@@ -1,0 +1,3 @@
+[*.cs]
+# Radzen disposable components will be disposed by the Blazor system
+dotnet_diagnostic.CA2213.severity = none				# CA2213: Disposable fields should be disposed
