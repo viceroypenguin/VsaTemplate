@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<Import Project="../Scaffold/Scaffold.targets" />
+	<Import Project="Secrets.targets" Condition="Exists('Secrets.targets')" />
+
+	<PropertyGroup>
+		<RootNamespace>VsaTemplate</RootNamespace>
+		<NoWarn>$(NoWarn);CA1036;AddValidationMethod</NoWarn>
+	</PropertyGroup>
+
+	<PropertyGroup Label="Scaffolder">
+		<ScaffoldContextNamespace>VsaTemplate.Database</ScaffoldContextNamespace>
+		<ScaffoldModelNamespace>VsaTemplate.Database.Models</ScaffoldModelNamespace>
+		<ScaffoldOutput>$(MSBuildThisFileDirectory)Database/Models/Scaffold.g.cs</ScaffoldOutput>
+	</PropertyGroup>
+
+	<ItemGroup Label="Scaffolder">
+		<None Remove="Database/Scripts/*.sql" />
+		<EmbeddedResource Include="Database/Scripts/*.sql" Script="true" />
+	</ItemGroup>
+
+	<ItemGroup Label="Usings">
+		<Using Include="Vogen" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="../Scaffold/Scaffold.csproj" ReferenceOutputAssembly="false" />
+		<ProjectReference Include="../SourceGen/SourceGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="linq2db" Version="5.2.2" />
+		<PackageReference Include="MailKit" Version="4.1.0" />
+		<PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.1" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" />
+		<PackageReference Include="System.Linq.Async" Version="6.0.1" />
+		<PackageReference Include="Vogen" Version="3.0.20" />
+	</ItemGroup>
+
+</Project>

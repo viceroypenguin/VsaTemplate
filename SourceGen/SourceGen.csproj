@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<RootNamespace>VsaTemplate.SourceGen</RootNamespace>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<IncludeBuildOutput>false</IncludeBuildOutput>
+		<IsRoslynComponent>true</IsRoslynComponent>
+
+		<!-- Avoid figuring out an actual dependency on Scriban -->
+		<PackageScribanIncludeSource>true</PackageScribanIncludeSource>
+
+		<!-- Scriban fails a lot of things in latest-all... -->
+		<AnalysisLevel>latest-default</AnalysisLevel>
+
+		<!-- Analyzer checks-->
+		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+
+		<!-- Other things to turn off -->
+		<NoWarn>$(NoWarn);RS1035;CA1310</NoWarn>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Remove="SuperLinq" />
+		<PackageReference Include="Microsoft.Bcl.HashCode" Version="1.1.1" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.7.0" PrivateAssets="all" />
+		<PackageReference Include="PolySharp" Version="1.13.2" PrivateAssets="All" />
+		<PackageReference Include="Scriban" Version="5.7.0" IncludeAssets="build" />
+		<PackageReference Include="ThisAssembly.Resources" Version="1.4.0" PrivateAssets="all" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Remove="*.generator.cs" />
+		<EmbeddedResource Include="*.generator.cs" />
+
+		<None Remove="*.sbntxt" />
+		<EmbeddedResource Include="*.sbntxt" Kind="Text" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Remove="Attributes.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="Attributes.cs" />
+	</ItemGroup>
+
+</Project>

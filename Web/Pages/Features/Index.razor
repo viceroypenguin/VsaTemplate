@@ -1,0 +1,59 @@
+﻿@page "/features"
+@using VsaTemplate.Features.Models;
+@inherits BlazorComponentBase
+
+<RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle_outline" class="mt-2 mb-4"
+			  Text="Add New Feature" Click="@CreateFeature" Disabled="@(IsLoading || IsEditing)" />
+
+<RadzenDataGrid TItem="Feature" @ref="_featuresGrid" Data="_features"
+				IsLoading="@IsLoading" Density="Density.Compact"
+				AllowSorting="true" AllowPaging="true" PageSize="40"
+				PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
+				EditMode="DataGridEditMode.Single" Sort="@Reset" Page="@Reset" Filter="@Reset"
+				RowUpdate="@OnUpdateRow" RowCreate="@OnCreateRow">
+	<Columns>
+		<RadzenDataGridColumn TItem="Feature" Property="Name" Title="Name">
+			<EditTemplate Context="feature">
+				<RadzenTextBox @bind-Value="feature.Name" Style="width:100%; display: block" Name="FeatureName" />
+				<RadzenRequiredValidator Text="Name is required" Component="FeatureName" Popup="true" />
+			</EditTemplate>
+		</RadzenDataGridColumn>
+		<RadzenDataGridColumn TItem="Feature" Property="FeatureType" Title="Type">
+			<EditTemplate Context="feature">
+				<RadzenDropDown @bind-Value="feature.FeatureType" Style="width:100%; display: block" Name="FeatureType"
+								Data="@_featureTypes" />
+				<RadzenCustomValidator Text="Type is required" Component="FeatureType" Popup="true"
+									   Validator="@(() => feature.FeatureType != FeatureType.None)" />
+			</EditTemplate>
+		</RadzenDataGridColumn>
+		<RadzenDataGridColumn TItem="Feature" Property="CreatorName" Title="Creator" />
+		<RadzenDataGridColumn TItem="Feature" Property="LastUpdatedTimestamp" Title="Last Updated" />
+		<RadzenDataGridColumn TItem="Feature" Property="ValueA" Title="ValueA">
+			<EditTemplate Context="feature">
+				<RadzenNumeric @bind-Value="feature.ValueA" Style="width:100%; display: block" TextAlign="TextAlign.Right" />
+			</EditTemplate>
+		</RadzenDataGridColumn>
+		<RadzenDataGridColumn TItem="Feature" Property="ValueB" Title="ValueB">
+			<EditTemplate Context="feature">
+				<RadzenTextBox @bind-Value="feature.ValueB" Style="width:100%; display: block" />
+			</EditTemplate>
+		</RadzenDataGridColumn>
+
+		<RadzenDataGridColumn TItem="Feature" Context="Feature" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Width="156px">
+			<Template Context="feature">
+				<RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium"
+							  Click="@(args => EditFeature(feature))" @onclick:stopPropagation="true" Disabled="@IsEditing" />
+				<RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Medium" class="my-1 ms-1"
+							  Click="@(args => DeleteFeature(feature))" @onclick:stopPropagation="true" Disabled="@IsEditing" />
+			</Template>
+			<EditTemplate Context="Feature">
+				<RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium"
+							  Click="@((args) => SaveFeature(Feature))" />
+				<RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="my-1 ms-1"
+							  Click="@((args) => CancelEdit(Feature))" />
+				<RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Medium" class="my-1 ms-1"
+							  Click="@(args => DeleteFeature(Feature))" />
+			</EditTemplate>
+		</RadzenDataGridColumn>
+	</Columns>
+</RadzenDataGrid>

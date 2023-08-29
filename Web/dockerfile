@@ -1,0 +1,50 @@
+# init image
+FROM mcr.microsoft.com/dotnet/aspnet:7.0-alpine AS init
+RUN apk add --no-cache icu-libs krb5-libs libintl libssl1.1 zlib tzdata
+ENV DOTNET_RUNNING_IN_CONTAINER=true \
+	ASPNETCORE_URLS=https://+:443 \
+	DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+
+# set up app folder
+WORKDIR /app
+RUN adduser \
+  --uid 10002 \
+  --disabled-password \
+  --home /app \
+  --gecos '' app \
+  && chown -R app /app
+USER app
+
+# expose https
+EXPOSE 443
+
+# build and publish
+FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine AS build
+
+# .net build and publish
+WORKDIR /src
+
+# Copy files for Restore
+COPY .editorconfig Directory.Build.props VsaTemplate.sln ./
+COPY */*.csproj ./
+RUN for file in $(ls *.csproj); do mkdir -p ${file%.*}/ && mv $file ${file%.*}/; done
+
+# Restore Nuget Packages
+RUN dotnet restore -r linux-musl-x64
+
+# Build Project
+COPY . .
+RUN --mount=type=secret,id=ScaffoldConnectionString \
+	ScaffoldConnectionString=$(cat /run/secrets/ScaffoldConnectionString) \
+	dotnet build "./Web/Web.csproj" \
+		-c Release -r linux-musl-x64 --no-self-contained --no-restore
+
+# Publish Project
+RUN dotnet publish "./Web/Web.csproj" -c Release -r linux-musl-x64 --no-self-contained -o /app/publish --no-build
+
+# Build deploy image
+FROM init AS publish
+COPY --from=build /app/publish .
+
+# Run Project
+ENTRYPOINT ["dotnet", "Web.dll"]
