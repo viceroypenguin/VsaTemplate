@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<RootNamespace>VsaTemplate.Scaffold</RootNamespace>
+
+		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<OutputType>exe</OutputType>
+
+		<AccelerateBuildsInVisualStudio>false</AccelerateBuildsInVisualStudio>
+
+		<!-- Because SG doesn't respect .editorconfig -->
+		<NoWarn>CA1852</NoWarn>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="docopt.net" Version="0.8.1" />
+		<PackageReference Include="linq2db" Version="5.3.0" />
+		<PackageReference Include="linq2db.Tools" Version="5.3.0" />
+		<PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.1" />
+	</ItemGroup>
+
+</Project>
