@@ -1,0 +1,71 @@
+﻿@inherits LayoutComponentBase
+
+<RadzenLayout>
+	<RadzenHeader>
+		<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0">
+			<RadzenSidebarToggle Click="@(() => _expanded = !_expanded)" />
+			<div class="flex-grow-1" />
+			<AuthorizeView>
+				<Authorized>
+					<RadzenProfileMenu>
+						<Template>
+							@context.User.Identity?.Name
+						</Template>
+						<ChildContent>
+							<RadzenProfileMenuItem Text="Logout" Path="/logout" Icon="logout" />
+						</ChildContent>
+					</RadzenProfileMenu>
+				</Authorized>
+				<NotAuthorized>
+					<div class="navbar-item">
+						<a href="/login?redirectUri=/" class="has-text-white">
+							<span class="icon is-left">
+								<i class="fas fa-sign-in-alt"></i>
+							</span>
+							Login
+						</a>
+					</div>
+				</NotAuthorized>
+			</AuthorizeView>
+		</RadzenStack>
+	</RadzenHeader>
+	<RadzenSidebar @bind-Expanded="@_expanded">
+		<RadzenPanelMenu>
+			<RadzenPanelMenuItem Text="Home" Path="/" Icon="home" />
+			<RadzenPanelMenuItem Text="Features">
+				<RadzenPanelMenuItem Text="View Features" Path="/Features" />
+			</RadzenPanelMenuItem>
+			<AuthorizeView>
+				<Authorized>
+					@if (context.User.IsInRole("Admin"))
+					{
+						<RadzenPanelMenuItem Text="Admin Data Editor" Icon="edit_note">
+							<RadzenPanelMenuItem Text="Edit Users" Path="/Admin/Users" />
+						</RadzenPanelMenuItem>
+						<RadzenPanelMenuItem Text="Admin" Icon="admin_panel_settings" Expanded="true">
+							<RadzenPanelMenuItem Text="Hangfire" Path="/hangfire" />
+							<RadzenPanelMenuItem Text="Swagger" Path="/swagger" />
+							<RadzenPanelMenuItem Text="@("Commit: " + ThisAssembly.Git.Sha)" Icon="info" />
+						</RadzenPanelMenuItem>
+					}
+				</Authorized>
+			</AuthorizeView>
+		</RadzenPanelMenu>
+	</RadzenSidebar>
+	<RadzenBody>
+		<RadzenContentContainer Name="main">
+			<RadzenRow Gap="2rem" Class="rz-pt-6 rz-px-4 rz-px-sm-8 rz-px-xl-12">
+				<RadzenColumn Size="12">
+					<RadzenRow Class="rz-mx-auto" Style="max-width: 1600px;">
+						@Body
+					</RadzenRow>
+				</RadzenColumn>
+			</RadzenRow>
+		</RadzenContentContainer>
+	</RadzenBody>
+</RadzenLayout>
+
+@code
+{
+	private bool _expanded = true;
+}

@@ -1,0 +1,3 @@
+[*.cs]
+dotnet_diagnostic.RMG012.severity = error # Unmapped target member
+dotnet_diagnostic.RMG020.severity = error # Unmapped source member

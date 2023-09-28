@@ -1,0 +1,65 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34003.232
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".root", ".root", "{7CAC09B6-98FE-45D3-8216-55B4420B37CE}"
+	ProjectSection(SolutionItems) = preProject
+		.dockerignore = .dockerignore
+		.editorconfig = .editorconfig
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		Directory.Build.props = Directory.Build.props
+		readme.md = readme.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1. Support", "1. Support", "{B88E398E-BE9B-43B5-B787-7F38FD8827F3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "2. Services", "2. Services", "{ADF88F2C-B9F8-4809-B5A0-5D9E7BC6F905}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3. Web", "3. Web", "{5DD2B4CA-F323-419F-AC82-79EADD6B5F41}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Scaffold", "Scaffold\Scaffold.csproj", "{DEE1A7EA-C0E1-4476-B34E-B104FF963EBC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SourceGen", "SourceGen\SourceGen.csproj", "{C1A7C3AA-5902-4992-ADC8-3ED07D88D896}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Services", "Services\Services.csproj", "{ADB1BF78-DBA8-4DB4-BA23-95D814D4E994}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Web", "Web\Web.csproj", "{09AF7C6E-41BB-4DB9-8693-3F8839EBCDD6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DEE1A7EA-C0E1-4476-B34E-B104FF963EBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DEE1A7EA-C0E1-4476-B34E-B104FF963EBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DEE1A7EA-C0E1-4476-B34E-B104FF963EBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DEE1A7EA-C0E1-4476-B34E-B104FF963EBC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1A7C3AA-5902-4992-ADC8-3ED07D88D896}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1A7C3AA-5902-4992-ADC8-3ED07D88D896}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1A7C3AA-5902-4992-ADC8-3ED07D88D896}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1A7C3AA-5902-4992-ADC8-3ED07D88D896}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ADB1BF78-DBA8-4DB4-BA23-95D814D4E994}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ADB1BF78-DBA8-4DB4-BA23-95D814D4E994}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ADB1BF78-DBA8-4DB4-BA23-95D814D4E994}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ADB1BF78-DBA8-4DB4-BA23-95D814D4E994}.Release|Any CPU.Build.0 = Release|Any CPU
+		{09AF7C6E-41BB-4DB9-8693-3F8839EBCDD6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09AF7C6E-41BB-4DB9-8693-3F8839EBCDD6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09AF7C6E-41BB-4DB9-8693-3F8839EBCDD6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09AF7C6E-41BB-4DB9-8693-3F8839EBCDD6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{DEE1A7EA-C0E1-4476-B34E-B104FF963EBC} = {B88E398E-BE9B-43B5-B787-7F38FD8827F3}
+		{C1A7C3AA-5902-4992-ADC8-3ED07D88D896} = {B88E398E-BE9B-43B5-B787-7F38FD8827F3}
+		{ADB1BF78-DBA8-4DB4-BA23-95D814D4E994} = {ADF88F2C-B9F8-4809-B5A0-5D9E7BC6F905}
+		{09AF7C6E-41BB-4DB9-8693-3F8839EBCDD6} = {5DD2B4CA-F323-419F-AC82-79EADD6B5F41}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FA318BBE-D485-41DF-92C8-72984D4D4AEC}
+	EndGlobalSection
+EndGlobal
