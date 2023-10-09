@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<PropertyGroup>
 		<RootNamespace>VsaTemplate.Web</RootNamespace>
@@ -19,7 +19,7 @@
 		<PackageReference Include="Serilog.Exceptions.MsSqlServer" Version="8.4.0" />
 		<PackageReference Include="Serilog.Exceptions.Refit" Version="8.4.0" />
 		<PackageReference Include="Serilog.Settings.Configuration" Version="7.0.1" />
-		<PackageReference Include="Serilog.Sinks.Seq" Version="5.2.2" />
+		<PackageReference Include="Serilog.Sinks.Seq" Version="5.2.3" />
 		<PackageReference Include="ThisAssembly.Git" Version="1.4.1" PrivateAssets="All" />
 	</ItemGroup>
 
