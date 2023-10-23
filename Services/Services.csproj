@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<Import Project="../Scaffold/Scaffold.targets" />
 	<Import Project="Secrets.targets" Condition="Exists('Secrets.targets')" />
@@ -29,7 +29,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="linq2db" Version="5.3.0" />
+		<PackageReference Include="linq2db" Version="5.3.2" />
 		<PackageReference Include="MailKit" Version="4.2.0" />
 		<PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.1" />
 		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.0.0" />
