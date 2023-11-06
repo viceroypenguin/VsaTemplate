@@ -70,7 +70,7 @@ try
 
 	builder.Services.AutoRegisterFromServices();
 
-	builder.Services.ConfigureAllOptions(builder.Configuration);
+	builder.Services.ConfigureAllOptions();
 
 	builder.Services.AddAuthorization(options =>
 	{

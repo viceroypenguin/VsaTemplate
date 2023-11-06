@@ -1,6 +1,5 @@
 ﻿using System.Globalization;
 using System.Text;
-using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
@@ -8,17 +7,8 @@ using Scriban;
 
 namespace VsaTemplate.SourceGen;
 
-[Generator]
-public class EnumDatabaseSyncGenerator : IIncrementalGenerator
+public sealed partial class Generator : IIncrementalGenerator
 {
-	public void Initialize(IncrementalGeneratorInitializationContext context)
-	{
-		context.RegisterPostInitializationOutput(ctx => ctx.AddSource(
-			"Attributes.generator.cs", ThisAssembly.Resources.Attributes.Text));
-
-		GenerateSyncEnums(context);
-	}
-
 	private static void GenerateSyncEnums(IncrementalGeneratorInitializationContext context)
 	{
 		var nodes = context.SyntaxProvider
