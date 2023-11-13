@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<PropertyGroup>
 		<RootNamespace>VsaTemplate.Web</RootNamespace>
@@ -11,7 +11,7 @@
 		<PackageReference Include="Hangfire" Version="1.8.5" />
 		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.12" />
 		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
-		<PackageReference Include="Radzen.Blazor" Version="4.17.1" />
+		<PackageReference Include="Radzen.Blazor" Version="4.20.4" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
 		<PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
 		<PackageReference Include="Serilog.Enrichers.Environment" Version="2.3.0" />
