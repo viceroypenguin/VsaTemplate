@@ -14,10 +14,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="docopt.net" Version="0.8.1" />
-		<PackageReference Include="linq2db" Version="5.3.0" />
-		<PackageReference Include="linq2db.Tools" Version="5.3.0" />
-		<PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.1" />
+		<PackageReference Include="docopt.net" />
+		<PackageReference Include="linq2db" />
+		<PackageReference Include="linq2db.Tools" />
+		<PackageReference Include="Microsoft.Data.SqlClient" />
 	</ItemGroup>
 
 </Project>

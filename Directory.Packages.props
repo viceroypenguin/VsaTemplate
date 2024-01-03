@@ -1,0 +1,47 @@
+<Project>
+	<PropertyGroup>
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageVersion Include="Auth0.AspNetCore.Authentication" Version="1.3.1" />
+		<PackageVersion Include="AutoRegisterInject" Version="1.2.1" />
+		<PackageVersion Include="CommunityToolkit.Diagnostics" Version="8.2.1" />
+		<PackageVersion Include="docopt.net" Version="0.8.1" />
+		<PackageVersion Include="DryIoc.dll" Version="5.4.1" />
+		<PackageVersion Include="DryIoc.Microsoft.DependencyInjection" Version="6.2.0" />
+		<PackageVersion Include="Hangfire" Version="1.8.5" />
+		<PackageVersion Include="linq2db" Version="5.3.0" />
+		<PackageVersion Include="linq2db.Tools" Version="5.3.0" />
+		<PackageVersion Include="MailKit" Version="4.2.0" />
+		<PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="7.0.12" />
+		<PackageVersion Include="Microsoft.Bcl.HashCode" Version="1.1.1" />
+		<PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
+		<PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.7.0" />
+		<PackageVersion Include="Microsoft.Data.SqlClient" Version="5.1.1" />
+		<PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
+		<PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.0.0" />
+		<PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
+		<PackageVersion Include="Microsoft.Extensions.Options" Version="7.0.1" />
+		<PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="7.0.0" />
+		<PackageVersion Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
+		<PackageVersion Include="PolySharp" Version="1.13.2" />
+		<PackageVersion Include="Radzen.Blazor" Version="4.17.1" />
+		<PackageVersion Include="Riok.Mapperly" Version="3.2.0" />
+		<PackageVersion Include="Scriban" Version="5.9.0" />
+		<PackageVersion Include="Serilog.AspNetCore" Version="7.0.0" />
+		<PackageVersion Include="Serilog.Enrichers.Environment" Version="2.3.0" />
+		<PackageVersion Include="Serilog.Exceptions" Version="8.4.0" />
+		<PackageVersion Include="Serilog.Exceptions.MsSqlServer" Version="8.4.0" />
+		<PackageVersion Include="Serilog.Exceptions.Refit" Version="8.4.0" />
+		<PackageVersion Include="Serilog.Settings.Configuration" Version="7.0.1" />
+		<PackageVersion Include="Serilog.Sinks.Seq" Version="5.2.3" />
+		<PackageVersion Include="SuperLinq" Version="5.2.0" />
+		<PackageVersion Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+		<PackageVersion Include="System.Linq.Async" Version="6.0.1" />
+		<PackageVersion Include="ThisAssembly.Git" Version="1.4.1" />
+		<PackageVersion Include="ThisAssembly.Resources" Version="1.4.1" />
+		<PackageVersion Include="Vogen" Version="3.0.21" />
+	</ItemGroup>
+
+</Project>

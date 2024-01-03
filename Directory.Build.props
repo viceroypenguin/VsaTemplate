@@ -16,12 +16,4 @@
 
 		<NoWarn>$(NoWarn);SYSLIB1006</NoWarn>
 	</PropertyGroup>
-
-	<ItemGroup>
-		<PackageReference Include="AutoRegisterInject" Version="1.2.1" PrivateAssets="All" />
-		<PackageReference Include="CommunityToolkit.Diagnostics" Version="8.2.1" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
-		<PackageReference Include="SuperLinq" Version="5.2.0" />
-	</ItemGroup>
 </Project>
