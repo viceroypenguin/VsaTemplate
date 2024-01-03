@@ -30,6 +30,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="AutoRegisterInject" PrivateAssets="All" />
+		<PackageReference Include="CommunityToolkit.Diagnostics" />
 		<PackageReference Include="linq2db" />
 		<PackageReference Include="MailKit" />
 		<PackageReference Include="Microsoft.Data.SqlClient" />
