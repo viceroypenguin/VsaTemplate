@@ -7,7 +7,7 @@
 
 		<ImplicitUsings>enable</ImplicitUsings>
 
-		<TargetFramework>net7.0</TargetFramework>
+		<TargetFramework>net8.0</TargetFramework>
 		<AnalysisLevel>latest-all</AnalysisLevel>
 		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 		<TieredPGO>true</TieredPGO>
