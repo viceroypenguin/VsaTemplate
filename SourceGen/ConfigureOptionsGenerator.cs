@@ -12,7 +12,7 @@ public sealed partial class Generator : IIncrementalGenerator
 	{
 		var classes = context.SyntaxProvider
 			.ForAttributeWithMetadataName(
-				"ConfigureOptionsAttribute",
+				"VsaTemplate.ConfigureOptionsAttribute",
 				predicate: static (sn, ct) => true,
 				transform: static (ctx, ct) =>
 				{

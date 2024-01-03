@@ -13,7 +13,7 @@ public sealed partial class Generator : IIncrementalGenerator
 	{
 		var nodes = context.SyntaxProvider
 			.ForAttributeWithMetadataName(
-				"SyncEnumAttribute",
+				"VsaTemplate.SyncEnumAttribute",
 				predicate: static (sn, ct) => true,
 				transform: static (ctx, ct) =>
 				{
