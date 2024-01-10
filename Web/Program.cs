@@ -15,6 +15,7 @@ using Serilog.Exceptions.MsSqlServer.Destructurers;
 using Serilog.Exceptions.Refit.Destructurers;
 using VsaTemplate.Users.Models;
 using VsaTemplate.Users.Services;
+using VsaTemplate.Web.Features.Users.Endpoints;
 using VsaTemplate.Web.Infrastructure.Hangfire;
 using VsaTemplate.Web.Infrastructure.Startup;
 
@@ -68,8 +69,6 @@ try
 	builder.Services.AddHangfireServer();
 	builder.Services.AddHostedService<HangfireInitializationService>();
 
-	builder.Services.AutoRegisterFromServices();
-
 	builder.Services.ConfigureAllOptions();
 
 	builder.Services.AddAuthorizationBuilder()
@@ -117,7 +116,15 @@ try
 			};
 		});
 
+	builder.Services.AutoRegisterFromServices();
+	builder.Services.AddHandlers();
+	builder.Services.AddBehaviors();
+
+	builder.Services.AddEndpointsApiExplorer();
 	builder.Services.AddSwaggerGen();
+
+	builder.Services.AddHttpContextAccessor();
+	builder.Services.AddAntiforgery();
 
 	builder.Services.AddResponseCompression(options =>
 	{
@@ -161,6 +168,8 @@ try
 	});
 
 	app.UseAntiforgery();
+
+	app.MapUserEndpoints();
 
 	app.Run();
 }

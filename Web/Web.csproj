@@ -4,12 +4,17 @@
 		<RootNamespace>VsaTemplate.Web</RootNamespace>
 	</PropertyGroup>
 
+	<ItemGroup Label="Usings">
+		<Using Include="Vogen" />
+	</ItemGroup>
+
 	<ItemGroup>
 		<PackageReference Include="Auth0.AspNetCore.Authentication" />
 		<PackageReference Include="AutoRegisterInject" PrivateAssets="All" />
 		<PackageReference Include="DryIoc.dll" />
 		<PackageReference Include="DryIoc.Microsoft.DependencyInjection" />
 		<PackageReference Include="Hangfire" />
+		<PackageReference Include="Immediate.Handlers" />
 		<PackageReference Include="Microsoft.AspNetCore.OpenApi" />
 		<PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
 		<PackageReference Include="Radzen.Blazor" />
