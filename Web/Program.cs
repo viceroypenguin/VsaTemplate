@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Security.Claims;
-using System.Text.Json.Serialization;
 using Auth0.AspNetCore.Authentication;
 using CommunityToolkit.Diagnostics;
 using DryIoc;
@@ -16,7 +15,8 @@ using Serilog.Exceptions.MsSqlServer.Destructurers;
 using Serilog.Exceptions.Refit.Destructurers;
 using VsaTemplate.Users.Models;
 using VsaTemplate.Users.Services;
-using VsaTemplate.Web.Code;
+using VsaTemplate.Web.Infrastructure.Hangfire;
+using VsaTemplate.Web.Infrastructure.Startup;
 
 #pragma warning disable CA1852 // Type can be sealed because it has no subtypes in its containing assembly and is not externally visible
 
@@ -72,10 +72,8 @@ try
 
 	builder.Services.ConfigureAllOptions();
 
-	builder.Services.AddAuthorization(options =>
-	{
-		options.AddPolicy("has_dbid", policy => policy.RequireClaim("dbid"));
-	});
+	builder.Services.AddAuthorizationBuilder()
+		.AddPolicy("has_dbid", policy => policy.RequireClaim("dbid"));
 
 	builder.Services
 		.AddAuth0WebAppAuthentication(o =>
@@ -109,7 +107,6 @@ try
 					var usersService = ctx.HttpContext.RequestServices.GetRequiredService<UsersService>();
 					var userId = await usersService.GetOrCreateUserId(Auth0UserId.From(auth0Id), emailAddress);
 
-
 					user.AddIdentity(
 						new ClaimsIdentity(
 							new Claim[]
@@ -119,11 +116,6 @@ try
 				},
 			};
 		});
-
-	builder.Services.AddRazorPages();
-	builder.Services.AddServerSideBlazor();
-	builder.Services.AddControllers()
-		.AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 	builder.Services.AddSwaggerGen();
 
@@ -141,9 +133,9 @@ try
 
 	app.UseStaticFiles();
 
-	app.UseAuthorization();
-
 	app.UseRouting();
+
+	app.UseAuthorization();
 
 	app.UseHangfireDashboard(
 		"/hangfire",
@@ -168,9 +160,7 @@ try
 		};
 	});
 
-	app.MapControllers();
-	app.MapBlazorHub();
-	app.MapFallbackToPage("/_Host");
+	app.UseAntiforgery();
 
 	app.Run();
 }

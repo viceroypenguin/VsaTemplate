@@ -20,7 +20,6 @@
 		<PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
 		<PackageVersion Include="Microsoft.Data.SqlClient" Version="5.1.2" />
 		<PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
-		<PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.0.0" />
 		<PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
 		<PackageVersion Include="Microsoft.Extensions.Options" Version="8.0.0" />
 		<PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
