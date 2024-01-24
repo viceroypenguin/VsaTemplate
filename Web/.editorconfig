@@ -1,0 +1,5 @@
+[*.cs]
+# Radzen disposable components will be disposed by the Blazor system
+dotnet_diagnostic.CA2213.severity = none				# CA2213: Disposable fields should be disposed
+
+dotnet_diagnostic.CA1034.severity = none				# CA1034: Nested types should not be visible

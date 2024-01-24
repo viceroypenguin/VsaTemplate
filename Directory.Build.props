@@ -1,0 +1,19 @@
+<Project>
+	<PropertyGroup>
+		<LangVersion>latest</LangVersion>
+
+		<Nullable>enable</Nullable>
+		<WarningsAsErrors>Nullable</WarningsAsErrors>
+
+		<ImplicitUsings>enable</ImplicitUsings>
+
+		<TargetFramework>net8.0</TargetFramework>
+		<AnalysisLevel>latest-all</AnalysisLevel>
+		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+		<TieredPGO>true</TieredPGO>
+
+		<AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
+
+		<NoWarn>$(NoWarn);SYSLIB1006</NoWarn>
+	</PropertyGroup>
+</Project>
