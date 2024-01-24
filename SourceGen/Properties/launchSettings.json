@@ -1,0 +1,8 @@
+{
+	"profiles": {
+		"Web": {
+			"commandName": "DebugRoslynComponent",
+			"targetProject": "..\\Web\\Web.csproj"
+		}
+	}
+}

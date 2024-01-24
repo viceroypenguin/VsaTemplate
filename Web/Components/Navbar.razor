@@ -1,0 +1,63 @@
+﻿@rendermode InteractiveServer
+
+<div class="rz-header">
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0">
+        <RadzenSidebarToggle Click="@(() => _expanded = !_expanded)" />
+        <div class="flex-grow-1" />
+        <AuthorizeView>
+            <Authorized>
+                <RadzenProfileMenu>
+                    <Template>
+                        @context.User.Identity?.Name
+                    </Template>
+                    <ChildContent>
+                        <RadzenProfileMenuItem Text="Logout" Path="/logout" Icon="logout" />
+                    </ChildContent>
+                </RadzenProfileMenu>
+            </Authorized>
+            <NotAuthorized>
+                <div class="navbar-item mr-2">
+                    <a href="/login?redirectUri=/" class="has-text-white">
+                        <span class="icon is-left">
+                            <i class="fas fa-sign-in-alt"></i>
+                        </span>
+                        Login
+                    </a>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
+    </RadzenStack>
+</div>
+<div class="rz-sidebar rz-sidebar-responsive @(State)">
+    <RadzenPanelMenu>
+        <RadzenPanelMenuItem Text="Home" Path="/" Icon="home" />
+        <AuthorizeView Policy="@Policies.Features">
+            <Authorized>
+                <RadzenPanelMenuItem Text="Features">
+                    <RadzenPanelMenuItem Text="View Features" Path="/Features" />
+                </RadzenPanelMenuItem>
+            </Authorized>
+        </AuthorizeView>
+        <AuthorizeView Policy="@Policies.Admin">
+            <Authorized>
+                <RadzenPanelMenuItem Text="Admin Data Editor" Icon="edit_note">
+                    <RadzenPanelMenuItem Text="Edit Users" Path="/Admin/Users" />
+                </RadzenPanelMenuItem>
+                <RadzenPanelMenuItem Text="Admin" Icon="admin_panel_settings" Expanded="true">
+                    <RadzenPanelMenuItem Text="Hangfire" Path="/hangfire" />
+                    <RadzenPanelMenuItem Text="Swagger" Path="/swagger" />
+                    <RadzenPanelMenuItem Text="@("Commit: " + ThisAssembly.Git.Sha)" Icon="info" />
+                </RadzenPanelMenuItem>
+            </Authorized>
+        </AuthorizeView>
+    </RadzenPanelMenu>
+</div>
+
+@code
+{
+    private bool _expanded = true;
+    private string State =>
+      _expanded
+      ? "rz-sidebar-expanded"
+      : "rz-sidebar-collapsed";
+}
