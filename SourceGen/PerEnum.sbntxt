@@ -1,0 +1,34 @@
+using LinqToDB;
+using LinqToDB.Data;
+using VsaTemplate.Web.Database.Models;
+
+namespace VsaTemplate.Web.Database;
+
+public sealed partial class DbContext : DataConnection
+{
+	private async Task Sync{{ name }}()
+	{
+		_ = await this.GetTable<{{ table }}>()
+			.Merge().Using(
+				new[]
+				{
+					{{~ for v in values ~}}
+					new { Id = {{ v.item2 }}, Name = "{{ v.item1 }}", },
+					{{~ end ~}}
+				})
+			.On((dst, src) => dst.{{ table }}Id == src.Id)
+			.InsertWhenNotMatched(src => new {{ table }}
+			{
+				{{ table }}Id = src.Id,
+				Name = src.Name,
+			})
+			.UpdateWhenMatched((dst, src) => new {{ table }}
+			{
+				Name = src.Name,
+			})
+			{{~ if delete_unknown ~}}
+			.DeleteWhenNotMatchedBySource()
+			{{~ end ~}}
+			.MergeAsync();
+	}
+}

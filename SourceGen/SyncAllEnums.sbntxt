@@ -1,0 +1,13 @@
+using LinqToDB.Data;
+
+namespace VsaTemplate.Web.Database;
+
+public sealed partial class DbContext : DataConnection
+{
+	private async Task SyncAllEnums()
+	{
+		{{~ for n in names ~}}
+		await Sync{{ n }}();
+		{{~ end ~}}
+	}
+}
