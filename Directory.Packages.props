@@ -4,7 +4,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageVersion Include="Auth0.AspNetCore.Authentication" Version="1.4.0" />
+		<PackageVersion Include="Auth0.AspNetCore.Authentication" Version="1.4.1" />
 		<PackageVersion Include="AutoRegisterInject" Version="1.2.1" />
 		<PackageVersion Include="CommunityToolkit.Diagnostics" Version="8.2.2" />
 		<PackageVersion Include="docopt.net" Version="0.8.1" />
