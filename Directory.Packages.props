@@ -11,7 +11,7 @@
 		<PackageVersion Include="DryIoc.dll" Version="5.4.3" />
 		<PackageVersion Include="DryIoc.Microsoft.DependencyInjection" Version="6.2.0" />
 		<PackageVersion Include="Hangfire" Version="1.8.9" />
-		<PackageVersion Include="Immediate.Handlers" Version="1.0.0" />
+		<PackageVersion Include="Immediate.Handlers" Version="1.1.0" />
 		<PackageVersion Include="linq2db" Version="5.3.2" />
 		<PackageVersion Include="linq2db.Tools" Version="5.3.2" />
 		<PackageVersion Include="MailKit" Version="4.3.0" />
