@@ -22,7 +22,7 @@
 		<PackageVersion Include="Microsoft.Data.SqlClient" Version="5.1.5" />
 		<PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
 		<PackageVersion Include="PolySharp" Version="1.14.1" />
-		<PackageVersion Include="Radzen.Blazor" Version="4.24.4" />
+		<PackageVersion Include="Radzen.Blazor" Version="4.25.6" />
 		<PackageVersion Include="Riok.Mapperly" Version="3.3.0" />
 		<PackageVersion Include="Scriban" Version="5.9.1" />
 		<PackageVersion Include="Serilog.AspNetCore" Version="8.0.1" />
