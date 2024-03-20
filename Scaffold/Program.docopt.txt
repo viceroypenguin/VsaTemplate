@@ -1,0 +1,17 @@
+﻿Scaffolder.
+
+Usage:
+  scaffolder.exe 
+       --connection-string=STR 
+       --context-namespace=NAMESPACE 
+       --model-namespace=NAMESPACE 
+       --output-file=FILE 
+       [--] FILE ...
+  scaffolder.exe (-h | --help)
+
+Options:
+  -h --help                                   Show this screen.
+  --connection-string=STR                     Connection String.
+  --context-namespace=NAMESPACE               Context Namespace.
+  --model-namespace=NAMESPACE                 Model Namespace.
+  --output-file=FILE                          Output file.
