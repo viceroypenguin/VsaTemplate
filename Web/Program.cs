@@ -72,11 +72,16 @@ try
 	_ = app.UseAntiforgery();
 	_ = app.UseLogging();
 
-	_ = app.MapAccountServices();
-	_ = app.MapWebEndpoints();
+	_ = app.UseEndpoints(
+		endpoints =>
+		{
+			_ = endpoints.MapAccountServices();
+			_ = endpoints.MapWebEndpoints();
 
-	_ = app.MapRazorComponents<App>()
-		.AddInteractiveServerRenderMode();
+			_ = endpoints.MapRazorComponents<App>()
+				.AddInteractiveServerRenderMode();
+		}
+	);
 
 	await app.RunAsync();
 }
