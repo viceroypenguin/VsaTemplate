@@ -1,17 +1,15 @@
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using DocoptNet;
+using Humanizer;
 using LinqToDB;
-using LinqToDB.CodeModel;
 using LinqToDB.Data;
-using LinqToDB.DataModel;
 using LinqToDB.DataProvider.SqlServer;
-using LinqToDB.Metadata;
-using LinqToDB.Naming;
-using LinqToDB.Scaffold;
-using LinqToDB.Schema;
-using VsaTemplate.Scaffold;
 using Microsoft.Data.SqlClient;
+using SuperLinq;
+using VsaTemplate;
+using VsaTemplate.Scaffold;
 
 static int ShowHelp(string help) { Console.WriteLine(help); return 0; }
 
@@ -56,27 +54,104 @@ static async Task<string> GenerateScaffold(ProgramArguments args)
 	{
 		await LoadMigrationScripts(conn, dbName, args.ArgFile);
 
-		var language = LanguageProviders.CSharp;
-		var settings = GetScaffoldOptions(args.OptModelNamespace!);
+		var provider = conn.DataProvider.GetSchemaProvider();
+		var schema = provider.GetSchema(
+			conn,
+			new()
+			{
+				ExcludedSchemas = ["Hangfire"],
+			}
+		);
 
-		var legacyProvider = new LegacySchemaProvider(conn, settings.Schema, language);
-		var generator = new Scaffolder(language, HumanizerNameConverter.Instance, settings, new Interceptors());
-		var dataModel = generator.LoadDataModel(legacyProvider, legacyProvider);
-		dataModel.DataContext.Class.Namespace = args.OptContextNamespace;
+		var entities = schema.Tables
+			.Select(t => new DbEntity
+			{
+				PropertyName = Pluralize(t.TypeName),
+				TypeName = t.TypeName,
+				TableName = $"{t.SchemaName}.{t.TableName}",
 
-		var builder = conn.DataProvider.CreateSqlBuilder(conn.MappingSchema, new DataOptions());
-		var files = generator.GenerateCodeModel(
-			builder,
-			dataModel,
-			MetadataBuilders.GetMetadataBuilder(generator.Language, MetadataSource.Attributes),
-			new ProviderSpecificStructsEqualityFixer(generator.Language));
-		return generator.GenerateSourceCode(dataModel, files)[0].Code;
+				Properties = t.Columns
+					.Select(c => new Property
+					{
+						PropertyName = c.ColumnName,
+						TypeName = GetPropertyType(c.DataType, c.IsNullable),
+						DataType = c.ColumnType ?? throw new InvalidOperationException("Unknown column type"),
+						CanBeNull = c.SystemType!.IsClass && c.IsNullable ? false : null,
+						IsPrimaryKey = c.IsPrimaryKey,
+						PrimaryKeyOrder = c.IsPrimaryKey ? c.PrimaryKeyOrder : null,
+						IsIdentity = c.IsIdentity,
+						SkipOnInsert = c.SkipOnInsert,
+						SkipOnUpdate = c.SkipOnUpdate
+					})
+					.ToList()
+			})
+			.ToList();
+
+		return JsonSerializer.Serialize(entities);
 	}
 	finally
 	{
 		await DropDatabase(conn, dbName);
 	}
 }
+
+static string Pluralize(string typeName) =>
+	string.Concat(
+		typeName
+			.Segment(char.IsUpper)
+			.TagFirstLast((str, _, isLast) =>
+				isLast ?
+					string.Concat(str).Pluralize() :
+					string.Concat(str)
+			)
+	);
+
+#pragma warning disable IDE0072 // Add missing cases
+static string GetPropertyType(DataType? dataType, bool isNullable)
+	=> dataType switch
+	{
+		DataType.Char
+		or DataType.NChar => "char",
+
+		DataType.VarChar
+		or DataType.Text
+		or DataType.NVarChar
+		or DataType.NText => "string",
+
+		DataType.Binary
+		or DataType.VarBinary
+		or DataType.Blob => "byte[]",
+
+		DataType.Guid => "global::System.Guid",
+
+		DataType.Boolean => "bool",
+
+		DataType.Byte => "byte",
+		DataType.SByte => "sbyte",
+		DataType.Int16 => "short",
+		DataType.Int32 => "int",
+		DataType.Int64 => "long",
+		DataType.UInt16 => "ushort",
+		DataType.UInt32 => "uint",
+
+		DataType.UInt64 => "ulong",
+		DataType.Single => "float",
+		DataType.Double => "double",
+
+		DataType.Decimal
+		or DataType.Money => "decimal",
+
+		DataType.Date => "global::System.DateOnly",
+		DataType.Time => "global::System.TimeSpan",
+
+		DataType.DateTime
+		or DataType.DateTime2 => "global::System.DateTime",
+
+		DataType.DateTimeOffset => "global::System.DateTimeOffset",
+
+		_ => throw new InvalidOperationException("Unknown data type."),
+	} + (isNullable ? "?" : "");
+#pragma warning restore IDE0072 // Add missing cases
 
 static async Task CreateDatabase(DataConnection conn, string database)
 {
@@ -126,35 +201,4 @@ static DataConnection GetSqlServerConnection(string connectionString, string dat
 		builder.ToString(),
 		SqlServerVersion.v2019,
 		SqlServerProvider.MicrosoftDataSqlClient);
-}
-
-static ScaffoldOptions GetScaffoldOptions(string modelsNamespace)
-{
-	var settings = ScaffoldOptions.Default();
-
-	settings.Schema.IncludeSchemas = false;
-	_ = settings.Schema.Schemas.Add("Hangfire");
-
-	settings.DataModel.HasDefaultConstructor = false;
-	settings.DataModel.HasConfigurationConstructor = false;
-	settings.DataModel.HasUntypedOptionsConstructor = false;
-	settings.DataModel.HasTypedOptionsConstructor = false;
-	settings.DataModel.ContextClassName = "DbContext";
-	settings.DataModel.GenerateFindExtensions = FindTypes.None;
-
-	settings.CodeGeneration.Namespace = modelsNamespace;
-	settings.CodeGeneration.ClassPerFile = false;
-
-	return settings;
-}
-
-internal class Interceptors : ScaffoldInterceptors
-{
-	public override TypeMapping? GetTypeMapping(DatabaseType databaseType, ITypeParser typeParser, TypeMapping? defaultMapping)
-	{
-		if (databaseType.Name == "date")
-			return new(typeParser.Parse<DateOnly>(), DataType.Date);
-
-		return base.GetTypeMapping(databaseType, typeParser, defaultMapping);
-	}
 }

@@ -1,52 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project>
 
+  <PropertyGroup>
+	<ScaffoldsDependsOn>
+	  $(ScaffoldsDependsOn);
+	  PrepareForScaffold;
+	  ScaffoldCore;
+	</ScaffoldsDependsOn>
+  </PropertyGroup>
+
+  <Target
+	  Name="Scaffold"
+	  DependsOnTargets="$(ScaffoldsDependsOn)"
+	  BeforeTargets="PrepareResources">
+  </Target>
+
+  <Target Name="PrepareForScaffold">
 	<PropertyGroup>
-		<ScaffoldsDependsOn>
-			$(ScaffoldsDependsOn);
-			PrepareForScaffold;
-			ScaffoldCore;
-		</ScaffoldsDependsOn>
+	  <ScaffoldDetailed>low</ScaffoldDetailed>
+	  <ScaffoldDetailed Condition="'$(ScaffoldVerbosity)' == 'detailed' Or '$(ScaffoldVerbosity)' == 'd' Or '$(ScaffoldVerbosity)' == 'diagnostic' Or '$(ScaffoldVerbosity)' == 'diag'">high</ScaffoldDetailed>
 	</PropertyGroup>
 
-	<Target
-		Name="Scaffold"
-		DependsOnTargets="$(ScaffoldsDependsOn)"
-		BeforeTargets="PrepareResources">
-	</Target>
+	<ItemGroup>
+	  <ScaffoldFiles Include="@(EmbeddedResource)" Condition="'%(EmbeddedResource.Script)' == 'true'" />
+	  <ScaffoldInputs Include="@(ScaffoldFiles)" />
+	  <ScaffoldInputs Include="$(MSBuildThisFileDirectory)/bin/$(Configuration)/Scaffold" Condition="'$(BuildingInsideVisualStudio)' != 'true'" />
+	  <UpToDateCheckInput Set="Scaffold" Include="@(ScaffoldFiles)" />
+	  <UpToDateCheckOutput Set="Scaffold" Include="$(ScaffoldOutput)" />
+	</ItemGroup>
 
-	<Target Name="PrepareForScaffold">
-		<PropertyGroup>
-			<ScaffoldDetailed>low</ScaffoldDetailed>
-			<ScaffoldDetailed Condition="'$(ScaffoldVerbosity)' == 'detailed' Or '$(ScaffoldVerbosity)' == 'd' Or '$(ScaffoldVerbosity)' == 'diagnostic' Or '$(ScaffoldVerbosity)' == 'diag'">high</ScaffoldDetailed>
-		</PropertyGroup>
+	<Message Importance="$(ScaffoldDetailed)" Text="Scaffold: [input] ScaffoldOutput=$(ScaffoldOutput)" />
+	<Message Importance="$(ScaffoldDetailed)" Text="Scaffold: [input] ScaffoldConnectionString=$(ScaffoldConnectionString)" />
+	<Message Importance="$(ScaffoldDetailed)" Text="Scaffold: [input] ScaffoldFiles=@(ScaffoldFiles->'&quot;%(FullPath)&quot;', ' ')" />
 
-		<ItemGroup>
-			<ScaffoldFiles Include="@(EmbeddedResource)" Condition="'%(EmbeddedResource.Script)' == 'true'" />
-			<ScaffoldInputs Include="@(ScaffoldFiles)" />
-			<ScaffoldInputs Include="$(MSBuildThisFileDirectory)/bin/$(Configuration)/Scaffold" Condition="'$(BuildingInsideVisualStudio)' != 'true'" />
-			<UpToDateCheckInput Set="Scaffold" Include="@(ScaffoldFiles)" />
-			<UpToDateCheckOutput Set="Scaffold" Include="$(ScaffoldOutput)" />
-		</ItemGroup>
+	<ItemGroup>
+	  <ScaffoldInput Remove="@(ScaffoldInput)" />
+	  <ScaffoldInput Include="--output-file=&quot;$(ScaffoldOutput)&quot;" />
+	  <ScaffoldInput Include="--connection-string=&quot;$([MSBuild]::Escape($(ScaffoldConnectionString)))&quot;" />
+	</ItemGroup>
+  </Target>
 
-		<Message Importance="$(ScaffoldDetailed)" Text="Scaffold: [input] ScaffoldOutput=$(ScaffoldOutput)" />
-		<Message Importance="$(ScaffoldDetailed)" Text="Scaffold: [input] ScaffoldContextNamespace=$(ScaffoldContextNamespace)" />
-		<Message Importance="$(ScaffoldDetailed)" Text="Scaffold: [input] ScaffoldModelNamespace=$(ScaffoldModelNamespace)" />
-		<Message Importance="$(ScaffoldDetailed)" Text="Scaffold: [input] ScaffoldConnectionString=$(ScaffoldConnectionString)" />
-		<Message Importance="$(ScaffoldDetailed)" Text="Scaffold: [input] ScaffoldFiles=@(ScaffoldFiles->'&quot;%(FullPath)&quot;', ' ')" />
-
-		<ItemGroup>
-			<ScaffoldInput Remove="@(ScaffoldInput)" />
-			<ScaffoldInput Include="--output-file=&quot;$(ScaffoldOutput)&quot;" />
-			<ScaffoldInput Include="--context-namespace=&quot;$(ScaffoldContextNamespace)&quot;" />
-			<ScaffoldInput Include="--model-namespace=&quot;$(ScaffoldModelNamespace)&quot;" />
-			<ScaffoldInput Include="--connection-string=&quot;$([MSBuild]::Escape($(ScaffoldConnectionString)))&quot;" />
-		</ItemGroup>
-	</Target>
-
-	<Target Name="ScaffoldCore" Inputs="@(ScaffoldInputs)" Outputs="$(ScaffoldOutput)">
-		<Exec Command="&quot;$(MSBuildThisFileDirectory)/bin/$(Configuration)/Scaffold&quot; @(ScaffoldInput->'%(Identity)', ' ') -- @(ScaffoldFiles->'&quot;%(FullPath)&quot;', ' ')"
-					ConsoleToMSBuild="true" StandardOutputImportance="$(ScaffoldDetailed)" />
-	</Target>
+  <Target Name="ScaffoldCore" Inputs="@(ScaffoldInputs)" Outputs="$(ScaffoldOutput)">
+	<Exec Command="&quot;$(MSBuildThisFileDirectory)/bin/$(Configuration)/Scaffold&quot; @(ScaffoldInput->'%(Identity)', ' ') -- @(ScaffoldFiles->'&quot;%(FullPath)&quot;', ' ')"
+				ConsoleToMSBuild="true" StandardOutputImportance="$(ScaffoldDetailed)" />
+  </Target>
 
 </Project>
