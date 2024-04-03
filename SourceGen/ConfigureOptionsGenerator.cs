@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
@@ -6,9 +6,10 @@ using Scriban;
 
 namespace VsaTemplate.SourceGen;
 
-public sealed partial class Generator : IIncrementalGenerator
+[Generator]
+public sealed class ConfigureOptionsGenerator : IIncrementalGenerator
 {
-	private static void GenerateConfigureOptions(IncrementalGeneratorInitializationContext context)
+	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
 		var classes = context.SyntaxProvider
 			.ForAttributeWithMetadataName(
@@ -32,7 +33,7 @@ public sealed partial class Generator : IIncrementalGenerator
 			classes,
 			action: (spc, c) =>
 			{
-				var output = Template.Parse(GetScribanTemplate("ConfigureOptions"))
+				var output = Template.Parse(Utility.GetScribanTemplate("ConfigureOptions"))
 					.Render(new { classes = c });
 				spc.AddSource($"ConfigureOptions.g.cs", SourceText.From(output, Encoding.UTF8));
 			});

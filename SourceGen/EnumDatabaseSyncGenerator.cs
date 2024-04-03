@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -7,9 +7,10 @@ using Scriban;
 
 namespace VsaTemplate.SourceGen;
 
-public sealed partial class Generator : IIncrementalGenerator
+[Generator]
+public sealed class EnumDatabaseSyncGenerator : IIncrementalGenerator
 {
-	private static void GenerateSyncEnums(IncrementalGeneratorInitializationContext context)
+	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
 		var nodes = context.SyntaxProvider
 			.ForAttributeWithMetadataName(
@@ -48,7 +49,7 @@ public sealed partial class Generator : IIncrementalGenerator
 					return (deleteUnknown, table, name, values);
 				});
 
-		var template = Template.Parse(GetScribanTemplate("PerEnum"));
+		var template = Template.Parse(Utility.GetScribanTemplate("PerEnum"));
 		context.RegisterSourceOutput(
 			nodes,
 			action: (spc, n) =>
@@ -65,7 +66,7 @@ public sealed partial class Generator : IIncrementalGenerator
 			names,
 			action: static (spc, n) =>
 			{
-				var output = Template.Parse(GetScribanTemplate("SyncAllEnums"))
+				var output = Template.Parse(Utility.GetScribanTemplate("SyncAllEnums"))
 					.Render(new { names = n, });
 				spc.AddSource("SyncAllEnums.g.cs", SourceText.From(output, Encoding.UTF8));
 			});

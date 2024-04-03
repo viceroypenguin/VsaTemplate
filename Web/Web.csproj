@@ -5,7 +5,6 @@
 
   <PropertyGroup Label="Scaffolder">
 	<ScaffoldOutput>$(MSBuildThisFileDirectory)Database/Models/Scaffold.json</ScaffoldOutput>
-	<ScaffoldVerbosity>detailed</ScaffoldVerbosity>
   </PropertyGroup>
 
   <ItemGroup Label="Scaffolder">
