@@ -35,6 +35,18 @@ public static partial class CreateFeature
 		Guard.IsNotNullOrWhiteSpace(query.Name);
 		Guard.IsGreaterThan(query.CreatorUserId.Value, 0);
 
+		_ = await context.InsertAsync(
+			new Database.Models.Feature
+			{
+				Name = query.Name,
+				FeatureTypeId = query.FeatureType,
+				CreatorUserId = query.CreatorUserId,
+				ValueA = query.ValueA,
+				ValueB = query.ValueB,
+			},
+			token: token
+		);
+
 		var output = await SuperEnumerable.Return(
 				new
 				{

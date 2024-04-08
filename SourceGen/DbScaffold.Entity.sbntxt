@@ -6,7 +6,7 @@ using LinqToDB.Mapping;
 
 namespace VsaTemplate.Web.Database.Models;
 
-[Table("{{ table_name }}"{{ if !string.empty schema_name }}, Schema = "schema_name"{{ end }})]
+[Table("{{ table_name }}"{{ if !string.empty schema_name }}, Schema = "{{ schema_name }}"{{ end }})]
 public sealed class {{ type_name }}
 {
 	{{~ for p in properties ~}}
@@ -31,6 +31,9 @@ public sealed class {{ type_name }}
 		, SkipOnUpdate = true
 		{{~ end ~}}
 	)]
+	{{~ if p.use_converter ~}}
+	[ValueConverter(ConverterType = typeof({{ p.type_name }}.LinqToDbValueConverter))]
+	{{~ end ~}}
 	public {{ p.type_name }} {{ p.property_name }} { get; set; }{{~ if p.force_not_null ~}} = null!;{{~ end }}
 
 	{{~ end ~}}

@@ -28,7 +28,8 @@ public sealed partial class DbContext : DataConnection
 				SqlServerVersion.v2019,
 				SqlServerProvider.MicrosoftDataSqlClient),
 			connectionString: GetConnectionString(options),
-			mappingSchema: s_mappingSchema)
+			mappingSchema: s_mappingSchema
+		)
 	{
 		_logger = logger;
 

@@ -24,7 +24,7 @@ public static partial class DeleteFeature
 		CancellationToken token)
 	{
 		var rowCount = await context.Features
-			.Where(u => u.FeatureId == query.FeatureId.Value)
+			.Where(u => u.FeatureId == query.FeatureId)
 			.DeleteAsync(token);
 		return rowCount > 0;
 	}

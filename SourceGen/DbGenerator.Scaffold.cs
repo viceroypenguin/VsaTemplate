@@ -16,15 +16,33 @@ public sealed partial class DbGenerator
 	private static void RenderEntity(SourceProductionContext spc, DbEntity entity, EquatableDictionary<string> map, Template template)
 	{
 		var properties = entity.Properties.Collection
-			.Select(p => p with
+			.Select(p =>
 			{
-				TypeName =
-					map.TryGetValue(p.ColumnName, out var name)
-						? name :
-					p.ColumnName.EndsWith("Id", StringComparison.Ordinal)
-					&& map.FindValue(p.ColumnName, out name)
-						? name :
-						p.TypeName
+				var name = p.TypeName;
+				var useConverter = false;
+				if (map.TryGetValue(p.ColumnName, out var n)
+					|| (p.ColumnName.EndsWith("Id", StringComparison.Ordinal)
+						&& map.FindValue(p.ColumnName, out n))
+					)
+				{
+					name = n;
+					useConverter = n.EndsWith("Id", StringComparison.Ordinal);
+				}
+
+				return new
+				{
+					TypeName = name,
+					UseConverter = useConverter,
+					p.PropertyName,
+					p.ColumnName,
+					p.DataType,
+					p.ForceNotNull,
+					p.IsPrimaryKey,
+					p.PrimaryKeyOrder,
+					p.IsIdentity,
+					p.SkipOnInsert,
+					p.SkipOnUpdate,
+				};
 			});
 
 		var output = template

@@ -30,38 +30,36 @@ public sealed partial class LoggingBehavior<TRequest, TResponse>(
 			properties["RequestPath"] = httpRequest.Path.ToString();
 		}
 
-		var requestName = typeof(TRequest).ToString();
-		var responseName = typeof(TResponse).ToString();
 		try
 		{
 			var sw = Stopwatch.StartNew();
 			var response = await Next(request, cancellationToken);
 			using (var scope = _logger.BeginScope(properties))
-				LogSuccess(requestName, responseName, sw.Elapsed.TotalMilliseconds);
+				LogSuccess(HandlerType, sw.Elapsed.TotalMilliseconds);
 
 			return response;
 		}
 		catch (Exception ex)
 		{
 			using (var scope = _logger.BeginScope(properties))
-				LogException(requestName, responseName, ex);
+				LogException(HandlerType, ex);
 			throw;
 		}
 	}
 
 	[LoggerMessage(
 		Level = LogLevel.Information,
-		Message = "Executed IHandler<{RequestType}, {ResponseType}> in {Elapsed} ms")]
+		Message = "Executed {Type} handler in {Elapsed} ms"
+	)]
 	private partial void LogSuccess(
-		string requestType,
-		string responseType,
+		Type type,
 		double elapsed);
 
 	[LoggerMessage(
 		Level = LogLevel.Error,
-		Message = "Exception during IHandler<{RequestType}, {ResponseType}>")]
+		Message = "Exception during {Type} handler"
+	)]
 	private partial void LogException(
-		string requestType,
-		string responseType,
+		Type type,
 		Exception exception);
 }
