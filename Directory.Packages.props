@@ -25,7 +25,7 @@
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <PackageVersion Include="PolySharp" Version="1.14.1" />
     <PackageVersion Include="Radzen.Blazor" Version="4.28.9" />
-    <PackageVersion Include="Riok.Mapperly" Version="3.4.0" />
+    <PackageVersion Include="Riok.Mapperly" Version="3.5.0" />
     <PackageVersion Include="Scriban" Version="5.9.1" />
     <PackageVersion Include="Serilog.AspNetCore" Version="8.0.1" />
     <PackageVersion Include="Serilog.Enrichers.Environment" Version="2.3.0" />
