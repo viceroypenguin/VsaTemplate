@@ -17,6 +17,7 @@
     <PackageVersion Include="MailKit" Version="4.4.0" />
     <PackageVersion Include="Meziantou.Analyzer" Version="2.0.146" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="8.0.3" />
+    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="1.1.1" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.2" />
@@ -33,7 +34,16 @@
     <PackageVersion Include="Serilog.Exceptions.MsSqlServer" Version="8.4.0" />
     <PackageVersion Include="Serilog.Exceptions.Refit" Version="8.4.0" />
     <PackageVersion Include="Serilog.Sinks.Seq" Version="7.0.0" />
+    <PackageVersion Include="System.Buffers" Version="4.5.1" />
+    <PackageVersion Include="System.Collections.Immutable" Version="8.0.0" />
+    <PackageVersion Include="System.Memory" Version="4.5.5" />
+    <PackageVersion Include="System.Numerics.Vectors" Version="4.4.0" />
+    <PackageVersion Include="System.Reflection.Metadata" Version="8.0.0" />
+    <PackageVersion Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
+    <PackageVersion Include="System.Text.Encoding.CodePages" Version="8.0.0" />
+    <PackageVersion Include="System.Text.Encodings.Web" Version="8.0.0" />
     <PackageVersion Include="System.Text.Json" Version="8.0.3" />
+    <PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
     <PackageVersion Include="SuperLinq" Version="5.4.0" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />

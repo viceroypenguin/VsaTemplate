@@ -1,0 +1,22 @@
+#nullable enable
+
+using LinqToDB;
+using LinqToDB.Data;
+using LinqToDB.Mapping;
+
+namespace VsaTemplate.Web.Database;
+
+public sealed partial class DbContext : DataConnection
+{
+	private static partial MappingSchema BuildMappingSchema()
+	{
+		var schema = new MappingSchema();
+
+		{{~ for t in types ~}}
+		_ = schema.SetConvertExpression<{{ t.type_name }}, {{ t.underlying_type_name }}>(x => ({{ t.underlying_type_name }})x);
+		_ = schema.SetConvertExpression<{{ t.underlying_type_name }}, {{ t.type_name }}>(x => ({{ t.type_name }})x);
+
+		{{~ end ~}}
+		return schema;
+	}
+}

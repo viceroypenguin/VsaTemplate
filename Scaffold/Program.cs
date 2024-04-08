@@ -6,10 +6,11 @@ using Humanizer;
 using LinqToDB;
 using LinqToDB.Data;
 using LinqToDB.DataProvider.SqlServer;
+using LinqToDB.SchemaProvider;
 using Microsoft.Data.SqlClient;
 using SuperLinq;
-using VsaTemplate;
 using VsaTemplate.Scaffold;
+using VsaTemplate.SourceGen;
 
 static int ShowHelp(string help) { Console.WriteLine(help); return 0; }
 
@@ -68,26 +69,52 @@ static async Task<string> GenerateScaffold(ProgramArguments args)
 			{
 				PropertyName = Pluralize(t.TypeName),
 				TypeName = t.TypeName,
-				TableName = $"{t.SchemaName}.{t.TableName}",
+				TableName = t.TableName!,
+				SchemaName = t.SchemaName is "dbo" ? null : t.SchemaName,
 
 				Properties = t.Columns
 					.Select(c => new Property
 					{
-						PropertyName = c.ColumnName,
+						PropertyName = c.MemberName,
+						ColumnName = c.ColumnName,
 						TypeName = GetPropertyType(c.DataType, c.IsNullable),
 						DataType = c.ColumnType ?? throw new InvalidOperationException("Unknown column type"),
-						CanBeNull = c.SystemType!.IsClass && c.IsNullable ? false : null,
+						ForceNotNull = c.SystemType!.IsClass && !c.IsNullable,
 						IsPrimaryKey = c.IsPrimaryKey,
-						PrimaryKeyOrder = c.IsPrimaryKey ? c.PrimaryKeyOrder : null,
+						PrimaryKeyOrder = c.IsPrimaryKey && t.Columns.Any(c => c.PrimaryKeyOrder > 1) ? c.PrimaryKeyOrder : null,
 						IsIdentity = c.IsIdentity,
 						SkipOnInsert = c.SkipOnInsert,
 						SkipOnUpdate = c.SkipOnUpdate
 					})
-					.ToList()
+					.ToEquatableReadOnlyList(),
+
+				Associations = t.ForeignKeys
+					.Select(fk => new Association
+					{
+						Name = fk.KeyName,
+						CanBeNull = fk.CanBeNull,
+						ThisKeys = string.Join(",", fk.ThisColumns.Select(c => c.MemberName)),
+						OtherName =
+							fk.AssociationType == AssociationType.OneToMany
+								? Pluralize(fk.OtherTable.TypeName) :
+							fk.ThisColumns.Count == 1
+								? fk.ThisColumns[0].MemberName[..^2] :
+								fk.OtherTable.TypeName,
+						OtherType =
+							fk.AssociationType == AssociationType.OneToMany
+								? $"IEnumerable<{fk.OtherTable.TypeName}>" :
+							fk.CanBeNull
+								? $"{fk.OtherTable.TypeName}?" :
+								fk.OtherTable.TypeName,
+						OtherKeys = string.Join(",", fk.OtherColumns.Select(c => c.MemberName)),
+					})
+					.ToEquatableReadOnlyList(),
 			})
 			.ToList();
 
-		return JsonSerializer.Serialize(entities);
+#pragma warning disable CA1869 // Cache and reuse 'JsonSerializerOptions' instances
+		return JsonSerializer.Serialize(entities, new JsonSerializerOptions() { WriteIndented = true, });
+#pragma warning restore CA1869 // Cache and reuse 'JsonSerializerOptions' instances
 	}
 	finally
 	{

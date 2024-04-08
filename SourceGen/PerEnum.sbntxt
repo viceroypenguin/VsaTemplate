@@ -15,7 +15,7 @@ public sealed partial class DbContext : DataConnection
 				new[]
 				{
 					{{~ for v in values ~}}
-					new { Id = {{ v.item2 }}, Name = "{{ v.item1 }}", },
+					new { Id = ({{ type }}){{ v.item2 }}, Name = "{{ v.item1 }}", },
 					{{~ end ~}}
 				})
 			.On((dst, src) => dst.{{ table }}Id == src.Id)

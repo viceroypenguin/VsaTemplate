@@ -40,7 +40,7 @@ public static partial class CreateFeature
 				{
 					query.Name,
 					query.FeatureType,
-					CreatorUserId = query.CreatorUserId.Value,
+					query.CreatorUserId,
 					query.ValueA,
 					query.ValueB,
 				})
@@ -50,7 +50,7 @@ public static partial class CreateFeature
 				src => new()
 				{
 					Name = src.Name,
-					FeatureTypeId = (int)src.FeatureType,
+					FeatureTypeId = src.FeatureType,
 					CreatorUserId = src.CreatorUserId,
 					LastUpdatedTimestamp = DateTimeOffset.Now,
 					ValueA = src.ValueA,
@@ -64,10 +64,10 @@ public static partial class CreateFeature
 		var f = output[0];
 		return new()
 		{
-			FeatureId = FeatureId.From(f.FeatureId),
+			FeatureId = f.FeatureId,
 			Name = f.Name,
-			FeatureType = (FeatureType)f.FeatureTypeId,
-			CreatorUserId = UserId.From(f.CreatorUserId),
+			FeatureType = f.FeatureTypeId,
+			CreatorUserId = f.CreatorUserId,
 			LastUpdatedTimestamp = f.LastUpdatedTimestamp,
 			ValueA = query.ValueA,
 			ValueB = query.ValueB,

@@ -1,1 +1,337 @@
-[{"PropertyName":"VersionHistories","TypeName":"VersionHistory","TableName":"dbo.VersionHistory","Properties":[{"TypeName":"int","PropertyName":"VersionHistoryId","DataType":"int","CanBeNull":null,"IsPrimaryKey":true,"PrimaryKeyOrder":1,"IsIdentity":true,"SkipOnInsert":true,"SkipOnUpdate":true},{"TypeName":"string","PropertyName":"SqlFile","DataType":"varchar(50)","CanBeNull":null,"IsPrimaryKey":false,"PrimaryKeyOrder":null,"IsIdentity":false,"SkipOnInsert":false,"SkipOnUpdate":false},{"TypeName":"global::System.DateTimeOffset","PropertyName":"ExecutionStart","DataType":"datetimeoffset(7)","CanBeNull":null,"IsPrimaryKey":false,"PrimaryKeyOrder":null,"IsIdentity":false,"SkipOnInsert":false,"SkipOnUpdate":false},{"TypeName":"global::System.DateTimeOffset","PropertyName":"ExecutionEnd","DataType":"datetimeoffset(7)","CanBeNull":null,"IsPrimaryKey":false,"PrimaryKeyOrder":null,"IsIdentity":false,"SkipOnInsert":false,"SkipOnUpdate":false}]},{"PropertyName":"Users","TypeName":"User","TableName":"dbo.User","Properties":[{"TypeName":"int","PropertyName":"UserId","DataType":"int","CanBeNull":null,"IsPrimaryKey":true,"PrimaryKeyOrder":1,"IsIdentity":true,"SkipOnInsert":true,"SkipOnUpdate":true},{"TypeName":"string?","PropertyName":"Auth0UserId","DataType":"nvarchar(100)","CanBeNull":false,"IsPrimaryKey":false,"PrimaryKeyOrder":null,"IsIdentity":false,"SkipOnInsert":false,"SkipOnUpdate":false},{"TypeName":"string","PropertyName":"EmailAddress","DataType":"nvarchar(500)","CanBeNull":null,"IsPrimaryKey":false,"PrimaryKeyOrder":null,"IsIdentity":false,"SkipOnInsert":false,"SkipOnUpdate":false},{"TypeName":"string?","PropertyName":"Name","DataType":"nvarchar(200)","CanBeNull":false,"IsPrimaryKey":false,"PrimaryKeyOrder":null,"IsIdentity":false,"SkipOnInsert":false,"SkipOnUpdate":false},{"TypeName":"bool","PropertyName":"IsActive","DataType":"bit","CanBeNull":null,"IsPrimaryKey":false,"PrimaryKeyOrder":null,"IsIdentity":false,"SkipOnInsert":false,"SkipOnUpdate":false},{"TypeName":"global::System.DateTimeOffset?","PropertyName":"LastLogin","DataType":"datetimeoffset(7)","CanBeNull":null,"IsPrimaryKey":false,"PrimaryKeyOrder":null,"IsIdentity":false,"SkipOnInsert":false,"SkipOnUpdate":false},{"TypeName":"string","PropertyName":"Roles","DataType":"nvarchar(max)","CanBeNull":null,"IsPrimaryKey":false,"PrimaryKeyOrder":null,"IsIdentity":false,"SkipOnInsert":false,"SkipOnUpdate":false}]},{"PropertyName":"FeatureTypes","TypeName":"FeatureType","TableName":"dbo.FeatureType","Properties":[{"TypeName":"int","PropertyName":"FeatureTypeId","DataType":"int","CanBeNull":null,"IsPrimaryKey":true,"PrimaryKeyOrder":1,"IsIdentity":false,"SkipOnInsert":false,"SkipOnUpdate":false},{"TypeName":"string","PropertyName":"Name","DataType":"varchar(200)","CanBeNull":null,"IsPrimaryKey":false,"PrimaryKeyOrder":null,"IsIdentity":false,"SkipOnInsert":false,"SkipOnUpdate":false}]},{"PropertyName":"Features","TypeName":"Feature","TableName":"dbo.Feature","Properties":[{"TypeName":"int","PropertyName":"FeatureId","DataType":"int","CanBeNull":null,"IsPrimaryKey":true,"PrimaryKeyOrder":1,"IsIdentity":true,"SkipOnInsert":true,"SkipOnUpdate":true},{"TypeName":"string","PropertyName":"Name","DataType":"nvarchar(200)","CanBeNull":null,"IsPrimaryKey":false,"PrimaryKeyOrder":null,"IsIdentity":false,"SkipOnInsert":false,"SkipOnUpdate":false},{"TypeName":"int","PropertyName":"FeatureTypeId","DataType":"int","CanBeNull":null,"IsPrimaryKey":false,"PrimaryKeyOrder":null,"IsIdentity":false,"SkipOnInsert":false,"SkipOnUpdate":false},{"TypeName":"int","PropertyName":"CreatorUserId","DataType":"int","CanBeNull":null,"IsPrimaryKey":false,"PrimaryKeyOrder":null,"IsIdentity":false,"SkipOnInsert":false,"SkipOnUpdate":false},{"TypeName":"global::System.DateTimeOffset","PropertyName":"LastUpdatedTimestamp","DataType":"datetimeoffset(7)","CanBeNull":null,"IsPrimaryKey":false,"PrimaryKeyOrder":null,"IsIdentity":false,"SkipOnInsert":false,"SkipOnUpdate":false},{"TypeName":"int","PropertyName":"ValueA","DataType":"int","CanBeNull":null,"IsPrimaryKey":false,"PrimaryKeyOrder":null,"IsIdentity":false,"SkipOnInsert":false,"SkipOnUpdate":false},{"TypeName":"string?","PropertyName":"ValueB","DataType":"nvarchar(max)","CanBeNull":false,"IsPrimaryKey":false,"PrimaryKeyOrder":null,"IsIdentity":false,"SkipOnInsert":false,"SkipOnUpdate":false}]}]
+[
+  {
+    "PropertyName": "VersionHistories",
+    "TypeName": "VersionHistory",
+    "TableName": "VersionHistory",
+    "SchemaName": null,
+    "Properties": {
+      "Collection": [
+        {
+          "TypeName": "int",
+          "PropertyName": "VersionHistoryId",
+          "ColumnName": "VersionHistoryId",
+          "DataType": "int",
+          "ForceNotNull": false,
+          "IsPrimaryKey": true,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": true,
+          "SkipOnInsert": true,
+          "SkipOnUpdate": true
+        },
+        {
+          "TypeName": "string",
+          "PropertyName": "SqlFile",
+          "ColumnName": "SqlFile",
+          "DataType": "varchar(50)",
+          "ForceNotNull": true,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "global::System.DateTimeOffset",
+          "PropertyName": "ExecutionStart",
+          "ColumnName": "ExecutionStart",
+          "DataType": "datetimeoffset(7)",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "global::System.DateTimeOffset",
+          "PropertyName": "ExecutionEnd",
+          "ColumnName": "ExecutionEnd",
+          "DataType": "datetimeoffset(7)",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        }
+      ],
+      "Count": 4
+    },
+    "Associations": {
+      "Collection": [],
+      "Count": 0
+    }
+  },
+  {
+    "PropertyName": "Users",
+    "TypeName": "User",
+    "TableName": "User",
+    "SchemaName": null,
+    "Properties": {
+      "Collection": [
+        {
+          "TypeName": "int",
+          "PropertyName": "UserId",
+          "ColumnName": "UserId",
+          "DataType": "int",
+          "ForceNotNull": false,
+          "IsPrimaryKey": true,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": true,
+          "SkipOnInsert": true,
+          "SkipOnUpdate": true
+        },
+        {
+          "TypeName": "string?",
+          "PropertyName": "Auth0UserId",
+          "ColumnName": "Auth0UserId",
+          "DataType": "nvarchar(100)",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "string",
+          "PropertyName": "EmailAddress",
+          "ColumnName": "EmailAddress",
+          "DataType": "nvarchar(500)",
+          "ForceNotNull": true,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "string?",
+          "PropertyName": "Name",
+          "ColumnName": "Name",
+          "DataType": "nvarchar(200)",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "bool",
+          "PropertyName": "IsActive",
+          "ColumnName": "IsActive",
+          "DataType": "bit",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "global::System.DateTimeOffset?",
+          "PropertyName": "LastLogin",
+          "ColumnName": "LastLogin",
+          "DataType": "datetimeoffset(7)",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "string",
+          "PropertyName": "Roles",
+          "ColumnName": "Roles",
+          "DataType": "nvarchar(max)",
+          "ForceNotNull": true,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        }
+      ],
+      "Count": 7
+    },
+    "Associations": {
+      "Collection": [
+        {
+          "Name": "FK_Feature_User_BackReference",
+          "CanBeNull": true,
+          "ThisKeys": "UserId",
+          "OtherName": "Features",
+          "OtherType": "IEnumerable\u003CFeature\u003E",
+          "OtherKeys": "CreatorUserId"
+        }
+      ],
+      "Count": 1
+    }
+  },
+  {
+    "PropertyName": "FeatureTypes",
+    "TypeName": "FeatureType",
+    "TableName": "FeatureType",
+    "SchemaName": null,
+    "Properties": {
+      "Collection": [
+        {
+          "TypeName": "int",
+          "PropertyName": "FeatureTypeId",
+          "ColumnName": "FeatureTypeId",
+          "DataType": "int",
+          "ForceNotNull": false,
+          "IsPrimaryKey": true,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "string",
+          "PropertyName": "Name",
+          "ColumnName": "Name",
+          "DataType": "varchar(200)",
+          "ForceNotNull": true,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        }
+      ],
+      "Count": 2
+    },
+    "Associations": {
+      "Collection": [
+        {
+          "Name": "FK_Feature_FeatureType_BackReference",
+          "CanBeNull": true,
+          "ThisKeys": "FeatureTypeId",
+          "OtherName": "Features",
+          "OtherType": "IEnumerable\u003CFeature\u003E",
+          "OtherKeys": "FeatureTypeId"
+        }
+      ],
+      "Count": 1
+    }
+  },
+  {
+    "PropertyName": "Features",
+    "TypeName": "Feature",
+    "TableName": "Feature",
+    "SchemaName": null,
+    "Properties": {
+      "Collection": [
+        {
+          "TypeName": "int",
+          "PropertyName": "FeatureId",
+          "ColumnName": "FeatureId",
+          "DataType": "int",
+          "ForceNotNull": false,
+          "IsPrimaryKey": true,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": true,
+          "SkipOnInsert": true,
+          "SkipOnUpdate": true
+        },
+        {
+          "TypeName": "string",
+          "PropertyName": "Name",
+          "ColumnName": "Name",
+          "DataType": "nvarchar(200)",
+          "ForceNotNull": true,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "int",
+          "PropertyName": "FeatureTypeId",
+          "ColumnName": "FeatureTypeId",
+          "DataType": "int",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "int",
+          "PropertyName": "CreatorUserId",
+          "ColumnName": "CreatorUserId",
+          "DataType": "int",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "global::System.DateTimeOffset",
+          "PropertyName": "LastUpdatedTimestamp",
+          "ColumnName": "LastUpdatedTimestamp",
+          "DataType": "datetimeoffset(7)",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "int",
+          "PropertyName": "ValueA",
+          "ColumnName": "ValueA",
+          "DataType": "int",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "string?",
+          "PropertyName": "ValueB",
+          "ColumnName": "ValueB",
+          "DataType": "nvarchar(max)",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        }
+      ],
+      "Count": 7
+    },
+    "Associations": {
+      "Collection": [
+        {
+          "Name": "FK_Feature_User",
+          "CanBeNull": false,
+          "ThisKeys": "CreatorUserId",
+          "OtherName": "CreatorUser",
+          "OtherType": "User",
+          "OtherKeys": "UserId"
+        },
+        {
+          "Name": "FK_Feature_FeatureType",
+          "CanBeNull": false,
+          "ThisKeys": "FeatureTypeId",
+          "OtherName": "FeatureType",
+          "OtherType": "FeatureType",
+          "OtherKeys": "FeatureTypeId"
+        }
+      ],
+      "Count": 2
+    }
+  }
+]

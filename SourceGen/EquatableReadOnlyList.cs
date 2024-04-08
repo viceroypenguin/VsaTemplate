@@ -1,18 +1,25 @@
-using System.Collections;
+using System.Text.Json.Serialization;
 
 namespace VsaTemplate.SourceGen;
 
-/// <summary>
-/// An immutable, equatable array. This is equivalent to <see cref="Array"/> but with value equality support.
-/// </summary>
-/// <typeparam name="T">The type of values in the array.</typeparam>
-public readonly struct EquatableReadOnlyList<T>(
-	IReadOnlyList<T> collection
-) : IEquatable<EquatableReadOnlyList<T>>, IReadOnlyList<T>
-	where T : IEquatable<T>
+public static class EquatableReadOnlyList
 {
+	public static EquatableReadOnlyList<T> ToEquatableReadOnlyList<T>(this IEnumerable<T> enumerable)
+		=> new(enumerable as IReadOnlyList<T> ?? enumerable.ToList());
+}
+
+/// <summary>
+///     A wrapper for IReadOnlyList that provides value equality support for the wrapped list.
+/// </summary>
+[method: JsonConstructor]
+public readonly struct EquatableReadOnlyList<T>(
+	IReadOnlyList<T>? collection
+) : IEquatable<EquatableReadOnlyList<T>>
+{
+	public IReadOnlyList<T> Collection => collection ?? [];
+
 	public bool Equals(EquatableReadOnlyList<T> other)
-		=> this.SequenceEqual(other);
+		=> this.Collection.SequenceEqual(other.Collection ?? []);
 
 	public override bool Equals(object? obj)
 		=> obj is EquatableReadOnlyList<T> other && Equals(other);
@@ -21,20 +28,14 @@ public readonly struct EquatableReadOnlyList<T>(
 	{
 		var hashCode = new HashCode();
 
-		foreach (var item in collection)
+		foreach (var item in Collection)
 			hashCode.Add(item);
 
 		return hashCode.ToHashCode();
 	}
 
-	IEnumerator<T> IEnumerable<T>.GetEnumerator()
-		=> collection.GetEnumerator();
-
-	IEnumerator IEnumerable.GetEnumerator()
-		=> collection.GetEnumerator();
-
-	public int Count => collection.Count;
-	public T this[int index] => collection[index];
+	public int Count => Collection.Count;
+	public T this[int index] => Collection[index];
 
 	public static bool operator ==(EquatableReadOnlyList<T> left, EquatableReadOnlyList<T> right)
 		=> left.Equals(right);

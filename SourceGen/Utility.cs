@@ -1,10 +1,12 @@
 using System.Reflection;
+using Microsoft.CodeAnalysis;
+using Scriban;
 
 namespace VsaTemplate.SourceGen;
 
 internal static class Utility
 {
-	public static string GetScribanTemplate(string templateName)
+	public static Template GetScribanTemplate(string templateName)
 	{
 		using var stream = Assembly
 			.GetExecutingAssembly()
@@ -14,7 +16,11 @@ internal static class Utility
 			)!;
 
 		using var reader = new StreamReader(stream);
-		return reader.ReadToEnd();
+		return Template.Parse(reader.ReadToEnd());
 	}
 
+	public static IncrementalValuesProvider<T> WhereNotNull<T>(this IncrementalValuesProvider<T?> provider) where T : struct
+		=> provider
+			.Where(x => x != null)
+			.Select((x, _) => x!.Value);
 }

@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using System.Text.Json;
 using CommunityToolkit.Diagnostics;
 using Immediate.Handlers.Shared;
@@ -26,7 +26,7 @@ public static partial class GetUserClaims
 		Guard.IsNotNull(query.EmailAddress);
 
 		var merges = await context.Users
-			.Merge().Using([new { UserId = query.UserId.Value, query.EmailAddress, }])
+			.Merge().Using([new { query.UserId, query.EmailAddress, }])
 			.On((dst, src) => dst.EmailAddress == src.EmailAddress)
 			.InsertWhenNotMatched(src =>
 				new Database.Models.User

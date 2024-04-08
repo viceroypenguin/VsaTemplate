@@ -2,7 +2,6 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
-using Scriban;
 
 namespace VsaTemplate.SourceGen;
 
@@ -29,11 +28,12 @@ public sealed class ConfigureOptionsGenerator : IIncrementalGenerator
 				})
 			.Collect();
 
+		var template = Utility.GetScribanTemplate("ConfigureOptions");
 		context.RegisterSourceOutput(
 			classes,
 			action: (spc, c) =>
 			{
-				var output = Template.Parse(Utility.GetScribanTemplate("ConfigureOptions"))
+				var output = template
 					.Render(new { classes = c });
 				spc.AddSource($"ConfigureOptions.g.cs", SourceText.From(output, Encoding.UTF8));
 			});

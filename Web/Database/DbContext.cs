@@ -1,6 +1,7 @@
 using CommunityToolkit.Diagnostics;
 using LinqToDB.Data;
 using LinqToDB.DataProvider.SqlServer;
+using LinqToDB.Mapping;
 using Microsoft.Extensions.Options;
 
 namespace VsaTemplate.Web.Database;
@@ -15,16 +16,19 @@ public sealed class DbContextOptions
 [RegisterTransient]
 public sealed partial class DbContext : DataConnection
 {
+	private static readonly MappingSchema s_mappingSchema = BuildMappingSchema();
+
 	private static bool s_dbInitialized;
 	private static bool s_loaded;
 	private readonly ILogger<DbContext> _logger;
 
 	public DbContext(IOptions<DbContextOptions> options, ILogger<DbContext> logger)
 		: base(
-			connectionString: GetConnectionString(options),
 			dataProvider: SqlServerTools.GetDataProvider(
 				SqlServerVersion.v2019,
-				SqlServerProvider.MicrosoftDataSqlClient))
+				SqlServerProvider.MicrosoftDataSqlClient),
+			connectionString: GetConnectionString(options),
+			mappingSchema: s_mappingSchema)
 	{
 		_logger = logger;
 
@@ -43,4 +47,6 @@ public sealed partial class DbContext : DataConnection
 			conn = options.Value.ConnectionStringInit;
 		return conn;
 	}
+
+	private static partial MappingSchema BuildMappingSchema();
 }

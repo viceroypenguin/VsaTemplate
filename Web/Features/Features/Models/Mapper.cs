@@ -1,28 +1,42 @@
-using Riok.Mapperly.Abstractions;
-using VsaTemplate.Web.Features.Users.Models;
-
 namespace VsaTemplate.Web.Features.Features.Models;
 
-[Mapper]
-internal static partial class Mapper
+internal static class Mapper
 {
-	internal static partial IQueryable<Feature> SelectDto(this IQueryable<Database.Models.Feature> q);
+	internal static IQueryable<Feature> SelectDto(this IQueryable<Database.Models.Feature> q) => q
+		.Select(f => new Feature()
+		{
+			FeatureId = f.FeatureId,
+			FeatureType = f.FeatureTypeId,
+			Name = f.Name,
+			ValueA = f.ValueA,
+			ValueB = f.ValueB,
+			CreatorUserId = f.CreatorUserId,
+			LastUpdatedTimestamp = f.LastUpdatedTimestamp,
 
-	private static FeatureId ToFeatureId(int id) => (FeatureId)id;
-	private static UserId ToUserId(int id) => (UserId)id;
+			CreatorName = f.CreatorUser.Name,
+		});
 
-	[MapProperty(nameof(Database.Models.Feature.FeatureTypeId), nameof(Feature.FeatureType))]
-	[MapperIgnoreTarget(nameof(Feature.CreatorName))]
-	[MapperIgnoreSource(nameof(Database.Models.Feature.CreatorUser))]
-	[MapperIgnoreSource(nameof(Database.Models.Feature.FeatureType))]
-	internal static partial Feature ToDto(this Database.Models.Feature feature);
+	internal static Feature ToDto(this Database.Models.Feature feature) =>
+		new()
+		{
+			FeatureId = feature.FeatureId,
+			FeatureType = feature.FeatureTypeId,
+			Name = feature.Name,
+			ValueA = feature.ValueA,
+			ValueB = feature.ValueB,
+			CreatorUserId = feature.CreatorUserId,
+			LastUpdatedTimestamp = feature.LastUpdatedTimestamp,
+		};
 
-	private static int FromFeatureId(FeatureId id) => (int)id;
-	private static int FromUserId(UserId id) => (int)id;
-
-	[MapProperty(nameof(Database.Models.Feature.FeatureType), nameof(Database.Models.Feature.FeatureTypeId))]
-	[MapperIgnoreSource(nameof(Feature.CreatorName))]
-	[MapperIgnoreTarget(nameof(Database.Models.Feature.CreatorUser))]
-	[MapperIgnoreTarget(nameof(Database.Models.Feature.FeatureType))]
-	internal static partial Database.Models.Feature FromDto(this Feature feature);
+	internal static Database.Models.Feature FromDto(this Feature f) =>
+		new()
+		{
+			FeatureId = f.FeatureId,
+			FeatureTypeId = f.FeatureType,
+			Name = f.Name,
+			ValueA = f.ValueA,
+			ValueB = f.ValueB,
+			CreatorUserId = f.CreatorUserId,
+			LastUpdatedTimestamp = f.LastUpdatedTimestamp,
+		};
 }

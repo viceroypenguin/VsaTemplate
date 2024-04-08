@@ -14,6 +14,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+	<Compile Include="../SourceGen/EquatableReadOnlyList.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
 	<PackageReference Include="docopt.net" />
 	<PackageReference Include="Humanizer" />
 	<PackageReference Include="linq2db" />

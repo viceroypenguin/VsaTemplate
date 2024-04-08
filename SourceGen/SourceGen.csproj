@@ -1,35 +1,62 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<RootNamespace>VsaTemplate.SourceGen</RootNamespace>
-		<TargetFramework>netstandard2.0</TargetFramework>
-		<IncludeBuildOutput>false</IncludeBuildOutput>
-		<IsRoslynComponent>true</IsRoslynComponent>
-		<AnalysisLevel>latest-all</AnalysisLevel>
-		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
-	</PropertyGroup>
+  <PropertyGroup>
+	<RootNamespace>VsaTemplate.SourceGen</RootNamespace>
+	<TargetFramework>netstandard2.0</TargetFramework>
+	<IncludeBuildOutput>false</IncludeBuildOutput>
+	<IsRoslynComponent>true</IsRoslynComponent>
+	<AnalysisLevel>latest-all</AnalysisLevel>
+	<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+  </PropertyGroup>
 
+  <ItemGroup>
+	<Compile Include="../Scaffold/DbEntity.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<None Remove="*.sbntxt" />
+	<EmbeddedResource Include="*.sbntxt" Kind="Text" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<PackageReference Include="Microsoft.Bcl.AsyncInterfaces" PrivateAssets="all" GeneratePathProperty="true" />
+	<PackageReference Include="Microsoft.Bcl.HashCode" PrivateAssets="all" GeneratePathProperty="true" />
+	<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
+	<PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
+	<PackageReference Include="PolySharp" PrivateAssets="All" />
+	<PackageReference Include="Scriban" PrivateAssets="all" GeneratePathProperty="true" />
+	<PackageReference Include="System.Buffers" PrivateAssets="all" GeneratePathProperty="true" />
+	<PackageReference Include="System.Collections.Immutable" PrivateAssets="all" GeneratePathProperty="true" />
+	<PackageReference Include="System.Memory" PrivateAssets="all" GeneratePathProperty="true" />
+	<PackageReference Include="System.Numerics.Vectors" PrivateAssets="all" GeneratePathProperty="true" />
+	<PackageReference Include="System.Reflection.Metadata" PrivateAssets="all" GeneratePathProperty="true" />
+	<PackageReference Include="System.Runtime.CompilerServices.Unsafe" PrivateAssets="all" GeneratePathProperty="true" />
+	<PackageReference Include="System.Text.Encoding.CodePages" PrivateAssets="all" GeneratePathProperty="true" />
+	<PackageReference Include="System.Text.Encodings.Web" PrivateAssets="all" GeneratePathProperty="true" />
+	<PackageReference Include="System.Text.Json" PrivateAssets="all" GeneratePathProperty="true" />
+	<PackageReference Include="System.Threading.Tasks.Extensions" PrivateAssets="all" GeneratePathProperty="true" />
+  </ItemGroup>
+
+  <PropertyGroup>
+	<GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
+  </PropertyGroup>
+
+  <Target Name="GetDependencyTargetPaths">
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Bcl.HashCode" />
-		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
-		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
-		<PackageReference Include="PolySharp" PrivateAssets="All" />
-		<PackageReference Include="Scriban" PrivateAssets="all" GeneratePathProperty="true" />
+	  <TargetPathWithTargetPlatformMoniker Include="$(PkgMicrosoft_Bcl_AsyncInterfaces)\lib\netstandard2.0\Microsoft.Bcl.AsyncInterfaces.dll" IncludeRuntimeDependency="false" />
+	  <TargetPathWithTargetPlatformMoniker Include="$(PkgMicrosoft_Bcl_HashCode)\lib\netstandard2.0\Microsoft.Bcl.HashCode.dll" IncludeRuntimeDependency="false" />
+	  <TargetPathWithTargetPlatformMoniker Include="$(PkgScriban)\lib\netstandard2.0\Scriban.dll" IncludeRuntimeDependency="false" />
+	  <TargetPathWithTargetPlatformMoniker Include="$(PkgSystem_Buffers)\lib\netstandard2.0\System.Buffers.dll" IncludeRuntimeDependency="false" />
+	  <TargetPathWithTargetPlatformMoniker Include="$(PkgSystem_Collections_Immutable)\lib\netstandard2.0\System.Collections.Immutable.dll" IncludeRuntimeDependency="false" />
+	  <TargetPathWithTargetPlatformMoniker Include="$(PkgSystem_Memory)\lib\netstandard2.0\System.Memory.dll" IncludeRuntimeDependency="false" />
+	  <TargetPathWithTargetPlatformMoniker Include="$(PkgSystem_Numerics_Vectors)\lib\netstandard2.0\System.Numerics.Vectors.dll" IncludeRuntimeDependency="false" />
+	  <TargetPathWithTargetPlatformMoniker Include="$(PkgSystem_Reflection_Metadata)\lib\netstandard2.0\System.Reflection.Metadata.dll" IncludeRuntimeDependency="false" />
+	  <TargetPathWithTargetPlatformMoniker Include="$(PkgSystem_Runtime_CompilerServices_Unsafe)\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll" IncludeRuntimeDependency="false" />
+	  <TargetPathWithTargetPlatformMoniker Include="$(PkgSystem_Text_Encoding_CodePages)\lib\netstandard2.0\System.Text.Encoding.CodePages.dll" IncludeRuntimeDependency="false" />
+	  <TargetPathWithTargetPlatformMoniker Include="$(PkgSystem_Text_Encodings_Web)\lib\netstandard2.0\System.Text.Encodings.Web.dll" IncludeRuntimeDependency="false" />
+	  <TargetPathWithTargetPlatformMoniker Include="$(PkgSystem_Text_Json)\lib\netstandard2.0\System.Text.Json.dll" IncludeRuntimeDependency="false" />
+	  <TargetPathWithTargetPlatformMoniker Include="$(PkgSystem_Threading_Tasks_Extensions)\lib\netstandard2.0\System.Threading.Tasks.Extensions.dll" IncludeRuntimeDependency="false" />
 	</ItemGroup>
-
-	<ItemGroup>
-		<None Remove="*.sbntxt" />
-		<EmbeddedResource Include="*.sbntxt" Kind="Text" />
-	</ItemGroup>
-
-	<PropertyGroup>
-		<GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
-	</PropertyGroup>
-
-	<Target Name="GetDependencyTargetPaths">
-		<ItemGroup>
-			<TargetPathWithTargetPlatformMoniker Include="$(PkgScriban)\lib\netstandard2.0\Scriban.dll" IncludeRuntimeDependency="false" />
-		</ItemGroup>
-	</Target>
+  </Target>
 
 </Project>

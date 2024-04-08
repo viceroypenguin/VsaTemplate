@@ -11,7 +11,7 @@
 	<None Remove="Database/Scripts/*.sql" />
 	<EmbeddedResource Include="Database/Scripts/*.sql" Script="true" />
 
-	<AdditionalFiles Include="Database/Models/Scaffold.json" IsScaffold="true" />
+	<AdditionalFiles Include="Database/Models/Scaffold.json" />
   </ItemGroup>
 
   <PropertyGroup>

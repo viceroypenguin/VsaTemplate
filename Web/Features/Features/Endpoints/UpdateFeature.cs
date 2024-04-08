@@ -43,7 +43,7 @@ public static partial class UpdateFeature
 				u => new()
 				{
 					Name = query.Name,
-					FeatureTypeId = (int)query.FeatureType,
+					FeatureTypeId = query.FeatureType,
 					LastUpdatedTimestamp = DateTimeOffset.Now,
 					ValueA = query.ValueA,
 					ValueB = query.ValueB,
