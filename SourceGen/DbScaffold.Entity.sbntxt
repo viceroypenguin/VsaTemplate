@@ -1,0 +1,53 @@
+#nullable enable
+
+using LinqToDB;
+using LinqToDB.Data;
+using LinqToDB.Mapping;
+
+namespace VsaTemplate.Web.Database.Models;
+
+[Table("{{ table_name }}"{{ if !string.empty schema_name }}, Schema = "{{ schema_name }}"{{ end }})]
+public sealed class {{ type_name }}
+{
+	{{~ for p in properties ~}}
+	[Column(
+		"{{ p.column_name }}"
+		{{~ if p.is_primary_key ~}}
+		, IsPrimaryKey = true
+		{{~ end ~}}
+		{{~ if p.primary_key_order != null ~}}
+		, PrimaryKeyOrder = {{ p.primary_key_order }}
+		{{~ end ~}}
+		{{~ if p.is_identity ~}}
+		, IsIdentity = true
+		{{~ end ~}}
+		{{~ if p.force_not_null ~}}
+		, CanBeNull = false
+		{{~ end ~}}
+		{{~ if p.skip_on_insert ~}}
+		, SkipOnInsert = true
+		{{~ end ~}}
+		{{~ if p.skip_on_update ~}}
+		, SkipOnUpdate = true
+		{{~ end ~}}
+	)]
+	{{~ if p.use_converter ~}}
+	[ValueConverter(ConverterType = typeof({{ p.type_name }}.LinqToDbValueConverter))]
+	{{~ end ~}}
+	public {{ p.type_name }} {{ p.property_name }} { get; set; }{{ if p.force_not_null }} = null!;{{ end }}
+
+	{{~ end ~}}
+	{{~ for a in associations ~}}
+	/// <summary>
+	/// {{ a.name }}
+	/// </summary>
+	[Association(
+		ThisKey = "{{ a.this_keys }}", OtherKey = "{{ a.other_keys }}"
+		{{~ if !a.can_be_null ~}}
+		, CanBeNull = false
+		{{~ end ~}}
+	)]
+	public {{ a.other_type }} {{ a.other_name }} { get; set; } = null!;
+
+	{{~ end ~}}
+}

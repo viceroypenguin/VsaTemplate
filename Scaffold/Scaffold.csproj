@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<RootNamespace>VsaTemplate.Scaffold</RootNamespace>
+
+	<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+	<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+	<OutputType>exe</OutputType>
+
+	<AccelerateBuildsInVisualStudio>false</AccelerateBuildsInVisualStudio>
+
+	<!-- Because SG doesn't respect .editorconfig -->
+	<NoWarn>CA1852</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+	<Compile Include="../SourceGen/EquatableReadOnlyList.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<PackageReference Include="docopt.net" />
+	<PackageReference Include="Humanizer" />
+	<PackageReference Include="linq2db" />
+	<PackageReference Include="Microsoft.Data.SqlClient" />
+	<PackageReference Include="SuperLinq" />
+	<PackageReference Include="System.Text.Json" />
+  </ItemGroup>
+
+</Project>
