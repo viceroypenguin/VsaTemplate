@@ -1,0 +1,38 @@
+@page "/todo"
+@inherits BlazorComponentBase
+@rendermode InteractiveServer
+
+@if (_todos is null)
+{
+    @: Loading...
+}
+else
+{
+    <div class="rz-col-12">
+        <span>
+            <RadzenTextBox @bind-Value="@_newTodoText" Placeholder="New Todo Item..." />
+            <RadzenButton Text="Add" Click="AddTodo" class="rz-ml-1" />
+        </span>
+
+        <div style="float: right">
+            <RadzenLabel Component="ShowCompletedCheck" Text="Show Completed" class="rz-mr-1" />
+            <RadzenCheckBox ValueExpression="@(() => _showCompleted)"
+                            ValueChanged="@((bool b) => LoadTodos(b))"
+                            Name="ShowCompletedCheck" />
+        </div>
+    </div>
+
+
+    <ul>
+        @foreach (var t in _todos)
+        {
+            <li>
+                <RadzenCheckBox Value="t.IsComplete"
+                                ValueChanged="@((bool _) => Complete(t))"
+                                Name="@("IsComplete" + t.TodoId.ToString())" />
+                <RadzenLabel Component="@("IsComplete" + t.TodoId.ToString())"
+                             Text="@t.Name" />
+            </li>
+        }
+    </ul>
+}

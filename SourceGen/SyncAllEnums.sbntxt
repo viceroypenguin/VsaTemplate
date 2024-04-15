@@ -1,0 +1,17 @@
+#nullable enable
+
+using LinqToDB.Data;
+
+namespace VsaTemplate.Web.Database;
+
+public sealed partial class DbContext : DataConnection
+{
+	private void SyncAllEnums()
+	{
+		{{~ for n in names ~}}
+		Sync{{ n }}();
+		{{~ end ~}}
+
+		_logger.LogInformation("Synchronized all enums.");
+	}
+}
