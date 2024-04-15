@@ -85,7 +85,7 @@ static async Task<string> GenerateScaffold(ProgramArguments args)
 					{
 						PropertyName = c.MemberName,
 						ColumnName = c.ColumnName,
-						TypeName = GetPropertyType(c.DataType, c.IsNullable),
+						TypeName = GetPropertyType(c.DataType, c.Length, c.IsNullable),
 						DataType = c.ColumnType ?? throw new InvalidOperationException("Unknown column type"),
 						ForceNotNull = c.SystemType!.IsClass && !c.IsNullable,
 						IsPrimaryKey = c.IsPrimaryKey,
@@ -155,11 +155,11 @@ static string Pluralize(string typeName) =>
 	);
 
 #pragma warning disable IDE0072 // Add missing cases
-static string GetPropertyType(DataType? dataType, bool isNullable) =>
+static string GetPropertyType(DataType? dataType, int? length, bool isNullable) =>
 	dataType switch
 	{
 		DataType.Char
-		or DataType.NChar => "char",
+		or DataType.NChar => length > 1 ? "string" : "char",
 
 		DataType.VarChar
 		or DataType.Text
