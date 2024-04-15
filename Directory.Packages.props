@@ -27,7 +27,7 @@
 	<PackageVersion Include="PolySharp" Version="1.14.1" />
 	<PackageVersion Include="Radzen.Blazor" Version="4.29.4" />
 	<PackageVersion Include="Riok.Mapperly" Version="3.5.0" />
-	<PackageVersion Include="Scriban" Version="5.9.1" />
+	<PackageVersion Include="Scriban" Version="5.10.0" />
 	<PackageVersion Include="Serilog.AspNetCore" Version="8.0.1" />
 	<PackageVersion Include="Serilog.Enrichers.Environment" Version="2.3.0" />
 	<PackageVersion Include="Serilog.Enrichers.Thread" Version="3.1.0" />
