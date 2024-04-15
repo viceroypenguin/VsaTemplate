@@ -5,7 +5,7 @@ namespace VsaTemplate.Web.Features.Todos.Pages;
 
 public sealed partial class Index : BlazorComponentBase
 {
-	internal sealed class TodoItem
+	public sealed class TodoItem
 	{
 		public required TodoId TodoId { get; set; }
 		public required string Name { get; set; }

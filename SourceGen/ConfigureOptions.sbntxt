@@ -2,7 +2,7 @@
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-internal static class ConfigureAllOptionsExtensions
+public static class ConfigureAllOptionsExtensions
 {
 	public static IServiceCollection ConfigureAllOptions(this IServiceCollection services)
 	{

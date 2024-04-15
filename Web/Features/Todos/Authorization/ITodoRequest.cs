@@ -2,7 +2,7 @@ using VsaTemplate.Web.Features.Todos.Models;
 
 namespace VsaTemplate.Web.Features.Todos.Authorization;
 
-internal interface ITodoRequest
+public interface ITodoRequest
 {
 	TodoId TodoId { get; }
 }

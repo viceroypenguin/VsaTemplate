@@ -7,7 +7,7 @@ using VsaTemplate.Web.Features.Todos.Models;
 namespace VsaTemplate.Web.Features.Todos.Services;
 
 [RegisterSingleton]
-internal sealed class TodoCache(
+public sealed class TodoCache(
 	IMemoryCache cache,
 	Func<DbContext> contextFactory
 )

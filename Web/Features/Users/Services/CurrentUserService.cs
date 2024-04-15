@@ -9,7 +9,7 @@ using VsaTemplate.Web.Infrastructure.Authorization;
 namespace VsaTemplate.Web.Features.Users.Services;
 
 [RegisterScoped]
-internal sealed class CurrentUserService(
+public sealed class CurrentUserService(
 	IAuthorizationService authorizationService,
 	IHttpContextAccessor httpContextAccessor,
 	Task<AuthenticationState>? authenticationState = null

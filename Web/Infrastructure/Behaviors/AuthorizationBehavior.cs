@@ -4,7 +4,7 @@ using VsaTemplate.Web.Infrastructure.Authorization;
 
 namespace VsaTemplate.Web.Infrastructure.Behaviors;
 
-internal sealed class AuthorizationBehavior<TRequest, TResponse>(
+public sealed class AuthorizationBehavior<TRequest, TResponse>(
 	CurrentUserService currentUserService
 ) : Behavior<TRequest, TResponse>
 	where TRequest : IAuthorizedRequest

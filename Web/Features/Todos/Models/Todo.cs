@@ -6,7 +6,7 @@ namespace VsaTemplate.Web.Features.Todos.Models;
 [ValueObject]
 public readonly partial record struct TodoId;
 
-internal sealed class Todo : ITodoRequest
+public sealed class Todo : ITodoRequest
 {
 	public required TodoId TodoId { get; init; }
 	public required string Name { get; init; }

@@ -5,7 +5,7 @@ using VsaTemplate.Web.Infrastructure.Jobs;
 
 namespace VsaTemplate.Web.Infrastructure.Startup;
 
-internal sealed class HangfireInitializationService(IServiceProvider serviceProvider) : IHostedService
+public sealed class HangfireInitializationService(IServiceProvider serviceProvider) : IHostedService
 {
 	public Task StartAsync(CancellationToken cancellationToken)
 	{

@@ -6,7 +6,7 @@ using MimeKit;
 namespace VsaTemplate.Web.Infrastructure.Emails;
 
 [ConfigureOptions]
-internal sealed class EmailServiceOptions
+public sealed class EmailServiceOptions
 {
 	public required string Host { get; set; }
 	public required int Port { get; set; }
@@ -17,7 +17,7 @@ internal sealed class EmailServiceOptions
 }
 
 [RegisterScoped]
-internal sealed class EmailService
+public sealed class EmailService
 {
 	private readonly EmailServiceOptions _options;
 

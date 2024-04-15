@@ -11,10 +11,10 @@ namespace VsaTemplate.Web.Features.Todos.Endpoints;
 
 [Handler]
 [MapPost("/api/todos/{todoId:int}")]
-internal static partial class CompleteTodo
+public static partial class CompleteTodo
 {
 	[EndpointRegistrationOverride(EndpointRegistration.AsParameters)]
-	internal sealed record Command : IAuthorizedRequest, ITodoRequest
+	public sealed record Command : IAuthorizedRequest, ITodoRequest
 	{
 		public static string Policy => Policies.ValidUser;
 

@@ -1,6 +1,6 @@
-﻿namespace VsaTemplate.Web.Features.Users.Models;
+namespace VsaTemplate.Web.Features.Users.Models;
 
-internal sealed record User
+public sealed record User
 {
 	public UserId UserId { get; set; }
 	public Auth0UserId? Auth0UserId { get; set; }

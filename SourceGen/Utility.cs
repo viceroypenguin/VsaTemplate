@@ -4,7 +4,7 @@ using Scriban;
 
 namespace VsaTemplate.SourceGen;
 
-internal static class Utility
+public static class Utility
 {
 	public static Template GetScribanTemplate(string templateName)
 	{

@@ -7,14 +7,14 @@ using Microsoft.Extensions.Options;
 namespace VsaTemplate.Web.Database;
 
 [ConfigureOptions]
-internal sealed class DbContextOptions
+public sealed class DbContextOptions
 {
 	public required string ConnectionString { get; set; }
 	public string? ConnectionStringInit { get; set; }
 }
 
 [RegisterTransient]
-internal sealed partial class DbContext : DataConnection
+public sealed partial class DbContext : DataConnection
 {
 	private static readonly MappingSchema s_mappingSchema = BuildMappingSchema();
 

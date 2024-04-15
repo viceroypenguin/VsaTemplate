@@ -10,9 +10,9 @@ namespace VsaTemplate.Web.Features.Todos.Endpoints;
 
 [Handler]
 [MapPost("/api/todos/create")]
-internal static partial class CreateTodo
+public static partial class CreateTodo
 {
-	internal sealed record Command : IAuthorizedRequest
+	public sealed record Command : IAuthorizedRequest
 	{
 		public static string Policy => Policies.ValidUser;
 

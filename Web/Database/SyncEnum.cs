@@ -1,7 +1,7 @@
 namespace VsaTemplate;
 
 [AttributeUsage(AttributeTargets.Enum, AllowMultiple = false)]
-internal sealed class SyncEnumAttribute : Attribute
+public sealed class SyncEnumAttribute : Attribute
 {
 	/// <summary>
 	/// If specified, which table the enum should be sync'd to. By default, it will sync to the table with the same name

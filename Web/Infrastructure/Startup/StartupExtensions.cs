@@ -19,7 +19,7 @@ using VsaTemplate.Web.Infrastructure.Hangfire;
 
 namespace VsaTemplate.Web.Infrastructure.Startup;
 
-internal static class StartupExtensions
+public static class StartupExtensions
 {
 	public static void ConfigureSerilog(this IHostBuilder host) =>
 		host

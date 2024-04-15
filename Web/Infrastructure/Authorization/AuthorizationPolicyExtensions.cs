@@ -2,7 +2,7 @@ using System.Security.Claims;
 
 namespace VsaTemplate.Web.Infrastructure.Authorization;
 
-internal static class AuthorizationPolicyExtensions
+public static class AuthorizationPolicyExtensions
 {
 	public static void AddAuthorizationPolicies(this IServiceCollection services) =>
 		services.AddAuthorizationBuilder()

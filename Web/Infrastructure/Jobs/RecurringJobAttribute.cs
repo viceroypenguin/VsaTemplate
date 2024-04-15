@@ -1,7 +1,7 @@
 namespace VsaTemplate.Web.Infrastructure.Jobs;
 
 [AttributeUsage(AttributeTargets.Class)]
-internal sealed class RecurringJobAttribute : Attribute
+public sealed class RecurringJobAttribute : Attribute
 {
 	/// <summary>
 	/// The identifier of the RecurringJob

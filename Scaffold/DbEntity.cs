@@ -4,7 +4,7 @@ using VsaTemplate.SourceGen;
 
 namespace VsaTemplate.Scaffold;
 
-internal sealed record DbEntity
+public sealed record DbEntity
 {
 	public required string PropertyName { get; init; }
 	public required string TypeName { get; init; }
@@ -14,7 +14,7 @@ internal sealed record DbEntity
 	public required EquatableReadOnlyList<Association> Associations { get; init; }
 }
 
-internal sealed record Property
+public sealed record Property
 {
 	public required string TypeName { get; init; }
 	public required string PropertyName { get; init; }
@@ -28,7 +28,7 @@ internal sealed record Property
 	public required bool SkipOnUpdate { get; init; }
 }
 
-internal sealed record Association
+public sealed record Association
 {
 	public required string Name { get; init; }
 	public required bool CanBeNull { get; init; }

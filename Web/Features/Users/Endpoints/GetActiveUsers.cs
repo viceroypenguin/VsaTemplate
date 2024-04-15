@@ -9,9 +9,9 @@ namespace VsaTemplate.Web.Features.Users.Endpoints;
 
 [Handler]
 [MapGet("/api/users/active")]
-internal static partial class GetActiveUsers
+public static partial class GetActiveUsers
 {
-	internal sealed record Query : IAuthorizedRequest
+	public sealed record Query : IAuthorizedRequest
 	{
 		public static string? Policy => Policies.Admin;
 	}

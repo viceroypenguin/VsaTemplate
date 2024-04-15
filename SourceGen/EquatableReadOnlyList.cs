@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace VsaTemplate.SourceGen;
 
-internal static class EquatableReadOnlyList
+public static class EquatableReadOnlyList
 {
 	public static EquatableReadOnlyList<T> ToEquatableReadOnlyList<T>(this IEnumerable<T> enumerable) =>
 		new(enumerable as IReadOnlyList<T> ?? enumerable.ToList());
@@ -12,7 +12,7 @@ internal static class EquatableReadOnlyList
 ///     A wrapper for IReadOnlyList that provides value equality support for the wrapped list.
 /// </summary>
 [method: JsonConstructor]
-internal readonly struct EquatableReadOnlyList<T>(
+public readonly struct EquatableReadOnlyList<T>(
 	IReadOnlyList<T>? collection
 ) : IEquatable<EquatableReadOnlyList<T>>
 {

@@ -7,7 +7,7 @@ using VsaTemplate.Web.Features.Users.Services;
 
 namespace VsaTemplate.Web.Features.Todos.Authorization;
 
-internal sealed partial class TodoAuthorizationBehavior<TRequest, TResponse>(
+public sealed partial class TodoAuthorizationBehavior<TRequest, TResponse>(
 	CurrentUserService currentUserService,
 	TodoCache todoCache,
 	ILogger<TodoAuthorizationBehavior<TRequest, TResponse>> logger

@@ -11,9 +11,9 @@ namespace VsaTemplate.Web.Features.Todos.Endpoints;
 
 [Handler]
 [MapGet("/api/todos")]
-internal static partial class GetTodos
+public static partial class GetTodos
 {
-	internal sealed record Query : IAuthorizedRequest
+	public sealed record Query : IAuthorizedRequest
 	{
 		public static string Policy => Policies.ValidUser;
 

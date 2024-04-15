@@ -11,9 +11,9 @@ namespace VsaTemplate.Web.Features.Users.Endpoints;
 
 [Handler]
 [MapPost("/api/users/create")]
-internal static partial class CreateUser
+public static partial class CreateUser
 {
-	internal sealed record Command : IAuthorizedRequest
+	public sealed record Command : IAuthorizedRequest
 	{
 		public static string? Policy => Policies.Admin;
 

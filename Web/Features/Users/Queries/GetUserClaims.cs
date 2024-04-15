@@ -11,9 +11,9 @@ using VsaTemplate.Web.Infrastructure.Authorization;
 namespace VsaTemplate.Web.Features.Users.Queries;
 
 [Handler]
-internal static partial class GetUserClaims
+public static partial class GetUserClaims
 {
-	internal sealed record Query
+	public sealed record Query
 	{
 		public required Auth0UserId Auth0UserId { get; set; }
 		public required string EmailAddress { get; set; }

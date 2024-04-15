@@ -6,7 +6,7 @@ using VsaTemplate.Web.Database.Models;
 
 namespace VsaTemplate.Web.Database;
 
-internal partial class DbContext : DataConnection
+public partial class DbContext : DataConnection
 {
 	public void InitializeDatabase()
 	{

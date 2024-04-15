@@ -11,9 +11,9 @@ namespace VsaTemplate.Web.Features.Users.Endpoints;
 
 [Handler]
 [MapPut("/api/users/active")]
-internal static partial class UpdateUser
+public static partial class UpdateUser
 {
-	internal sealed record Query : IAuthorizedRequest
+	public sealed record Query : IAuthorizedRequest
 	{
 		public static string? Policy => Policies.Admin;
 

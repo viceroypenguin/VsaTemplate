@@ -5,7 +5,7 @@ using Serilog.Events;
 
 namespace VsaTemplate.Web.Infrastructure.Hangfire;
 
-internal sealed class HangfireJobIdEnricher : ILogEventEnricher, IServerFilter
+public sealed class HangfireJobIdEnricher : ILogEventEnricher, IServerFilter
 {
 	private static readonly AsyncLocal<string?> s_hangfireJobId = new();
 

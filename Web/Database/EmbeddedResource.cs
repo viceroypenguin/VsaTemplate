@@ -3,7 +3,7 @@ using CommunityToolkit.Diagnostics;
 
 namespace VsaTemplate.Web.Database;
 
-internal static class EmbeddedResource
+public static class EmbeddedResource
 {
 	public static string GetContent(string relativePath)
 	{

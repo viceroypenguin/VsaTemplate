@@ -7,7 +7,7 @@ using LinqToDB.Mapping;
 
 namespace VsaTemplate.Web.Database;
 
-internal sealed partial class DbContext : DataConnection
+public sealed partial class DbContext : DataConnection
 {
 	private static partial MappingSchema BuildMappingSchema()
 	{

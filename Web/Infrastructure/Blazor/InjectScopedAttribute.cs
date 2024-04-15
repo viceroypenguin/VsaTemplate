@@ -5,6 +5,6 @@
 /// scoped service provider during initialization.
 /// </summary>
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-internal sealed class InjectScopedAttribute : Attribute
+public sealed class InjectScopedAttribute : Attribute
 {
 }

@@ -3,7 +3,7 @@ using Immediate.Handlers.Shared;
 
 namespace VsaTemplate.Web.Infrastructure.Behaviors;
 
-internal sealed partial class LoggingBehavior<TRequest, TResponse>(
+public sealed partial class LoggingBehavior<TRequest, TResponse>(
 	ILogger<LoggingBehavior<TRequest, TResponse>> logger,
 	IHttpContextAccessor httpContextAccessor
 ) : Behavior<TRequest, TResponse>

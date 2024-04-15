@@ -2,14 +2,14 @@ namespace VsaTemplate.SourceGen;
 
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 
-internal static class EquatableDictionary
+public static class EquatableDictionary
 {
 	public static EquatableDictionary<TValue> ToEquatableDictionary<TValue>(
 		this Dictionary<string, TValue>? dict
 	) => new(dict);
 }
 
-internal readonly struct EquatableDictionary<TValue>(
+public readonly struct EquatableDictionary<TValue>(
 	Dictionary<string, TValue>? dictionary
 ) : IEquatable<EquatableDictionary<TValue>>
 {

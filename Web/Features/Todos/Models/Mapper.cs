@@ -1,6 +1,6 @@
 namespace VsaTemplate.Web.Features.Todos.Models;
 
-internal static class Mapper
+public static class Mapper
 {
 	public static IQueryable<Todo> SelectDto(this IQueryable<Database.Models.Todo> query) =>
 		query

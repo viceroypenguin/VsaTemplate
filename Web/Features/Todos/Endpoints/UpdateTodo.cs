@@ -12,12 +12,11 @@ namespace VsaTemplate.Web.Features.Todos.Endpoints;
 
 [Handler]
 [MapPut("/api/todos")]
-internal static partial class UpdateTodo
+public static partial class UpdateTodo
 {
-	internal sealed record Command : IAuthorizedRequest, ITodoRequest
+	public sealed record Command : IAuthorizedRequest, ITodoRequest
 	{
-		public static string Policy => Policies.ValidUser
-			;
+		public static string Policy => Policies.ValidUser;
 		public required TodoId TodoId { get; init; }
 		public required string Name { get; init; }
 		public required string? Comment { get; init; }

@@ -2,9 +2,9 @@ using System.Text.Json;
 
 namespace VsaTemplate.Web.Features.Users.Models;
 
-internal static class Mapper
+public static class Mapper
 {
-	internal static IQueryable<User> SelectDto(this IQueryable<Database.Models.User> q) => q
+	public static IQueryable<User> SelectDto(this IQueryable<Database.Models.User> q) => q
 		.Select(u => new User()
 		{
 			UserId = u.UserId,
@@ -19,7 +19,7 @@ internal static class Mapper
 	private static List<string> ToRoles(string roles) =>
 		JsonSerializer.Deserialize<List<string>>(roles)!;
 
-	internal static User ToDto(this Database.Models.User user) =>
+	public static User ToDto(this Database.Models.User user) =>
 		new User()
 		{
 			UserId = user.UserId,

@@ -4,7 +4,7 @@ using LinqToDB.Data;
 
 namespace VsaTemplate.Web.Database;
 
-internal sealed partial class DbContext : DataConnection
+public sealed partial class DbContext : DataConnection
 {
 	private void SyncAllEnums()
 	{

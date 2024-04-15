@@ -1,7 +1,7 @@
 namespace VsaTemplate.Web.Features.Todos.Models;
 
 [SyncEnum]
-internal enum TodoPriority
+public enum TodoPriority
 {
 	None = 0,
 	Low = 1,
@@ -10,7 +10,7 @@ internal enum TodoPriority
 }
 
 [SyncEnum]
-internal enum TodoStatus
+public enum TodoStatus
 {
 	None = 0,
 	Inactive = 1,

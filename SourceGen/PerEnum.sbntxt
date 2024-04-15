@@ -6,7 +6,7 @@ using VsaTemplate.Web.Database.Models;
 
 namespace VsaTemplate.Web.Database;
 
-internal sealed partial class DbContext : DataConnection
+public sealed partial class DbContext : DataConnection
 {
 	private void Sync{{ name }}()
 	{
