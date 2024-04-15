@@ -20,6 +20,7 @@ public sealed partial class DbGenerator
 			{
 				var name = p.TypeName;
 				var useConverter = false;
+				var forceNotNull = p.ForceNotNull;
 				if (map.TryGetValue(p.ColumnName, out var n)
 					|| (p.ColumnName.EndsWith("Id", StringComparison.Ordinal)
 						&& map.FindValue(p.ColumnName, out n))
@@ -27,16 +28,18 @@ public sealed partial class DbGenerator
 				{
 					name = n;
 					useConverter = n.EndsWith("Id", StringComparison.Ordinal);
+					forceNotNull = false;
 				}
 
 				return new
 				{
 					TypeName = name,
+					p.IsNullable,
 					UseConverter = useConverter,
 					p.PropertyName,
 					p.ColumnName,
 					p.DataType,
-					p.ForceNotNull,
+					ForceNotNull = forceNotNull,
 					p.IsPrimaryKey,
 					p.PrimaryKeyOrder,
 					p.IsIdentity,

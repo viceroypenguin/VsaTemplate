@@ -34,7 +34,7 @@ public sealed class {{ type_name }}
 	{{~ if p.use_converter ~}}
 	[ValueConverter(ConverterType = typeof({{ p.type_name }}.LinqToDbValueConverter))]
 	{{~ end ~}}
-	public {{ p.type_name }} {{ p.property_name }} { get; set; }{{ if p.force_not_null }} = null!;{{ end }}
+	public {{ p.type_name }}{{ if p.is_nullable }}?{{ end }} {{ p.property_name }} { get; set; }{{ if p.force_not_null }} = null!;{{ end }}
 
 	{{~ end ~}}
 	{{~ for a in associations ~}}

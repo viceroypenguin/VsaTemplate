@@ -19,6 +19,7 @@ public sealed record Property
 	public required string TypeName { get; init; }
 	public required string PropertyName { get; init; }
 	public required string ColumnName { get; init; }
+	public required bool IsNullable { get; init; }
 	public required string? DataType { get; init; }
 	public required bool ForceNotNull { get; init; }
 	public required bool IsPrimaryKey { get; init; }

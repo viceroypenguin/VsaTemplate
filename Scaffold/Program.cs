@@ -85,7 +85,8 @@ static async Task<string> GenerateScaffold(ProgramArguments args)
 					{
 						PropertyName = c.MemberName,
 						ColumnName = c.ColumnName,
-						TypeName = GetPropertyType(c.DataType, c.Length, c.IsNullable),
+						TypeName = GetPropertyType(c.DataType, c.Length),
+						IsNullable = c.IsNullable,
 						DataType = c.ColumnType ?? throw new InvalidOperationException("Unknown column type"),
 						ForceNotNull = c.SystemType!.IsClass && !c.IsNullable,
 						IsPrimaryKey = c.IsPrimaryKey,
@@ -155,7 +156,7 @@ static string Pluralize(string typeName) =>
 	);
 
 #pragma warning disable IDE0072 // Add missing cases
-static string GetPropertyType(DataType? dataType, int? length, bool isNullable) =>
+static string GetPropertyType(DataType? dataType, int? length) =>
 	dataType switch
 	{
 		DataType.Char
@@ -198,7 +199,7 @@ static string GetPropertyType(DataType? dataType, int? length, bool isNullable) 
 		DataType.DateTimeOffset => "global::System.DateTimeOffset",
 
 		_ => throw new InvalidOperationException("Unknown data type."),
-	} + (isNullable ? "?" : "");
+	};
 #pragma warning restore IDE0072 // Add missing cases
 
 static async Task CreateDatabase(DataConnection conn, string database)
