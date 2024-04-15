@@ -32,7 +32,11 @@ public sealed class {{ type_name }}
 		{{~ end ~}}
 	)]
 	{{~ if p.use_converter ~}}
+	{{~ if p.is_nullable ~}}
+	[NullableConverter(ConverterType = typeof({{ p.type_name }}.LinqToDbValueConverter))]
+	{{~ else ~}}
 	[ValueConverter(ConverterType = typeof({{ p.type_name }}.LinqToDbValueConverter))]
+	{{~ end ~}}
 	{{~ end ~}}
 	public {{ p.type_name }}{{ if p.is_nullable }}?{{ end }} {{ p.property_name }} { get; set; }{{ if p.force_not_null }} = null!;{{ end }}
 
