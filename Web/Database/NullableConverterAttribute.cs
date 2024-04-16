@@ -47,23 +47,41 @@ public sealed class NullableConverterAttribute : ValueConverterAttribute
 		LambdaExpression lambda
 	)
 	{
-		var aType = typeof(Nullable<>).MakeGenericType(lambda.Parameters[0].Type);
-		var bType = typeof(Nullable<>).MakeGenericType(lambda.ReturnType);
+		if (lambda is not
+			{
+				Body: { } body,
+				Parameters: [{ } parameter],
+				ReturnType: { } returnType,
+			}
+		)
+		{
+			throw new NotSupportedException("Unknown lambda.");
+		}
 
-		var aParam = Expression.Parameter(aType, "a");
-		var prop = aType.GetProperty("Value");
+		if (parameter.Type.IsValueType)
+		{
+			var aType = typeof(Nullable<>).MakeGenericType(parameter.Type);
+			var prop = aType.GetProperty("Value");
+			parameter = Expression.Parameter(aType, "a");
 
-		var body = lambda.Body.Replace(
-			lambda.Parameters[0],
-			Expression.Property(aParam, prop!)
-		);
+			body = lambda.Body.Replace(
+				parameter,
+				Expression.Property(parameter, prop!)
+			);
+		}
 
-		return Expression.Lambda(
-			Expression.Convert(
+		if (returnType.IsValueType)
+		{
+			var bType = typeof(Nullable<>).MakeGenericType(lambda.ReturnType);
+			body = Expression.Convert(
 				body,
 				bType
-			),
-			aParam
+			);
+		}
+
+		return Expression.Lambda(
+			body,
+			parameter
 		);
 	}
 }
