@@ -62,12 +62,17 @@ public sealed class NullableConverterAttribute : ValueConverterAttribute
 		{
 			var aType = typeof(Nullable<>).MakeGenericType(parameter.Type);
 			var prop = aType.GetProperty("Value");
-			parameter = Expression.Parameter(aType, "a");
+			var aParam = Expression.Parameter(aType, "a");
 
 			body = lambda.Body.Replace(
 				parameter,
-				Expression.Property(parameter, prop!)
+				Expression.Property(
+					aParam,
+					prop!
+				)
 			);
+
+			parameter = aParam;
 		}
 
 		if (returnType.IsValueType)
