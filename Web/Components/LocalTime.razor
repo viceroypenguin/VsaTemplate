@@ -1,0 +1,53 @@
+﻿@rendermode InteractiveServer
+@inject IJSRuntime JSRuntime
+
+<span class="local-time @Class" 
+  @ref="divElement" 
+  @attributes="Attributes"
+  data-format="@Format" 
+  data-time="@DateTime.UtcDateTime.ToString("O")"></span>
+
+@code {
+    [Parameter]
+    public DateTimeOffset DateTime { get; set; }
+
+    [Parameter]
+    public required string Format { get; set; }
+
+    [Parameter]
+    public string? Class { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public required IReadOnlyDictionary<string, object> Attributes { get; set; }
+
+    private ElementReference divElement;
+
+    private bool _created;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("window.localTime.updateTag", divElement);
+            _created = true;
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_created)
+        {
+            await JSRuntime.InvokeVoidAsync("window.localTime.updateTag", divElement);
+        }
+    }
+
+    [JSInvokable]
+    public static Task<string> DateFormat(string tagDate, int offsetMinutes, string? formatValue)
+    {
+        var date = DateTimeOffset.Parse(tagDate);
+        var offset = new TimeSpan(hours: 0, minutes: offsetMinutes, seconds: 0);
+        date = date.ToOffset(offset);
+
+        return Task.FromResult(date.ToString(formatValue, formatProvider: default));
+    }
+}
