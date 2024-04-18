@@ -73,12 +73,12 @@ public sealed partial class DbGenerator
 	private static void RenderEnum(
 		SourceProductionContext spc,
 		SyncEnum node,
-		EquatableDictionary<string> map,
+		EquatableDictionary<(string UnderlyingType, bool IsEnum)> map,
 		Template perEnumTemplate
 	)
 	{
 		var type = map.TryGetValue(node.Table + "Id", out var value)
-			? value
+			? value.UnderlyingType
 			: "int";
 
 		var output = perEnumTemplate

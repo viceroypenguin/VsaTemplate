@@ -13,7 +13,7 @@ public sealed partial class DbGenerator
 	private static ImmutableArray<DbEntity> ParseScaffold(AdditionalText text, CancellationToken token) =>
 		JsonSerializer.Deserialize<ImmutableArray<DbEntity>>(text.GetText(token)!.ToString());
 
-	private static void RenderEntity(SourceProductionContext spc, DbEntity entity, EquatableDictionary<string> map, Template template)
+	private static void RenderEntity(SourceProductionContext spc, DbEntity entity, EquatableDictionary<(string UnderlyingTypeName, bool IsEnum)> map, Template template)
 	{
 		var properties = entity.Properties.Collection
 			.Select(p =>
@@ -26,8 +26,8 @@ public sealed partial class DbGenerator
 						&& map.FindValue(p.ColumnName, out n))
 					)
 				{
-					name = n;
-					useConverter = n.EndsWith("Id", StringComparison.Ordinal);
+					name = n.UnderlyingTypeName;
+					useConverter = !n.IsEnum;
 					forceNotNull = false;
 				}
 
@@ -79,7 +79,7 @@ public sealed partial class DbGenerator
 
 	private static void RenderSchema(
 		SourceProductionContext spc,
-		IEnumerable<(string ColumnName, string TypeName, string UnderlyingTypeName)> context,
+		IEnumerable<(string ColumnName, string TypeName, string UnderlyingTypeName, bool IsEnum)> context,
 		Template template
 	)
 	{

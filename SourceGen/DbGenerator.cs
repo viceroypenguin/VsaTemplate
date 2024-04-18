@@ -42,7 +42,7 @@ public sealed partial class DbGenerator : IIncrementalGenerator
 			.Select((x, _) => x.Left.Left
 				.Concat(x.Left.Right)
 				.Concat(x.Right)
-				.ToDictionary(x => x.ColumnName, x => x.TypeName)
+				.ToDictionary(x => x.ColumnName, x => (x.TypeName, x.IsEnum))
 				.ToEquatableDictionary()
 			);
 
@@ -84,7 +84,7 @@ public sealed partial class DbGenerator : IIncrementalGenerator
 		);
 	}
 
-	public static (string ColumnName, string TypeName, string UnderlyingTypeName)? TransformVogenValueObject(
+	public static (string ColumnName, string TypeName, string UnderlyingTypeName, bool IsEnum)? TransformVogenValueObject(
 		GeneratorAttributeSyntaxContext context,
 		CancellationToken token
 	)
@@ -103,15 +103,16 @@ public sealed partial class DbGenerator : IIncrementalGenerator
 			? ul.ToDisplayString()
 			: "int";
 
-		return (name, valueObject.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat), underlying);
+		return (name, valueObject.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat), underlying, false);
 	}
 
-	private static (string ColumnName, string TypeName, string UnderlyingTypeName) TransformSyncEnum(
+	private static (string ColumnName, string TypeName, string UnderlyingTypeName, bool IsEnum) TransformSyncEnum(
 		SyncEnum @enum,
 		CancellationToken token
 	) => (
 			@enum.Name + "Id",
 			@enum.TypeName,
-			"int"
+			"int",
+			true
 		);
 }
