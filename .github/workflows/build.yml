@@ -1,0 +1,31 @@
+name: build
+
+on: 
+  workflow_dispatch:
+  # push:
+  #   branches: 
+  #     - 'master'
+  #   paths-ignore:
+  #     - '**/readme.md'
+  #   tags:
+  #     - '**'
+  # pull_request:
+  #   types: [opened, synchronize, reopened]
+    
+jobs:
+  build:
+
+    runs-on: self-hosted
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Build
+      run: |
+        echo ${{ secrets.ScaffoldConnectionString }} > secrets.json && \
+          DOCKER_BUILDKIT=1 \
+          docker build --pull --secret id=ScaffoldConnectionString,src=secrets.json -t vsa-web:${{ github.sha }} -f ./Web/dockerfile .
+
+    - name: Tag
+      if: github.ref == 'refs/heads/master'
+      run: docker tag vsa-web:${{ github.sha }} vsa-web:dev
