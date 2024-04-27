@@ -4,7 +4,7 @@ using LinqToDB;
 using LinqToDB.Data;
 using LinqToDB.Mapping;
 
-namespace VsaTemplate.Web.Database.Models;
+namespace {{ root_namespace }}.Database.Models;
 
 [Table("{{ table_name }}"{{ if !string.empty schema_name }}, Schema = "{{ schema_name }}"{{ end }})]
 public sealed class {{ type_name }}

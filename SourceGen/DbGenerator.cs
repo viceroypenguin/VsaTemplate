@@ -8,6 +8,13 @@ public sealed partial class DbGenerator : IIncrementalGenerator
 {
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
+		var rootNamespace = context.AnalyzerConfigOptionsProvider
+			.Select((p, _) =>
+				p.GlobalOptions.TryGetValue("build_property.RootNamespace", out var ns)
+					? ns
+					: ""
+			);
+
 		var valueTypes = context.SyntaxProvider
 			.ForAttributeWithMetadataName(
 				"Vogen.ValueObjectAttribute",
@@ -36,12 +43,16 @@ public sealed partial class DbGenerator : IIncrementalGenerator
 
 		var allTypes = valueTTypes.Collect()
 			.Combine(valueTypes.Collect())
-			.Combine(enumIds.Collect());
+			.Combine(enumIds.Collect())
+			.SelectMany((x, _) =>
+				x.Left.Left
+					.Concat(x.Left.Right)
+					.Concat(x.Right)
+			)
+			.Collect();
 
 		var map = allTypes
-			.Select((x, _) => x.Left.Left
-				.Concat(x.Left.Right)
-				.Concat(x.Right)
+			.Select((x, _) => x
 				.ToDictionary(x => x.ColumnName, x => (x.TypeName, x.IsEnum))
 				.ToEquatableDictionary()
 			);
@@ -52,26 +63,26 @@ public sealed partial class DbGenerator : IIncrementalGenerator
 
 		var entityTemplate = Utility.GetScribanTemplate("DbScaffold.Entity");
 		context.RegisterSourceOutput(
-			scaffold.Combine(map),
-			(spc, entity) => RenderEntity(spc, entity.Left, entity.Right, entityTemplate)
+			scaffold.Combine(map).Combine(rootNamespace),
+			(spc, entity) => RenderEntity(spc, entity.Left.Left, entity.Left.Right, entity.Right, entityTemplate)
 		);
 
 		var contextTemplate = Utility.GetScribanTemplate("DbScaffold.Context");
 		context.RegisterSourceOutput(
-			scaffold.Select((x, _) => (x.PropertyName, x.TypeName)).Collect(),
-			(spc, context) => RenderContext(spc, context, contextTemplate)
+			scaffold.Select((x, _) => (x.PropertyName, x.TypeName)).Collect().Combine(rootNamespace),
+			(spc, context) => RenderContext(spc, context.Left, context.Right, contextTemplate)
 		);
 
 		var schemaTemplate = Utility.GetScribanTemplate("DbScaffold.Schema");
 		context.RegisterSourceOutput(
-			allTypes,
-			(spc, types) => RenderSchema(spc, types.Left.Left.Concat(types.Left.Right).Concat(types.Right), schemaTemplate)
+			allTypes.Combine(rootNamespace),
+			(spc, types) => RenderSchema(spc, types.Left, types.Right, schemaTemplate)
 		);
 
 		var perEnumTemplate = Utility.GetScribanTemplate("PerEnum");
 		context.RegisterSourceOutput(
-			syncEnums.Combine(map),
-				action: (spc, x) => RenderEnum(spc, x.Left, x.Right, perEnumTemplate));
+			syncEnums.Combine(map).Combine(rootNamespace),
+			action: (spc, x) => RenderEnum(spc, x.Left.Left, x.Left.Right, x.Right, perEnumTemplate));
 
 		var names = syncEnums
 			.Select((n, _) => n.Name)
@@ -79,8 +90,8 @@ public sealed partial class DbGenerator : IIncrementalGenerator
 
 		var allEnumsTemplate = Utility.GetScribanTemplate("SyncAllEnums");
 		context.RegisterSourceOutput(
-			names,
-			action: (spc, n) => RenderAllEnums(spc, n, allEnumsTemplate)
+			names.Combine(rootNamespace),
+			action: (spc, n) => RenderAllEnums(spc, n.Left, n.Right, allEnumsTemplate)
 		);
 	}
 

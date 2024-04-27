@@ -13,7 +13,13 @@ public sealed partial class DbGenerator
 	private static ImmutableArray<DbEntity> ParseScaffold(AdditionalText text, CancellationToken token) =>
 		JsonSerializer.Deserialize<ImmutableArray<DbEntity>>(text.GetText(token)!.ToString());
 
-	private static void RenderEntity(SourceProductionContext spc, DbEntity entity, EquatableDictionary<(string UnderlyingTypeName, bool IsEnum)> map, Template template)
+	private static void RenderEntity(
+		SourceProductionContext spc,
+		DbEntity entity,
+		EquatableDictionary<(string UnderlyingTypeName, bool IsEnum)> map,
+		string rootNamespace,
+		Template template
+	)
 	{
 		var properties = entity.Properties.Collection
 			.Select(p =>
@@ -52,6 +58,7 @@ public sealed partial class DbGenerator
 			.Render(
 				new
 				{
+					RootNamespace = rootNamespace,
 					entity.SchemaName,
 					entity.TableName,
 					entity.TypeName,
@@ -66,6 +73,7 @@ public sealed partial class DbGenerator
 	private static void RenderContext(
 		SourceProductionContext spc,
 		ImmutableArray<(string PropertyName, string TypeName)> context,
+		string rootNamespace,
 		Template template
 	)
 	{
@@ -73,13 +81,14 @@ public sealed partial class DbGenerator
 			.Select(x => new { x.PropertyName, x.TypeName })
 			.OrderBy(x => x.TypeName);
 
-		var output = template.Render(new { Tables = tables });
+		var output = template.Render(new { Tables = tables, RootNamespace = rootNamespace });
 		spc.AddSource($"DbContext.Context.g.cs", SourceText.From(output, Encoding.UTF8));
 	}
 
 	private static void RenderSchema(
 		SourceProductionContext spc,
 		IEnumerable<(string ColumnName, string TypeName, string UnderlyingTypeName, bool IsEnum)> context,
+		string rootNamespace,
 		Template template
 	)
 	{
@@ -87,7 +96,7 @@ public sealed partial class DbGenerator
 			.Select(x => new { x.UnderlyingTypeName, x.TypeName })
 			.OrderBy(x => x.TypeName);
 
-		var output = template.Render(new { Types = types });
+		var output = template.Render(new { Types = types, RootNamespace = rootNamespace });
 		spc.AddSource($"DbContext.Schema.g.cs", SourceText.From(output, Encoding.UTF8));
 	}
 }

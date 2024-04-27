@@ -5,7 +5,7 @@ using LinqToDB;
 using LinqToDB.Data;
 using LinqToDB.Mapping;
 
-namespace VsaTemplate.Web.Database;
+namespace {{ root_namespace }}.Database;
 
 public sealed partial class DbContext : DataConnection
 {

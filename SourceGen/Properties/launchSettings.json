@@ -3,6 +3,10 @@
 		"Web": {
 			"commandName": "DebugRoslynComponent",
 			"targetProject": "..\\Web\\Web.csproj"
+		},
+		"Api": {
+			"commandName": "DebugRoslynComponent",
+			"targetProject": "..\\Api\\Api.csproj"
 		}
 	}
 }

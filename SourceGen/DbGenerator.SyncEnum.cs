@@ -19,7 +19,10 @@ public sealed partial class DbGenerator
 		public required EquatableReadOnlyList<(string, int?)> Values { get; init; }
 	}
 
-	private static SyncEnum TransformEnums(GeneratorAttributeSyntaxContext context, CancellationToken token)
+	private static SyncEnum TransformEnums(
+		GeneratorAttributeSyntaxContext context,
+		CancellationToken token
+	)
 	{
 		var @enum = (EnumDeclarationSyntax)context.TargetNode;
 		var name = @enum.Identifier.Text;
@@ -74,6 +77,7 @@ public sealed partial class DbGenerator
 		SourceProductionContext spc,
 		SyncEnum node,
 		EquatableDictionary<(string UnderlyingType, bool IsEnum)> map,
+		string rootNamespace,
 		Template perEnumTemplate
 	)
 	{
@@ -84,10 +88,11 @@ public sealed partial class DbGenerator
 		var output = perEnumTemplate
 			.Render(new
 			{
+				RootNamespace = rootNamespace,
 				node.DeleteUnknown,
 				node.Table,
 				node.Name,
-				type,
+				Type = type,
 				values = node.Values.Collection,
 			});
 
@@ -97,11 +102,16 @@ public sealed partial class DbGenerator
 	private static void RenderAllEnums(
 		SourceProductionContext spc,
 		ImmutableArray<string> n,
+		string rootNamespace,
 		Template allEnumsTemplate
 	)
 	{
 		var output = allEnumsTemplate
-			.Render(new { names = n });
+			.Render(new
+			{
+				Names = n,
+				RootNamespace = rootNamespace,
+			});
 
 		spc.AddSource("SyncAllEnums.g.cs", SourceText.From(output, Encoding.UTF8));
 	}
