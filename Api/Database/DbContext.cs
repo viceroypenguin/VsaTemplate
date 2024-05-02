@@ -3,7 +3,6 @@ using LinqToDB.Data;
 using LinqToDB.DataProvider.SqlServer;
 using LinqToDB.Mapping;
 using Microsoft.Extensions.Options;
-using VsaTemplate.Api.Infrastructure.Startup;
 
 namespace VsaTemplate.Api.Database;
 

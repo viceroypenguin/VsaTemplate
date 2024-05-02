@@ -2,7 +2,6 @@ using CommunityToolkit.Diagnostics;
 using MailKit.Net.Smtp;
 using Microsoft.Extensions.Options;
 using MimeKit;
-using VsaTemplate.Api.Infrastructure.Startup;
 
 namespace VsaTemplate.Api.Infrastructure.Emails;
 
