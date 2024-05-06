@@ -34,7 +34,7 @@
 	<PackageVersion Include="Serilog.Exceptions" Version="8.4.0" />
 	<PackageVersion Include="Serilog.Exceptions.MsSqlServer" Version="8.4.0" />
 	<PackageVersion Include="Serilog.Exceptions.Refit" Version="8.4.0" />
-	<PackageVersion Include="Serilog.Sinks.Seq" Version="7.0.0" />
+	<PackageVersion Include="Serilog.Sinks.Seq" Version="7.0.1" />
 	<PackageVersion Include="System.Buffers" Version="4.5.1" />
 	<PackageVersion Include="System.Collections.Immutable" Version="8.0.0" />
 	<PackageVersion Include="System.Memory" Version="4.5.5" />
