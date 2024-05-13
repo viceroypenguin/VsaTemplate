@@ -1,61 +1,39 @@
 @rendermode InteractiveServer
 
-<div class="rz-header">
-    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0">
-        <RadzenSidebarToggle Click="@(() => _expanded = !_expanded)" />
-        <div class="flex-grow-1" />
-        <AuthorizeView>
-            <Authorized>
-                <RadzenProfileMenu>
-                    <Template>
-                        @context.User.Identity?.Name
-                    </Template>
-                    <ChildContent>
-                        <RadzenProfileMenuItem Text="Logout" Path="/logout" Icon="logout" />
-                    </ChildContent>
-                </RadzenProfileMenu>
-            </Authorized>
-            <NotAuthorized>
-                <div class="navbar-item mr-2">
-                    <a href="/login?redirectUri=/" class="has-text-white">
-                        <span class="icon is-left">
+<nav class="navbar">
+    <div class="container">
+        <div class="navbar-brand">
+            <a class="navbar-item">VSA Template</a>
+        </div>
+
+        <div class="navbar-end">
+            <AuthorizeView>
+                <Authorized>
+                    <div class="navbar-item has-dropdown is-hoverable">
+                        <a class="navbar-link">
+                            @context.User.Identity?.Name
+                        </a>
+
+                        <div class="navbar-dropdown">
+                            <a class="navbar-item" href="/logout">
+                                <span class="icon mr-1">
+                                    <i class="fa-solid fa-right-from-bracket"></i>
+                                </span>
+                                Logout
+                            </a>
+                        </div>
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <a class="navbar-item" href="/login?redirectUri=/">
+                        <span class="icon mr-1">
                             <i class="fas fa-sign-in-alt"></i>
                         </span>
                         Login
                     </a>
-                </div>
-            </NotAuthorized>
-        </AuthorizeView>
-    </RadzenStack>
-</div>
-<div class="rz-sidebar rz-sidebar-responsive @(State)">
-    <RadzenPanelMenu>
-        <RadzenPanelMenuItem Text="Home" Path="/" Icon="home" />
-        <AuthorizeView>
-            <Authorized>
-                <RadzenPanelMenuItem Text="Todos" Path="/Todo" />
-            </Authorized>
-        </AuthorizeView>
-        <AuthorizeView Policy="@Policies.Admin">
-            <Authorized>
-                <RadzenPanelMenuItem Text="Admin Data Editor" Icon="edit_note">
-                    <RadzenPanelMenuItem Text="Edit Users" Path="/Admin/Users" />
-                </RadzenPanelMenuItem>
-                <RadzenPanelMenuItem Text="Admin" Icon="admin_panel_settings" Expanded="true">
-                    <RadzenPanelMenuItem Text="Hangfire" Path="/hangfire" />
-                    <RadzenPanelMenuItem Text="Swagger" Path="/swagger" />
-                    <RadzenPanelMenuItem Text="@("Commit: " + ThisAssembly.Git.Sha)" Icon="info" />
-                </RadzenPanelMenuItem>
-            </Authorized>
-        </AuthorizeView>
-    </RadzenPanelMenu>
-</div>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+    </div>
+</nav>
 
-@code
-{
-    private bool _expanded = true;
-    private string State =>
-      _expanded
-      ? "rz-sidebar-expanded"
-      : "rz-sidebar-collapsed";
-}

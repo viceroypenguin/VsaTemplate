@@ -1,16 +1,15 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 
-<div class="rz-layout">
-    <Navbar />
+<Navbar />
 
-    <div class="rz-body">
-        <div class="rz-display-flex rz-row rz-align-items-normal rz-justify-content-normal rz-pt-6 rz-px-4 rz-px-sm-8 rz-px-xl-12" style="--rz-gap:2rem">
-            <div class="rz-col-12">
-                <div class="rz-display-flex rz-row rz-align-items-normal rz-justify-content-normal rz-mx-auto" style="max-width: 1600px;">
-                    @Body
-                </div>
-            </div>
+<div class="container">
+    <div class="columns">
+        <div class="column is-2">
+            <Menu />
+        </div>
+
+        <div class="column is-10">
+            @Body
         </div>
     </div>
 </div>
-

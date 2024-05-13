@@ -45,7 +45,6 @@
 	<PackageReference Include="Microsoft.AspNetCore.OpenApi" />
 	<PackageReference Include="Microsoft.Data.SqlClient" />
 	<PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
-	<PackageReference Include="Radzen.Blazor" />
 	<PackageReference Include="Riok.Mapperly" />
 	<PackageReference Include="Swashbuckle.AspNetCore" />
 	<PackageReference Include="Serilog.AspNetCore" />

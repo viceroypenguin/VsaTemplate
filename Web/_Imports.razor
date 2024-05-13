@@ -1,4 +1,4 @@
-﻿@using System.Net.Http
+@using System.Net.Http
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Forms
@@ -8,10 +8,8 @@
 @using Microsoft.JSInterop
 @using VsaTemplate.Web
 @using VsaTemplate.Web.Components
-@using Radzen;
-@using Radzen.Blazor;
-@using SuperLinq;
 @using VsaTemplate.Web.Infrastructure.Authorization
+@using SuperLinq;
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
 
 @attribute [Authorize(Policy = Policies.ValidUser)]

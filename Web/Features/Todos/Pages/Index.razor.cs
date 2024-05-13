@@ -79,11 +79,15 @@ public sealed partial class Index : BlazorComponentBase
 
 		if (success)
 		{
-			t.IsComplete = !t.IsComplete;
-			if (t.IsComplete && !_showCompleted)
+			if (!t.IsComplete && !_showCompleted)
+			{
 				_ = _todos.Remove(t);
-
-			StateHasChanged();
+				StateHasChanged();
+			}
+			else
+			{
+				t.IsComplete = !t.IsComplete;
+			}
 		}
 	}
 }
