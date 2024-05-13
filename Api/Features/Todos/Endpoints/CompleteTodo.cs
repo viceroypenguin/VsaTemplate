@@ -15,7 +15,6 @@ namespace VsaTemplate.Api.Features.Todos.Endpoints;
 [Authorize(Policy = Policies.ValidUser)]
 public static partial class CompleteTodo
 {
-	[EndpointRegistrationOverride(EndpointRegistration.AsParameters)]
 	public sealed record Command : ITodoRequest
 	{
 		public required TodoId TodoId { get; init; }
@@ -23,6 +22,7 @@ public static partial class CompleteTodo
 	}
 
 	private static async ValueTask<bool> HandleAsync(
+		[AsParameters]
 		Command command,
 		CurrentUserService currentUserService,
 		DbContext context,

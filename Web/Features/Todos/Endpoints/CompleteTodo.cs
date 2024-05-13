@@ -13,7 +13,6 @@ namespace VsaTemplate.Web.Features.Todos.Endpoints;
 [MapPost("/api/todos/{todoId:int}")]
 public static partial class CompleteTodo
 {
-	[EndpointRegistrationOverride(EndpointRegistration.AsParameters)]
 	public sealed record Command : IAuthorizedRequest, ITodoRequest
 	{
 		public static string Policy => Policies.ValidUser;
@@ -23,6 +22,7 @@ public static partial class CompleteTodo
 	}
 
 	private static async ValueTask<bool> HandleAsync(
+		[AsParameters]
 		Command command,
 		CurrentUserService currentUserService,
 		DbContext context,
