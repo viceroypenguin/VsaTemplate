@@ -1,5 +1,6 @@
 using Immediate.Apis.Shared;
 using Immediate.Handlers.Shared;
+using Immediate.Validations.Shared;
 using LinqToDB;
 using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.Todos.Authorization;
@@ -13,7 +14,8 @@ namespace VsaTemplate.Web.Features.Todos.Endpoints;
 [MapPost("/api/todos/{todoId:int}")]
 public static partial class CompleteTodo
 {
-	public sealed record Command : IAuthorizedRequest, ITodoRequest
+	[Validate]
+	public sealed partial record Command : IAuthorizedRequest, ITodoRequest, IValidationTarget<Command>
 	{
 		public static string Policy => Policies.ValidUser;
 

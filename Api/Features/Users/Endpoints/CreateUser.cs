@@ -1,7 +1,7 @@
 using System.Text.Json;
-using CommunityToolkit.Diagnostics;
 using Immediate.Apis.Shared;
 using Immediate.Handlers.Shared;
+using Immediate.Validations.Shared;
 using LinqToDB;
 using Microsoft.AspNetCore.Authorization;
 using VsaTemplate.Api.Database;
@@ -15,10 +15,15 @@ namespace VsaTemplate.Api.Features.Users.Endpoints;
 [Authorize(Policy = Policies.Admin)]
 public static partial class CreateUser
 {
-	public sealed record Command
+	[Validate]
+	public sealed partial record Command : IValidationTarget<Command>
 	{
+		[NotEmpty]
 		public required string EmailAddress { get; init; }
+
+		[NotEmpty]
 		public required string Name { get; init; }
+
 		public required bool IsActive { get; init; }
 		public required IReadOnlyList<string> Roles { get; init; }
 	}
@@ -28,9 +33,6 @@ public static partial class CreateUser
 		DbContext context,
 		CancellationToken token)
 	{
-		Guard.IsNotNullOrWhiteSpace(query.Name);
-		Guard.IsNotNullOrWhiteSpace(query.EmailAddress);
-
 		var user = await context.Users
 			.InsertWithOutputAsync(
 				new Database.Models.User

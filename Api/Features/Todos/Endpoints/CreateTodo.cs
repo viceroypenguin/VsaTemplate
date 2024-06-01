@@ -1,5 +1,6 @@
 using Immediate.Apis.Shared;
 using Immediate.Handlers.Shared;
+using Immediate.Validations.Shared;
 using LinqToDB;
 using Microsoft.AspNetCore.Authorization;
 using VsaTemplate.Api.Database;
@@ -14,12 +15,15 @@ namespace VsaTemplate.Api.Features.Todos.Endpoints;
 [Authorize(Policy = Policies.ValidUser)]
 public static partial class CreateTodo
 {
-	public sealed record Command
+	[Validate]
+	public sealed partial record Command : IValidationTarget<Command>
 	{
+		[NotEmpty]
 		public required string Name { get; init; }
+
 		public string? Comment { get; init; }
-		public TodoStatus TodoStatus { get; init; } = TodoStatus.Active;
-		public TodoPriority TodoPriority { get; init; } = TodoPriority.Mid;
+		public TodoStatus TodoStatus { get; init; }
+		public TodoPriority TodoPriority { get; init; }
 	}
 
 	private static async ValueTask<Todo> HandleAsync(

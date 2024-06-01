@@ -2,6 +2,7 @@ using System.Text.Json;
 using CommunityToolkit.Diagnostics;
 using Immediate.Apis.Shared;
 using Immediate.Handlers.Shared;
+using Immediate.Validations.Shared;
 using LinqToDB;
 using Microsoft.AspNetCore.Authorization;
 using VsaTemplate.Api.Database;
@@ -15,11 +16,17 @@ namespace VsaTemplate.Api.Features.Users.Endpoints;
 [Authorize(Policy = Policies.Admin)]
 public static partial class UpdateUser
 {
-	public sealed record Query
+	[Validate]
+	public sealed partial record Query : IValidationTarget<Query>
 	{
 		public required UserId UserId { get; set; }
+
+		[NotEmpty]
 		public required string EmailAddress { get; init; }
+
+		[NotEmpty]
 		public required string Name { get; init; }
+
 		public required bool IsActive { get; init; }
 		public required IReadOnlyList<string> Roles { get; init; }
 	}

@@ -16,9 +16,10 @@ public static partial class GetUsers
 	public sealed record Query;
 
 	private static async ValueTask<IEnumerable<User>> HandleAsync(
-			Query query,
-			DbContext context,
-			CancellationToken token) =>
+		Query _,
+		DbContext context,
+		CancellationToken token
+	) =>
 		await context.Users
 			.SelectDto()
 			.ToListAsync(token);

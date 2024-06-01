@@ -20,7 +20,7 @@ public static class Mapper
 		JsonSerializer.Deserialize<List<string>>(roles)!;
 
 	public static User ToDto(this Database.Models.User user) =>
-		new User()
+		new()
 		{
 			UserId = user.UserId,
 			Name = user.Name,

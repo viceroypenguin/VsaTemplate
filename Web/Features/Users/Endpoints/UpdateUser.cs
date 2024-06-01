@@ -2,6 +2,7 @@ using System.Text.Json;
 using CommunityToolkit.Diagnostics;
 using Immediate.Apis.Shared;
 using Immediate.Handlers.Shared;
+using Immediate.Validations.Shared;
 using LinqToDB;
 using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.Users.Models;
@@ -13,13 +14,19 @@ namespace VsaTemplate.Web.Features.Users.Endpoints;
 [MapPut("/api/users/active")]
 public static partial class UpdateUser
 {
-	public sealed record Query : IAuthorizedRequest
+	[Validate]
+	public sealed partial record Query : IAuthorizedRequest, IValidationTarget<Query>
 	{
 		public static string? Policy => Policies.Admin;
 
 		public required UserId UserId { get; set; }
+
+		[NotEmpty]
 		public required string EmailAddress { get; init; }
+
+		[NotEmpty]
 		public required string Name { get; init; }
+
 		public required bool IsActive { get; init; }
 		public required IReadOnlyList<string> Roles { get; init; }
 	}
@@ -30,7 +37,7 @@ public static partial class UpdateUser
 		CancellationToken token)
 	{
 		var rows = await context.Users
-			.Where(u => u.UserId == query.UserId.Value)
+			.Where(u => u.UserId == query.UserId)
 			.UpdateWithOutputAsync(
 				u => new()
 				{

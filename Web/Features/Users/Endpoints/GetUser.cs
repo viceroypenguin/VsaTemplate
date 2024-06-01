@@ -1,5 +1,6 @@
 using Immediate.Apis.Shared;
 using Immediate.Handlers.Shared;
+using Immediate.Validations.Shared;
 using LinqToDB;
 using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.Users.Models;
@@ -11,18 +12,20 @@ namespace VsaTemplate.Web.Features.Users.Endpoints;
 [MapGet("/api/users/{UserId}")]
 public static partial class GetUser
 {
-	public sealed record Query : IAuthorizedRequest
+	[Validate]
+	public sealed partial record Query : IAuthorizedRequest, IValidationTarget<Query>
 	{
 		public static string? Policy => Policies.Admin;
 
-		public int UserId { get; set; }
+		public UserId UserId { get; set; }
 	}
 
 	private static async ValueTask<User> HandleAsync(
 		Query query,
 		DbContext context,
 		CancellationToken token
-	) => await context.Users
+	) =>
+		await context.Users
 			.Where(u => u.UserId == query.UserId)
 			.SelectDto()
 			.FirstAsync(token);

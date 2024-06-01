@@ -17,9 +17,10 @@ public static partial class GetActiveUsers
 	}
 
 	private static async ValueTask<IEnumerable<User>> HandleAsync(
-			Query query,
-			DbContext context,
-			CancellationToken token) =>
+		Query _,
+		DbContext context,
+		CancellationToken token
+	) =>
 		await context.Users
 			.Where(u => u.IsActive)
 			.SelectDto()

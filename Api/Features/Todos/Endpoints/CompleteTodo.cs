@@ -1,5 +1,6 @@
 using Immediate.Apis.Shared;
 using Immediate.Handlers.Shared;
+using Immediate.Validations.Shared;
 using LinqToDB;
 using Microsoft.AspNetCore.Authorization;
 using VsaTemplate.Api.Database;
@@ -15,7 +16,8 @@ namespace VsaTemplate.Api.Features.Todos.Endpoints;
 [Authorize(Policy = Policies.ValidUser)]
 public static partial class CompleteTodo
 {
-	public sealed record Command : ITodoRequest
+	[Validate]
+	public sealed partial record Command : ITodoRequest, IValidationTarget<Command>
 	{
 		public required TodoId TodoId { get; init; }
 		public bool Completed { get; init; } = true;

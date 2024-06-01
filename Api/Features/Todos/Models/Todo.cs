@@ -4,7 +4,11 @@ using VsaTemplate.Api.Features.Users.Models;
 namespace VsaTemplate.Api.Features.Todos.Models;
 
 [ValueObject]
-public readonly partial record struct TodoId;
+public readonly partial record struct TodoId
+{
+	public static Validation Validate(int value) =>
+		value > 0 ? Validation.Ok : Validation.Invalid("Must be greater than zero.");
+}
 
 public sealed class Todo : ITodoRequest
 {

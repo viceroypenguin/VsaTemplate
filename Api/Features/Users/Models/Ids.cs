@@ -4,4 +4,8 @@ namespace VsaTemplate.Api.Features.Users.Models;
 public readonly partial struct Auth0UserId;
 
 [ValueObject]
-public readonly partial struct UserId;
+public readonly partial struct UserId
+{
+	public static Validation Validate(int value) =>
+		value > 0 ? Validation.Ok : Validation.Invalid("Must be greater than zero.");
+}
