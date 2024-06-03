@@ -55,6 +55,7 @@ try
 	_ = builder.Services.AddEndpointsApiExplorer();
 	_ = builder.Services.AddSwagger();
 	_ = builder.Services.AddAntiforgery();
+	_ = builder.Services.AddProblemDetails(StartupExtensions.ConfigureProblemDetails);
 
 	_ = builder.Services
 		.AddRazorComponents()

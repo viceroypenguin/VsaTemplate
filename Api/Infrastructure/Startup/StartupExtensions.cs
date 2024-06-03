@@ -17,6 +17,8 @@ using VsaTemplate.Api.Database;
 using VsaTemplate.Api.Features.Users.Models;
 using VsaTemplate.Api.Features.Users.Queries;
 using VsaTemplate.Api.Infrastructure.Hangfire;
+using Microsoft.AspNetCore.Mvc;
+using Immediate.Validations.Shared;
 
 namespace VsaTemplate.Api.Infrastructure.Startup;
 
@@ -150,6 +152,46 @@ public static class StartupExtensions
 				return [tag[..1].ToUpperInvariant() + tag[1..]];
 			});
 		});
+
+	public static void ConfigureProblemDetails(ProblemDetailsOptions options) =>
+		options.CustomizeProblemDetails = c =>
+		{
+			if (c.Exception is null)
+				return;
+
+			c.ProblemDetails = c.Exception switch
+			{
+				ValidationException ex => new ValidationProblemDetails(
+					ex
+						.Errors
+						.GroupBy(x => x.PropertyName, StringComparer.OrdinalIgnoreCase)
+						.ToDictionary(
+							x => x.Key,
+							x => x.Select(x => x.ErrorMessage).ToArray(),
+							StringComparer.OrdinalIgnoreCase
+						)
+				)
+				{
+					Status = StatusCodes.Status400BadRequest,
+				},
+
+				UnauthorizedAccessException ex => new()
+				{
+					Detail = "Access denied.",
+					Status = StatusCodes.Status403Forbidden,
+				},
+
+				var ex => new ProblemDetails
+				{
+					Detail = "An error has occurred.",
+					Status = StatusCodes.Status500InternalServerError,
+				},
+			};
+
+			c.HttpContext.Response.StatusCode =
+				c.ProblemDetails.Status
+				?? StatusCodes.Status500InternalServerError;
+		};
 
 	public static IApplicationBuilder InitializeDatabase(this IApplicationBuilder app)
 	{
