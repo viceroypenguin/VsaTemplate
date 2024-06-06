@@ -35,6 +35,7 @@ public static class StartupExtensions
 				.Enrich.WithThreadId()
 				.Enrich.WithProperty("ExecutionId", Guid.NewGuid())
 				.Enrich.WithProperty("Commit", ThisAssembly.Git.Commit)
+				.Enrich.With<HangfireJobIdEnricher>()
 				.Enrich.WithExceptionDetails(
 					new DestructuringOptionsBuilder()
 						.WithDefaultDestructurers()
