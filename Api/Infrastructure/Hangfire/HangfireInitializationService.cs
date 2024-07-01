@@ -3,7 +3,7 @@ using CommunityToolkit.Diagnostics;
 using Hangfire;
 using VsaTemplate.Api.Infrastructure.Jobs;
 
-namespace VsaTemplate.Api.Infrastructure.Startup;
+namespace VsaTemplate.Api.Infrastructure.Hangfire;
 
 public sealed class HangfireInitializationService(IServiceProvider serviceProvider) : IHostedService
 {

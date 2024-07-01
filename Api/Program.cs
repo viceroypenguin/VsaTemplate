@@ -6,7 +6,10 @@ using Hangfire;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 using VsaTemplate.Api;
+using VsaTemplate.Api.Database;
 using VsaTemplate.Api.Infrastructure.Authorization;
+using VsaTemplate.Api.Infrastructure.Hangfire;
+using VsaTemplate.Api.Infrastructure.Logging;
 using VsaTemplate.Api.Infrastructure.Startup;
 
 #pragma warning disable CA1852 // Type can be sealed because it has no subtypes in its containing assembly and is not externally visible
