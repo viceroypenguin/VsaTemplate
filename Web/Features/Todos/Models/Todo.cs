@@ -1,13 +1,20 @@
+using Immediate.Validations.Shared;
 using VsaTemplate.Web.Features.Todos.Authorization;
 using VsaTemplate.Web.Features.Users.Models;
 
 namespace VsaTemplate.Web.Features.Todos.Models;
 
 [ValueObject]
-public readonly partial record struct TodoId
+[Validate]
+public readonly partial record struct TodoId : IValidationTarget<TodoId>
 {
-	public static Validation Validate(int value) =>
-		value > 0 ? Validation.Ok : Validation.Invalid("Must be greater than zero.");
+	private static void AdditionalValidations(ValidationResult errors, TodoId userId)
+	{
+		errors.Add(
+			() => GreaterThanAttribute.ValidateProperty(userId.Value, 0),
+			"Id must be greater than zero."
+		);
+	}
 }
 
 public sealed class Todo : ITodoRequest
