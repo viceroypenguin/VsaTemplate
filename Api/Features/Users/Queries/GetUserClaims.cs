@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using CommunityToolkit.Diagnostics;
 using Immediate.Handlers.Shared;
+using Immediate.Validations.Shared;
 using LinqToDB;
 using VsaTemplate.Api.Database;
 using VsaTemplate.Api.Features.Users.Models;
@@ -13,7 +14,8 @@ namespace VsaTemplate.Api.Features.Users.Queries;
 [Handler]
 public static partial class GetUserClaims
 {
-	public sealed record Query
+	[Validate]
+	public sealed partial record Query : IValidationTarget<Query>
 	{
 		public required Auth0UserId Auth0UserId { get; set; }
 		public required string EmailAddress { get; set; }
