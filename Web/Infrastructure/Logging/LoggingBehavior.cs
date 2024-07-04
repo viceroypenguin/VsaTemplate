@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using Immediate.Handlers.Shared;
 
-namespace VsaTemplate.Web.Infrastructure.Behaviors;
+namespace VsaTemplate.Web.Infrastructure.Logging;
 
 public sealed partial class LoggingBehavior<TRequest, TResponse>(
 	ILogger<LoggingBehavior<TRequest, TResponse>> logger,

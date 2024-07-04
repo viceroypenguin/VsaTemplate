@@ -7,7 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 using Serilog;
 using VsaTemplate.Web;
 using VsaTemplate.Web.Components;
+using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Infrastructure.Authorization;
+using VsaTemplate.Web.Infrastructure.Hangfire;
+using VsaTemplate.Web.Infrastructure.Logging;
 using VsaTemplate.Web.Infrastructure.Startup;
 
 #pragma warning disable CA1852 // Type can be sealed because it has no subtypes in its containing assembly and is not externally visible

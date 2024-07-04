@@ -1,8 +1,7 @@
 using Immediate.Handlers.Shared;
 using VsaTemplate.Web.Features.Users.Services;
-using VsaTemplate.Web.Infrastructure.Authorization;
 
-namespace VsaTemplate.Web.Infrastructure.Behaviors;
+namespace VsaTemplate.Web.Infrastructure.Authorization;
 
 public sealed class AuthorizationBehavior<TRequest, TResponse>(
 	CurrentUserService currentUserService

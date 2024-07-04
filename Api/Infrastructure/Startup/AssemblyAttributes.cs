@@ -1,7 +1,7 @@
 using Immediate.Handlers.Shared;
 using Immediate.Validations.Shared;
 using VsaTemplate.Api.Features.Todos.Authorization;
-using VsaTemplate.Api.Infrastructure.Behaviors;
+using VsaTemplate.Api.Infrastructure.Logging;
 
 [assembly: Behaviors(
 	typeof(LoggingBehavior<,>),
