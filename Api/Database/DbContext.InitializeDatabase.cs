@@ -2,7 +2,6 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using LinqToDB;
 using LinqToDB.Data;
-using VsaTemplate.Api.Database.Models;
 
 namespace VsaTemplate.Api.Database;
 
@@ -51,7 +50,7 @@ public partial class DbContext : DataConnection
 			var endTime = DateTimeOffset.Now;
 
 			_ = this.Insert(
-				new VersionHistory()
+				new Models.VersionHistory()
 				{
 					SqlFile = s,
 					ExecutionStart = startTime,
