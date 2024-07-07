@@ -15,7 +15,7 @@ public sealed partial class LoggingBehavior<TRequest, TResponse>(
 	{
 		var properties = new Dictionary<string, object?>(StringComparer.Ordinal)
 		{
-			["RequestData"] = request,
+			["@RequestData"] = request,
 		};
 
 		var httpContext = _httpContextAccessor.HttpContext;
