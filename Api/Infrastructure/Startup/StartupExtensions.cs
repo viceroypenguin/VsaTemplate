@@ -46,7 +46,7 @@ public static class StartupExtensions
 			if (string.IsNullOrWhiteSpace(emailAddress))
 				ThrowHelper.ThrowInvalidOperationException("Completed Auth0 login, but no email address present.");
 
-			var usersService = ctx.HttpContext.RequestServices.GetRequiredService<GetUserClaims.Handler>();
+			var usersService = ctx.HttpContext.RequestServices.GetRequiredService<GetUserId.Handler>();
 			var claims = await usersService.HandleAsync(
 				new()
 				{

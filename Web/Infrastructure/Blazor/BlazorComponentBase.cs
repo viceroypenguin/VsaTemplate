@@ -1,6 +1,8 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.AspNetCore.Components.Server;
 
 namespace VsaTemplate.Web.Infrastructure.Blazor;
 
@@ -8,10 +10,14 @@ public partial class BlazorComponentBase : OwningComponentBase
 {
 	[Inject] private NavigationManager NavigationManager { get; set; } = default!;
 	[Inject] private ILogger<BlazorComponentBase> Logger { get; set; } = default!;
+	[Inject] private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = default!;
 
 	protected override void OnInitialized()
 	{
 		NavigationManager.LocationChanged += NavigationManager_LocationChanged;
+
+		if (ScopedServices.GetRequiredService<AuthenticationStateProvider>() is ServerAuthenticationStateProvider stateProvider)
+			stateProvider.SetAuthenticationState(AuthenticationStateProvider.GetAuthenticationStateAsync());
 
 		var properties = GetType()
 			.GetProperties(

@@ -76,6 +76,7 @@ try
 	_ = app.UseStaticFiles();
 	_ = app.UseSwagger();
 	_ = app.UseSwaggerUI();
+	_ = app.UseMiddleware<AddRolesMiddleware>();
 	_ = app.UseRouting();
 	_ = app.UseAuthorization();
 	_ = app.UseHangfire();

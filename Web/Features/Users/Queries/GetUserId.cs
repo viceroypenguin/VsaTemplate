@@ -1,6 +1,5 @@
 using System.Globalization;
 using System.Security.Claims;
-using System.Text.Json;
 using CommunityToolkit.Diagnostics;
 using Immediate.Handlers.Shared;
 using Immediate.Validations.Shared;
@@ -12,7 +11,7 @@ using VsaTemplate.Web.Infrastructure.Authorization;
 namespace VsaTemplate.Web.Features.Users.Queries;
 
 [Handler]
-public static partial class GetUserClaims
+public static partial class GetUserId
 {
 	[Validate]
 	public sealed partial record Query : IValidationTarget<Query>
@@ -44,7 +43,7 @@ public static partial class GetUserClaims
 					Auth0UserId = src.Auth0UserId,
 					LastLogin = Sql.CurrentTzTimestamp,
 				})
-			.MergeWithOutputAsync((a, d, i) => new { i.UserId, i.IsActive, i.Roles })
+			.MergeWithOutputAsync((a, d, i) => new { i.UserId, i.IsActive, })
 			.ToListAsync(token);
 
 		if (merges.Count != 1)
@@ -55,8 +54,6 @@ public static partial class GetUserClaims
 
 		return [
 			new Claim(Claims.Id, string.Create(CultureInfo.InvariantCulture, $"{merges[0].UserId}")),
-			.. JsonSerializer.Deserialize<IReadOnlyList<string>>(merges[0].Roles)!
-				.Select(r => new Claim(ClaimTypes.Role, r)),
 		];
 	}
 }

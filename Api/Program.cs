@@ -76,6 +76,7 @@ try
 	_ = app.UseSwagger();
 	_ = app.UseSwaggerUI();
 	_ = app.UseRouting();
+	_ = app.UseMiddleware<AddRolesMiddleware>();
 	_ = app.UseAuthorization();
 	_ = app.UseHangfire();
 	_ = app.UseAntiforgery();

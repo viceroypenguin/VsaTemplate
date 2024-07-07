@@ -2,49 +2,38 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Components.Authorization;
 using VsaTemplate.Api.Features.Users.Models;
 using VsaTemplate.Api.Infrastructure.Authorization;
 
 namespace VsaTemplate.Api.Features.Users.Services;
 
-[RegisterScoped]
+[RegisterSingleton]
 public sealed class CurrentUserService(
 	IAuthorizationService authorizationService,
-	IHttpContextAccessor httpContextAccessor,
-	Task<AuthenticationState>? authenticationState = null
+	IHttpContextAccessor httpContextAccessor
 )
 {
-	public async ValueTask<ClaimsPrincipal?> GetCurrentUser()
-	{
-		if (httpContextAccessor.HttpContext is { User: { } user })
-			return user;
-
-		if (authenticationState is null)
-			return null;
-
-		var state = await authenticationState;
-		return state.User;
-	}
+	private ClaimsPrincipal? GetCurrentUser() =>
+		httpContextAccessor.HttpContext?.User;
 
 	public async ValueTask<bool> IsAuthorized(string policy)
 	{
-		if (await GetCurrentUser() is not { } user)
+		if (GetCurrentUser() is not { } user)
 			return false;
 
 		var auth = await authorizationService.AuthorizeAsync(user, policy);
 		return auth.Succeeded;
 	}
 
-	public async ValueTask<UserId> GetCurrentUserId()
+	public ValueTask<UserId> GetCurrentUserId()
 	{
-		var user = await GetCurrentUser();
+		var user = GetCurrentUser();
 
 		var claim = user?.FindFirstValue(Claims.Id) ?? "";
 		if (!UserId.TryParse(claim, out var userId))
 			ThrowInvalidUserId(claim);
 
-		return userId;
+		return ValueTask.FromResult(userId);
 	}
 
 	[StackTraceHidden]

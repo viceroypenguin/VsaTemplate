@@ -12,25 +12,27 @@ namespace VsaTemplate.Web.Features.Users.Services;
 public sealed class CurrentUserService(
 	IAuthorizationService authorizationService,
 	IHttpContextAccessor httpContextAccessor,
-	Task<AuthenticationState>? authenticationState = null
+	AuthenticationStateProvider authenticationStateProvider,
+	UserRolesCache userRolesCache
 )
 {
-	public async ValueTask<ClaimsPrincipal?> GetCurrentUser()
+	private async ValueTask<ClaimsPrincipal?> GetCurrentUser()
 	{
 		if (httpContextAccessor.HttpContext is { User: { } user })
 			return user;
 
-		if (authenticationState is null)
-			return null;
+		var authenticationState = await authenticationStateProvider
+			.GetAuthenticationStateAsync();
 
-		var state = await authenticationState;
-		return state.User;
+		return authenticationState?.User;
 	}
 
 	public async ValueTask<bool> IsAuthorized(string policy)
 	{
 		if (await GetCurrentUser() is not { } user)
 			return false;
+
+		user = await TransformAsync(user);
 
 		var auth = await authorizationService.AuthorizeAsync(user, policy);
 		return auth.Succeeded;
@@ -51,4 +53,23 @@ public sealed class CurrentUserService(
 	[DoesNotReturn]
 	private static void ThrowInvalidUserId(string userId) =>
 		throw new InvalidOperationException($"Unknown user id: {userId}");
+
+	private async Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
+	{
+		var claim = principal.FindFirstValue(Claims.Id) ?? "";
+		if (!UserId.TryParse(claim, out var userId))
+			ThrowInvalidUserId(claim);
+
+		var roles = await userRolesCache.GetUserRoles(userId);
+
+		return new ClaimsPrincipal(
+			new ClaimsIdentity(
+				principal.Claims
+					.Where(c => !string.Equals(c.Type, ClaimTypes.Role, StringComparison.Ordinal))
+					.Concat(roles
+						.Select(r => new Claim(ClaimTypes.Role, r))
+					)
+			)
+		);
+	}
 }
