@@ -8,6 +8,7 @@ using Serilog;
 using VsaTemplate.Web;
 using VsaTemplate.Web.Components;
 using VsaTemplate.Web.Database;
+using VsaTemplate.Web.Infrastructure;
 using VsaTemplate.Web.Infrastructure.Authorization;
 using VsaTemplate.Web.Infrastructure.Hangfire;
 using VsaTemplate.Web.Infrastructure.Logging;
@@ -76,6 +77,7 @@ try
 	_ = app.UseStaticFiles();
 	_ = app.UseSwagger();
 	_ = app.UseSwaggerUI();
+	_ = app.UseMiddleware<AddRequestIdHeaderMiddleware>();
 	_ = app.UseMiddleware<AddRolesMiddleware>();
 	_ = app.UseRouting();
 	_ = app.UseAuthorization();

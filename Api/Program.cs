@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Serilog;
 using VsaTemplate.Api;
 using VsaTemplate.Api.Database;
+using VsaTemplate.Api.Infrastructure;
 using VsaTemplate.Api.Infrastructure.Authorization;
 using VsaTemplate.Api.Infrastructure.Hangfire;
 using VsaTemplate.Api.Infrastructure.Logging;
@@ -75,8 +76,9 @@ try
 	_ = app.UseStaticFiles();
 	_ = app.UseSwagger();
 	_ = app.UseSwaggerUI();
-	_ = app.UseRouting();
+	_ = app.UseMiddleware<AddRequestIdHeaderMiddleware>();
 	_ = app.UseMiddleware<AddRolesMiddleware>();
+	_ = app.UseRouting();
 	_ = app.UseAuthorization();
 	_ = app.UseHangfire();
 	_ = app.UseAntiforgery();
