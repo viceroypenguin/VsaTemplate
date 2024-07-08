@@ -2,13 +2,14 @@ using System.Globalization;
 using Microsoft.Extensions.Caching.Memory;
 using VsaTemplate.Api.Features.Users.Models;
 using VsaTemplate.Api.Features.Users.Queries;
+using VsaTemplate.Api.Infrastructure.DependencyInjection;
 
 namespace VsaTemplate.Api.Features.Users.Services;
 
 [RegisterSingleton]
 public sealed class UserRolesCache(
 	IMemoryCache memoryCache,
-	GetUserRoles.Handler getUserRoles
+	Owned<GetUserRoles.Handler> ownedGetUserRoles
 )
 {
 	private static string TransformKey(UserId userId) =>
@@ -17,7 +18,7 @@ public sealed class UserRolesCache(
 	private RolesValue GetRolesValue(UserId userId) =>
 		memoryCache.GetOrCreate(
 			TransformKey(userId),
-			e => new RolesValue(userId, getUserRoles)
+			e => new RolesValue(userId, ownedGetUserRoles)
 		)!;
 
 	public ValueTask<IReadOnlyList<string>> GetUserRoles(UserId userId) =>
@@ -28,7 +29,7 @@ public sealed class UserRolesCache(
 
 	private sealed class RolesValue(
 		UserId userId,
-		GetUserRoles.Handler getUserRoles
+		Owned<GetUserRoles.Handler> ownedGetUserRoles
 	)
 	{
 		private IReadOnlyList<string>? _roles;
@@ -46,7 +47,8 @@ public sealed class UserRolesCache(
 
 			try
 			{
-				var roles = await getUserRoles.HandleAsync(
+				await using var scope = ownedGetUserRoles.GetScope();
+				var roles = await scope.Value.HandleAsync(
 					new() { UserId = userId },
 					cancellationToken: token
 				);

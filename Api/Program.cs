@@ -9,6 +9,7 @@ using VsaTemplate.Api;
 using VsaTemplate.Api.Database;
 using VsaTemplate.Api.Infrastructure;
 using VsaTemplate.Api.Infrastructure.Authorization;
+using VsaTemplate.Api.Infrastructure.DependencyInjection;
 using VsaTemplate.Api.Infrastructure.Hangfire;
 using VsaTemplate.Api.Infrastructure.Logging;
 using VsaTemplate.Api.Infrastructure.Startup;
@@ -30,6 +31,8 @@ try
 		new DryIocServiceProviderFactory(container));
 
 	builder.Host.ConfigureSerilog();
+
+	_ = builder.Services.AddSingleton(typeof(Owned<>));
 
 	builder.Services.AddHangfire(
 		builder.Configuration["DbContextOptions:ConnectionString"]

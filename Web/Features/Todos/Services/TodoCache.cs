@@ -3,13 +3,14 @@ using LinqToDB;
 using Microsoft.Extensions.Caching.Memory;
 using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.Todos.Models;
+using VsaTemplate.Web.Infrastructure.DependencyInjection;
 
 namespace VsaTemplate.Web.Features.Todos.Services;
 
 [RegisterSingleton]
 public sealed class TodoCache(
 	IMemoryCache cache,
-	Func<DbContext> contextFactory
+	Owned<DbContext> ownedContext
 )
 {
 	private static string TransformKey(TodoId todoId) =>
@@ -22,9 +23,8 @@ public sealed class TodoCache(
 			{
 				entry.SlidingExpiration = TimeSpan.FromMinutes(5);
 
-				await using var context = contextFactory();
-
-				return await context.Todos
+				await using var scope = ownedContext.GetScope();
+				return await scope.Value.Todos
 					.Where(t => t.TodoId == todoId)
 					.SelectDto()
 					.FirstOrDefaultAsync();
