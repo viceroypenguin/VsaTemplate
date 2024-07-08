@@ -46,6 +46,7 @@ public static class ExceptionStartupExtensions
 				},
 			};
 
+			c.HttpContext.Response.Headers.Append("RequestId", c.HttpContext.TraceIdentifier);
 			c.HttpContext.Response.StatusCode =
 				c.ProblemDetails.Status
 				?? StatusCodes.Status500InternalServerError;

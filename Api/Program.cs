@@ -49,6 +49,9 @@ try
 	_ = builder.Services.Configure<ApiBehaviorOptions>(
 		o => o.SuppressInferBindingSourcesForParameters = true
 	);
+	_ = builder.Services.Configure<RouteHandlerOptions>(
+		o => o.ThrowOnBadRequest = true
+	);
 
 	_ = builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(
 		o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter())
@@ -82,6 +85,7 @@ try
 	_ = app.UseSwaggerUI();
 	_ = app.UseMiddleware<AddRequestIdHeaderMiddleware>();
 	_ = app.UseMiddleware<AddRolesMiddleware>();
+	_ = app.UseExceptionHandler();
 	_ = app.UseRouting();
 	_ = app.UseAuthorization();
 	_ = app.UseHangfire();
