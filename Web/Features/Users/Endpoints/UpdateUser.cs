@@ -1,10 +1,10 @@
 using System.Text.Json;
-using CommunityToolkit.Diagnostics;
 using Immediate.Apis.Shared;
 using Immediate.Handlers.Shared;
 using Immediate.Validations.Shared;
 using LinqToDB;
 using VsaTemplate.Web.Database;
+using VsaTemplate.Web.Features.Shared.Exceptions;
 using VsaTemplate.Web.Features.Users.Models;
 using VsaTemplate.Web.Infrastructure.Authorization;
 
@@ -50,7 +50,7 @@ public static partial class UpdateUser
 				token);
 
 		if (rows.Length != 1)
-			return ThrowHelper.ThrowInvalidOperationException<User>("Failed saving user");
+			NotFoundException.ThrowNotFoundException("User");
 
 		return rows[0].ToDto();
 	}

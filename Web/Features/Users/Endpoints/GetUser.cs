@@ -1,8 +1,8 @@
 using Immediate.Apis.Shared;
 using Immediate.Handlers.Shared;
 using Immediate.Validations.Shared;
-using LinqToDB;
 using VsaTemplate.Web.Database;
+using VsaTemplate.Web.Features.Shared.Extensions;
 using VsaTemplate.Web.Features.Users.Models;
 using VsaTemplate.Web.Infrastructure.Authorization;
 
@@ -28,5 +28,5 @@ public static partial class GetUser
 		await context.Users
 			.Where(u => u.UserId == query.UserId)
 			.SelectDto()
-			.FirstAsync(token);
+			.FirstNotFoundAsync("User", token);
 }

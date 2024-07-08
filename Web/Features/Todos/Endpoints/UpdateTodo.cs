@@ -3,6 +3,7 @@ using Immediate.Handlers.Shared;
 using Immediate.Validations.Shared;
 using LinqToDB;
 using VsaTemplate.Web.Database;
+using VsaTemplate.Web.Features.Shared.Exceptions;
 using VsaTemplate.Web.Features.Todos.Authorization;
 using VsaTemplate.Web.Features.Todos.Models;
 using VsaTemplate.Web.Features.Todos.Services;
@@ -30,7 +31,7 @@ public static partial class UpdateTodo
 		public required TodoPriority TodoPriority { get; init; }
 	}
 
-	private static async ValueTask<bool> HandleAsync(
+	private static async ValueTask HandleAsync(
 		Command command,
 		DbContext context,
 		CurrentUserService currentUserService,
@@ -52,7 +53,7 @@ public static partial class UpdateTodo
 			);
 
 		if (cnt != 1)
-			return false;
+			NotFoundException.ThrowNotFoundException("Todo");
 
 		var userId = await currentUserService.GetCurrentUserId();
 		todoCache
@@ -67,7 +68,5 @@ public static partial class UpdateTodo
 					UserId = userId,
 				}
 			);
-
-		return true;
 	}
 }

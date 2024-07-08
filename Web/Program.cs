@@ -11,6 +11,7 @@ using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Infrastructure;
 using VsaTemplate.Web.Infrastructure.Authorization;
 using VsaTemplate.Web.Infrastructure.DependencyInjection;
+using VsaTemplate.Web.Infrastructure.Exceptions;
 using VsaTemplate.Web.Infrastructure.Hangfire;
 using VsaTemplate.Web.Infrastructure.Logging;
 using VsaTemplate.Web.Infrastructure.Startup;
@@ -63,7 +64,7 @@ try
 	_ = builder.Services.AddEndpointsApiExplorer();
 	_ = builder.Services.AddSwagger();
 	_ = builder.Services.AddAntiforgery();
-	_ = builder.Services.AddProblemDetails(StartupExtensions.ConfigureProblemDetails);
+	_ = builder.Services.AddProblemDetails(ExceptionStartupExtensions.ConfigureProblemDetails);
 
 	_ = builder.Services
 		.AddRazorComponents()

@@ -299,6 +299,7 @@ dotnet_diagnostic.CS9179.severity = error               # CS9179: Primary constr
 dotnet_diagnostic.SYSLIB1045.severity = error           # SYSLIB1045: Use GeneratedRegexAttribute to generate the regular expression implementation at compile time.
 
 # Miscellaneous analyzers
+dotnet_diagnostic.CA1032.severity = none                # CA1032: Implement standard exception constructors
 dotnet_diagnostic.CA1034.severity = none                # CA1034: Nested types should not be visible
 dotnet_diagnostic.CA1051.severity = error               # CA1051: Do not declare visible instance fields
 dotnet_diagnostic.CA1062.severity = none                # CA1062: Validate arguments of public methods
