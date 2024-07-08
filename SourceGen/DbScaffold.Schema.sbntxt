@@ -1,0 +1,22 @@
+#nullable enable
+
+using System.Globalization;
+using LinqToDB;
+using LinqToDB.Data;
+using LinqToDB.Mapping;
+
+namespace {{ root_namespace }}.Database;
+
+public sealed partial class DbContext : DataConnection
+{
+	private static partial MappingSchema BuildMappingSchema()
+	{
+		var schema = new MappingSchema();
+
+		{{~ for t in types ~}}
+		_ = schema.SetValueToSqlConverter(typeof({{ t.type_name }}), (sb, _, o) => sb.AppendFormat(CultureInfo.InvariantCulture, $"'{o}'"));
+		{{~ end ~}}
+
+		return schema;
+	}
+}
