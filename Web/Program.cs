@@ -4,7 +4,6 @@ using DryIoc;
 using DryIoc.Microsoft.DependencyInjection;
 using Hangfire;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using Serilog;
 using VsaTemplate.Web;
 using VsaTemplate.Web.Components;
