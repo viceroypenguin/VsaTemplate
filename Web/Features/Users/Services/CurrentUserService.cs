@@ -60,14 +60,15 @@ public sealed class CurrentUserService(
 		if (!UserId.TryParse(claim, out var userId))
 			ThrowInvalidUserId(claim);
 
-		var roles = await userRolesCache.GetUserRoles(userId);
+		var roles = await userRolesCache.GetValue(new() { UserId = userId, });
 
 		return new ClaimsPrincipal(
 			new ClaimsIdentity(
 				principal.Claims
 					.Where(c => !string.Equals(c.Type, ClaimTypes.Role, StringComparison.Ordinal))
-					.Concat(roles
-						.Select(r => new Claim(ClaimTypes.Role, r))
+					.Concat(
+						roles
+							.Select(r => new Claim(ClaimTypes.Role, r))
 					)
 			)
 		);
