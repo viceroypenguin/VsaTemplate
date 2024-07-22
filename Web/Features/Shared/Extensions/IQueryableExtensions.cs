@@ -7,13 +7,8 @@ public static class IQueryableExtensions
 {
 	public static async Task<T> FirstNotFoundAsync<T>(this IQueryable<T> query, string entityName, CancellationToken token)
 	{
-		try
-		{
-			return await query.FirstAsync(token);
-		}
-		catch (InvalidOperationException ex) when (ex.Message is "The source sequence is empty." or "Sequence contains no elements")
-		{
-			throw new NotFoundException(entityName);
-		}
+		return await query.Take(1).ToListAsync(token) is [var item]
+			? item
+			: throw new NotFoundException(entityName);
 	}
 }
