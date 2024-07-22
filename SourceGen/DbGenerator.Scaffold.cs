@@ -18,6 +18,7 @@ public sealed partial class DbGenerator
 		DbEntity entity,
 		EquatableDictionary<(string UnderlyingTypeName, bool IsEnum)> map,
 		string rootNamespace,
+		EquatableReadOnlyList<string?> schemas,
 		Template template
 	)
 	{
@@ -59,6 +60,7 @@ public sealed partial class DbGenerator
 				new
 				{
 					RootNamespace = rootNamespace,
+					Schemas = schemas.Collection,
 					entity.SchemaName,
 					entity.TableName,
 					entity.TypeName,
@@ -74,6 +76,7 @@ public sealed partial class DbGenerator
 		SourceProductionContext spc,
 		ImmutableArray<(string PropertyName, string TypeName)> context,
 		string rootNamespace,
+		EquatableReadOnlyList<string?> schemas,
 		Template template
 	)
 	{
@@ -81,7 +84,14 @@ public sealed partial class DbGenerator
 			.Select(x => new { x.PropertyName, x.TypeName })
 			.OrderBy(x => x.TypeName);
 
-		var output = template.Render(new { Tables = tables, RootNamespace = rootNamespace });
+		var output = template
+			.Render(new
+			{
+				Tables = tables,
+				Schemas = schemas.Collection,
+				RootNamespace = rootNamespace,
+			});
+
 		spc.AddSource($"DbContext.Context.g.cs", SourceText.From(output, Encoding.UTF8));
 	}
 
@@ -89,6 +99,7 @@ public sealed partial class DbGenerator
 		SourceProductionContext spc,
 		IEnumerable<(string ColumnName, string TypeName, string UnderlyingTypeName, bool IsEnum)> context,
 		string rootNamespace,
+		EquatableReadOnlyList<string?> schemas,
 		Template template
 	)
 	{
@@ -96,7 +107,14 @@ public sealed partial class DbGenerator
 			.Select(x => new { x.UnderlyingTypeName, x.TypeName })
 			.OrderBy(x => x.TypeName);
 
-		var output = template.Render(new { Types = types, RootNamespace = rootNamespace });
+		var output = template.Render(
+			new
+			{
+				Types = types,
+				Schemas = schemas.Collection,
+				RootNamespace = rootNamespace,
+			});
+
 		spc.AddSource($"DbContext.Schema.g.cs", SourceText.From(output, Encoding.UTF8));
 	}
 }

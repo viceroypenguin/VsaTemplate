@@ -3,6 +3,9 @@
 using LinqToDB;
 using LinqToDB.Data;
 using {{ root_namespace }}.Database.Models;
+{{~ for s in schemas ~}}
+using {{ root_namespace }}.Database.Models.{{ s }};
+{{~ end ~}}
 
 namespace {{ root_namespace }}.Database;
 

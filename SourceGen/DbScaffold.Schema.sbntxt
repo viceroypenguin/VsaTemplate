@@ -4,6 +4,9 @@ using System.Globalization;
 using LinqToDB;
 using LinqToDB.Data;
 using LinqToDB.Mapping;
+{{~ for s in schemas ~}}
+using {{ root_namespace }}.Database.Models.{{ s }};
+{{~ end ~}}
 
 namespace {{ root_namespace }}.Database;
 

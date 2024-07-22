@@ -61,22 +61,28 @@ public sealed partial class DbGenerator : IIncrementalGenerator
 			.Where(x => x.Path.EndsWith("Scaffold.json", StringComparison.OrdinalIgnoreCase))
 			.SelectMany(ParseScaffold);
 
+		var schemas = scaffold
+			.Select((x, _) => x.SchemaName)
+			.Where(x => x is not null)
+			.Collect()
+			.Select((x, _) => x.Distinct().OrderBy(x => x).ToEquatableReadOnlyList());
+
 		var entityTemplate = Utility.GetScribanTemplate("DbScaffold.Entity");
 		context.RegisterSourceOutput(
-			scaffold.Combine(map).Combine(rootNamespace),
-			(spc, entity) => RenderEntity(spc, entity.Left.Left, entity.Left.Right, entity.Right, entityTemplate)
+			scaffold.Combine(map).Combine(rootNamespace.Combine(schemas)),
+			(spc, entity) => RenderEntity(spc, entity.Left.Left, entity.Left.Right, entity.Right.Left, entity.Right.Right, entityTemplate)
 		);
 
 		var contextTemplate = Utility.GetScribanTemplate("DbScaffold.Context");
 		context.RegisterSourceOutput(
-			scaffold.Select((x, _) => (x.PropertyName, x.TypeName)).Collect().Combine(rootNamespace),
-			(spc, context) => RenderContext(spc, context.Left, context.Right, contextTemplate)
+			scaffold.Select((x, _) => (x.PropertyName, x.TypeName)).Collect().Combine(rootNamespace).Combine(schemas),
+			(spc, context) => RenderContext(spc, context.Left.Left, context.Left.Right, context.Right, contextTemplate)
 		);
 
 		var schemaTemplate = Utility.GetScribanTemplate("DbScaffold.Schema");
 		context.RegisterSourceOutput(
-			allTypes.Combine(rootNamespace),
-			(spc, types) => RenderSchema(spc, types.Left, types.Right, schemaTemplate)
+			allTypes.Combine(rootNamespace).Combine(schemas),
+			(spc, types) => RenderSchema(spc, types.Left.Left, types.Left.Right, types.Right, schemaTemplate)
 		);
 
 		var perEnumTemplate = Utility.GetScribanTemplate("PerEnum");
