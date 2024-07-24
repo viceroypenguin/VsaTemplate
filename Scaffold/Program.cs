@@ -105,13 +105,7 @@ static async Task<string> GenerateScaffold(ProgramArguments args)
 						CanBeNull = fk.CanBeNull,
 						ThisKeys = string.Join(",", fk.ThisColumns.Select(c => c.MemberName)),
 						OtherKeys = string.Join(",", fk.OtherColumns.Select(c => c.MemberName)),
-
-						OtherName =
-							fk.AssociationType == AssociationType.OneToMany
-								? Pluralize(fk.OtherTable.TypeName) :
-							fk.ThisColumns.Count == 1
-								? fk.ThisColumns[0].MemberName[..^2] :
-								fk.OtherTable.TypeName,
+						OtherName = GetAssociationName(fk),
 
 						OtherType =
 							fk.AssociationType == AssociationType.OneToMany
@@ -133,6 +127,27 @@ static async Task<string> GenerateScaffold(ProgramArguments args)
 			})
 			.OrderBy(x => x.TableName)
 			.ToList();
+
+		static string GetAssociationName(ForeignKeySchema fk)
+		{
+			if (fk.AssociationType is AssociationType.OneToMany)
+				return Pluralize(fk.OtherTable.TypeName);
+
+			if (fk.KeyName.EndsWith("BackReference", StringComparison.OrdinalIgnoreCase)
+				&& fk.OtherColumns is [{ } oCol])
+			{
+				return oCol.MemberName[..^2];
+			}
+
+			if (!fk.KeyName.EndsWith("BackReference", StringComparison.OrdinalIgnoreCase)
+				&& fk.ThisColumns is [{ } tCol]
+				&& tCol.MemberName[..^2] != fk.ThisTable!.TypeName)
+			{
+				return tCol.MemberName[..^2];
+			}
+
+			return fk.OtherTable.TypeName;
+		}
 
 #pragma warning disable CA1869 // Cache and reuse 'JsonSerializerOptions' instances
 		return JsonSerializer.Serialize(entities, new JsonSerializerOptions() { WriteIndented = true });
