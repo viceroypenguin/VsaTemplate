@@ -6,13 +6,40 @@
 
 ## Choices Made
 
+### Immediate.Handlers
+
+[Immediate.Handlers](https://github.com/ImmediatePlatform/Immediate.Handlers) is used to implement the command-dispatch
+pattern, colloquially known as the "mediator" pattern, from a common library named MediatR. Immediate.Handlers uses
+compile-time binding of commands, requests, responses, and pipeline behaviors to implement a high-performance link
+between callers and callees that also allows cross-cutting concerns to be injected project-wide.
+
+Already implemented in VsaTemplate are:
+* `LoggingBehavior<,>`: used to log additional information about handler performance, as well as add log scope with
+  request information which will be applied to any log entries made inside of the handler.
+* `AuthorizationBehavior<,>`: used to authorize all handlers according to the created aspnetcore authorization policies.
+* `TodoAuthorizationBehavior<,>`: used to authorize handlers responding to specific todo item entries. This technique
+  allows custom authentication to be applied by feature.
+
+### Immediate.Apis
+
+[Immediate.Apis](https://github.com/immediateplatform/immediate.apis) is used to bind Immediate.Handlers handlers with
+asp.net core Minimal APIs registrations at compile time. Adding `[MapGet(<route>)]` will generate code to register the
+handler with Minimal APIs.
+
+### Immediate.Validations
+
+[Immediate.Validations](https://github.com/immediateplatform/immediate.validations) is used to generate validation
+routines for Immediate.Handler handler request types. Applying the existing `ValidationBehavior<,>` behavior to the IH
+pipeline means that requests are automatically validated via the pipeline.
+
+
 ### Linq2Db
 
 A majority of the current C# templates today use Entity Framework Core. I personally prefer the advanced capabilities of
 Linq2Db and so my projects rely heavily on this ORM instead of EFC. That said, a majority of the concepts in this
 template can be applied to EFC as well.
 
-### Database Initialization
+#### Database Initialization
 
 In choosing Linq2Db, the open question remains about ensuring reliability between the db schema and ORM representation of
 the schema. I have developed a system that works for me to do so:
@@ -22,7 +49,7 @@ the schema. I have developed a system that works for me to do so:
   be named in a monotonically increasing format. This way a simple string sort of the filenames develops the order in
   which they should be executed against the database.
 * The `Scaffold` project builds an executable that will, as a build step: generate a blank database, execute all scripts
-  against the database, and scaffold the ORM model.
+  against the database, and scaffold the DB Schema into `Scaffold.json`.
 * The migration scripts are baked into the `Services` dll as embedded resources. This way, at application
   initialization, the current list of executed scripts in `VersionHistory` can be compared against the known list of
   scripts and any missing scripts will be executed.
@@ -41,20 +68,6 @@ attribute. At application initialization, there is an initialization step that l
 
 Vogen is used to fight against primitive obsession, where every id in the system is an `int`. Instead, all business layer
 DTOs use a Vogen generated id type instead. 
-
-### Mapperly
-
-Mapperly is used to map data between various DTOs and db entities. This simplifies a lot of the boilerplate code for
-copying data between objects.
-
-In the past, I have rejected mapping libraries such as AutoMapper, because there can be hidden runtime bugs when
-refactoring or changing entities. It is easy to forget to update one side of the object vs the other, and having this
-show up at compile-time is much safer than at run-time.
-
-However, Mapperly does have one advantage that even manually writing mapping code does not have: it will provide a build
-error when properties are missing from one side or the other. An `.editorconfig` is added to the `Services` project to
-enforce RMG012 and RMG020, which identify missing properties in either direction. This requires that any refactoring
-include the DTOs and entities such that they are correctly matching.
 
 ### Auth0
 
@@ -83,27 +96,42 @@ The output exe from this project is used as a build step for the `Services` proj
 
 #### 2. `SourceGen` Project
 
-This project adds source generation to the `Services` project. It looks for any `enum`s that are marked with
-`[SyncEnum]` and creates an initialization script that will update the database table with the values in the `enum`.
-This is useful for automatically keeping the database tables up to date with the values in the C# `enum`.
+This project adds source generation to the `Services` project. There are two primary goals of this generation:
 
-#### 3. `Services` Project
+* It looks for any `enum`s that are marked with `[SyncEnum]` and creates an initialization script that will update the
+  database table with the values in the `enum`. This is useful for automatically keeping the database tables up to date
+  with the values in the C# `enum`.
 
-This project holds the core functionality of the application. There are two "important" folders: `Database` and `Support`.
+* It loads the `Scaffold.json` file generated by the Scaffold project along with Vogen Value Types present in the
+  assembly, in order to provide Vogen Value-Types for ORM representation of database columns.
 
-The `Database` folder contains the `DbContext`: initialization code, model code, etc. The build step is set up to 
-generate the scaffolded orm models to the `Database\Models` folder.
+#### 3. `Analyzer` Project
 
-The `Support` folder contains various an interface and two attributes. These are used to automatically register:
-recurring Hangfire jobs; and option classes used as configuration. The code consuming these are found in the `Web`
-project ([HangfireInitializationService](HangfireInitializationService.cs),
-[ConfigureAllOptionsExtensions](ConfigureAllOptionsExtensions.cs)).
+This project adds analyzers to ensure correct code in `Api` and `Web`.
 
-All other folders are organized by `Feature`, with `Jobs`, `Models`, and `Services` underneath them. 
+* (Web only) VSA0001: Api Handler must support authorization by implementing `IAuthorizedRequest`.
+  * This ensures that all api endpoints are properly protectedby an authorization check.
+* VSA0002: Records with primary constructors are difficult to maintain; remove the primary constructor.
+  * Positional notation for records are a) not compatible with database queries, and b) create bugs when refactoring
+* VSA0003: Database entities should only be referenced via Database.Models.Entity.
+  * Prevent accidentally referencing database entities casually. All entities should be explicitly referenced instead.
 
-#### 4. `Web` Project
+#### 4. `Api`/`Web` Project
 
-This project 
+These projects contain the core of the application; there is one template for API-only projects, and another template for
+Blazor+API projects. The core architecture of each is very similar and follows the following pattern:
+
+* The `Database` folder contains the `DbContext`: scripts, initialization code, model code, etc. 
+
+* The `Infrastructure` folder contains code to support the infrastructure of the application. Things like `Authentication`, 
+  `Authorization`, `Caching`, etc. can be found here. In general, no business logic of any kind should be found here.
+
+* The `Features` folder contains the business logic of the application. It is organized by general concept/slice/feature,
+  such as the `Todos` feature containing code to read, create, and update todo items; and the `Users` feature containing
+  code to manage users and api keys.
+
+  * The `Shared` folder will contain business logic code that is intended to be consumed broadly, like extension
+    methods, etc.
 
 ## Installation
 
