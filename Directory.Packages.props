@@ -1,55 +1,55 @@
 <Project>
   <PropertyGroup>
-	<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
-  
   <ItemGroup>
-	<PackageVersion Include="Auth0.AspNetCore.Authentication" Version="1.4.1" />
-	<PackageVersion Include="AutoRegisterInject" Version="1.4.1" />
-	<PackageVersion Include="CommunityToolkit.Diagnostics" Version="8.2.2" />
-	<PackageVersion Include="docopt.net" Version="0.8.1" />
-	<PackageVersion Include="DryIoc.dll" Version="5.4.3" />
-	<PackageVersion Include="DryIoc.Microsoft.DependencyInjection" Version="6.2.0" />
-	<PackageVersion Include="Hangfire" Version="1.8.14" />
-	<PackageVersion Include="Humanizer" Version="2.14.1" />
-	<PackageVersion Include="Immediate.Apis" Version="1.1.0" />
-	<PackageVersion Include="Immediate.Handlers" Version="1.5.0" />
-	<PackageVersion Include="Immediate.Validations" Version="0.17.0" />
-	<PackageVersion Include="linq2db" Version="5.4.1" />
-	<PackageVersion Include="MailKit" Version="4.7.1.1" />
-	<PackageVersion Include="Meziantou.Analyzer" Version="2.0.161" />
-	<PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="8.0.7" />
-	<PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
-	<PackageVersion Include="Microsoft.Bcl.HashCode" Version="1.1.1" />
-	<PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
-	<PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.10.0" />
-	<PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.1" />
-	<PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
-	<PackageVersion Include="PolySharp" Version="1.14.1" />
-	<PackageVersion Include="Riok.Mapperly" Version="3.6.0" />
-	<PackageVersion Include="Scriban" Version="5.10.0" />
-	<PackageVersion Include="Serilog.AspNetCore" Version="8.0.1" />
-	<PackageVersion Include="Serilog.Enrichers.Environment" Version="3.0.1" />
-	<PackageVersion Include="Serilog.Enrichers.Thread" Version="4.0.0" />
-	<PackageVersion Include="Serilog.Exceptions" Version="8.4.0" />
-	<PackageVersion Include="Serilog.Exceptions.MsSqlServer" Version="8.4.0" />
-	<PackageVersion Include="Serilog.Exceptions.Refit" Version="8.4.0" />
-	<PackageVersion Include="Serilog.Sinks.Seq" Version="8.0.0" />
-	<PackageVersion Include="System.Buffers" Version="4.5.1" />
-	<PackageVersion Include="System.Collections.Immutable" Version="8.0.0" />
-	<PackageVersion Include="System.Memory" Version="4.5.5" />
-	<PackageVersion Include="System.Numerics.Vectors" Version="4.5.0" />
-	<PackageVersion Include="System.Reflection.Metadata" Version="8.0.0" />
-	<PackageVersion Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
-	<PackageVersion Include="System.Text.Encoding.CodePages" Version="8.0.0" />
-	<PackageVersion Include="System.Text.Encodings.Web" Version="8.0.0" />
-	<PackageVersion Include="System.Text.Json" Version="8.0.4" />
-	<PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
-	<PackageVersion Include="SuperLinq" Version="6.2.0" />
-	<PackageVersion Include="Swashbuckle.AspNetCore" Version="6.6.2" />
-	<PackageVersion Include="System.Linq.Async" Version="6.0.1" />
-	<PackageVersion Include="ThisAssembly.Git" Version="1.4.3" />
-	<PackageVersion Include="ThisAssembly.Resources" Version="1.4.1" />
-	<PackageVersion Include="Vogen" Version="4.0.15" />
+    <PackageVersion Include="Auth0.AspNetCore.Authentication" Version="1.4.1" />
+    <PackageVersion Include="AutoRegisterInject" Version="1.4.1" />
+    <PackageVersion Include="CommunityToolkit.Diagnostics" Version="8.2.2" />
+    <PackageVersion Include="docopt.net" Version="0.8.1" />
+    <PackageVersion Include="DryIoc.dll" Version="5.4.3" />
+    <PackageVersion Include="DryIoc.Microsoft.DependencyInjection" Version="6.2.0" />
+    <PackageVersion Include="Hangfire" Version="1.8.14" />
+    <PackageVersion Include="Humanizer" Version="2.14.1" />
+    <PackageVersion Include="Immediate.Apis" Version="1.1.0" />
+    <PackageVersion Include="Immediate.Handlers" Version="1.5.0" />
+    <PackageVersion Include="Immediate.Validations" Version="0.17.0" />
+    <PackageVersion Include="linq2db" Version="5.4.1" />
+    <PackageVersion Include="MailKit" Version="4.7.1.1" />
+    <PackageVersion Include="Meziantou.Analyzer" Version="2.0.161" />
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="8.0.7" />
+    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Bcl.HashCode" Version="1.1.1" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.10.0" />
+    <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.1" />
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
+    <PackageVersion Include="PolySharp" Version="1.14.1" />
+    <PackageVersion Include="Riok.Mapperly" Version="3.6.0" />
+    <PackageVersion Include="Scriban" Version="5.10.0" />
+    <PackageVersion Include="Serilog.AspNetCore" Version="8.0.1" />
+    <PackageVersion Include="Serilog.Enrichers.Environment" Version="3.0.1" />
+    <PackageVersion Include="Serilog.Enrichers.Thread" Version="4.0.0" />
+    <PackageVersion Include="Serilog.Exceptions" Version="8.4.0" />
+    <PackageVersion Include="Serilog.Exceptions.MsSqlServer" Version="8.4.0" />
+    <PackageVersion Include="Serilog.Exceptions.Refit" Version="8.4.0" />
+    <PackageVersion Include="Serilog.Sinks.Seq" Version="8.0.0" />
+    <PackageVersion Include="SimpleBase" Version="4.0.0" />
+    <PackageVersion Include="System.Buffers" Version="4.5.1" />
+    <PackageVersion Include="System.Collections.Immutable" Version="8.0.0" />
+    <PackageVersion Include="System.Memory" Version="4.5.5" />
+    <PackageVersion Include="System.Numerics.Vectors" Version="4.5.0" />
+    <PackageVersion Include="System.Reflection.Metadata" Version="8.0.0" />
+    <PackageVersion Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
+    <PackageVersion Include="System.Text.Encoding.CodePages" Version="8.0.0" />
+    <PackageVersion Include="System.Text.Encodings.Web" Version="8.0.0" />
+    <PackageVersion Include="System.Text.Json" Version="8.0.4" />
+    <PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
+    <PackageVersion Include="SuperLinq" Version="6.2.0" />
+    <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+    <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
+    <PackageVersion Include="ThisAssembly.Git" Version="1.4.3" />
+    <PackageVersion Include="ThisAssembly.Resources" Version="1.4.1" />
+    <PackageVersion Include="Vogen" Version="4.0.15" />
   </ItemGroup>
 </Project>
