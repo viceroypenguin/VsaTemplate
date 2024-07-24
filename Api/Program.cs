@@ -8,6 +8,7 @@ using Serilog;
 using VsaTemplate.Api;
 using VsaTemplate.Api.Database;
 using VsaTemplate.Api.Infrastructure;
+using VsaTemplate.Api.Infrastructure.Authentication;
 using VsaTemplate.Api.Infrastructure.Authorization;
 using VsaTemplate.Api.Infrastructure.DependencyInjection;
 using VsaTemplate.Api.Infrastructure.Exceptions;
@@ -40,7 +41,7 @@ try
 	);
 
 	builder.Services.AddAuthorizationPolicies();
-	builder.Services.AddAuth0(
+	builder.Services.AddApiAuthentication(
 		builder.Configuration["Auth0:Domain"],
 		builder.Configuration["Auth0:ClientId"]
 	);

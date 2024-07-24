@@ -9,6 +9,7 @@ using VsaTemplate.Web;
 using VsaTemplate.Web.Components;
 using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Infrastructure;
+using VsaTemplate.Web.Infrastructure.Authentication;
 using VsaTemplate.Web.Infrastructure.Authorization;
 using VsaTemplate.Web.Infrastructure.DependencyInjection;
 using VsaTemplate.Web.Infrastructure.Exceptions;
@@ -41,7 +42,7 @@ try
 	);
 
 	builder.Services.AddAuthorizationPolicies();
-	builder.Services.AddAuth0(
+	builder.Services.AddWebAuthentication(
 		builder.Configuration["Auth0:Domain"],
 		builder.Configuration["Auth0:ClientId"]
 	);
