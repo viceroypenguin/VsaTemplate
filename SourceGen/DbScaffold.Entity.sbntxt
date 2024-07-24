@@ -7,7 +7,7 @@ using LinqToDB.Mapping;
 using {{ root_namespace }}.Database.Models.{{ s }};
 {{~ end ~}}
 
-namespace {{ root_namespace }}.Database.Models;
+namespace {{ root_namespace }}.Database.Models{{ if !string.empty schema_name; "." + schema_name ; end }};
 
 [Table("{{ table_name }}"{{ if !string.empty schema_name }}, Schema = "{{ schema_name }}"{{ end }})]
 public sealed class {{ type_name }}
