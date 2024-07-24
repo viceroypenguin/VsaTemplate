@@ -3,6 +3,7 @@ create table [User]
 	UserId int not null identity
 		constraint [PK_User]
 		primary key,
+
 	Auth0UserId nvarchar(100) null,
 	EmailAddress nvarchar(500) not null
 		constraint [UK_User_EmailAddress] unique,
