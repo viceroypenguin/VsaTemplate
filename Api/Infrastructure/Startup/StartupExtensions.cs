@@ -2,6 +2,8 @@ using Auth0.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.OpenApi.Models;
+using VsaTemplate.Api.Infrastructure.Authentication;
 
 namespace VsaTemplate.Api.Infrastructure.Startup;
 
@@ -11,6 +13,33 @@ public static class StartupExtensions
 		services.AddSwaggerGen(o =>
 		{
 			o.CustomSchemaIds(t => t.FullName?.Replace('+', '.'));
+
+			o.AddSecurityDefinition(
+				"ApiKey",
+				new()
+				{
+					In = ParameterLocation.Header,
+					Name = ApiKeyAuthenticationHandler.HeaderName,
+					Type = SecuritySchemeType.ApiKey,
+				}
+			);
+
+			var key = new OpenApiSecurityScheme()
+			{
+				Reference = new OpenApiReference
+				{
+					Type = ReferenceType.SecurityScheme,
+					Id = "ApiKey",
+				},
+				In = ParameterLocation.Header,
+			};
+
+			o.AddSecurityRequirement(
+				new()
+				{
+					{ key, [] },
+				}
+			);
 
 			o.DocInclusionPredicate((_, api) =>
 				api.ActionDescriptor
