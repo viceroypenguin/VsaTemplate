@@ -39,6 +39,7 @@
 	<PackageReference Include="Immediate.Apis" />
 	<PackageReference Include="Immediate.Handlers" />
 	<PackageReference Include="Immediate.Validations" />
+	<PackageReference Include="Isle.Extensions.Logging" />
 	<PackageReference Include="linq2db" />
 	<PackageReference Include="MailKit" />
 	<PackageReference Include="Meziantou.Analyzer" PrivateAssets="All" />

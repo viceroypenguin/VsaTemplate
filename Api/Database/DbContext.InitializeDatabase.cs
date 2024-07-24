@@ -9,7 +9,7 @@ public partial class DbContext : DataConnection
 {
 	public void InitializeDatabase()
 	{
-		LogInitializingDb();
+		_logger.LogInformation("Initializing VsaTemplate DB");
 
 		CommandTimeout = 600;
 
@@ -18,7 +18,7 @@ public partial class DbContext : DataConnection
 		SyncAllEnums();
 
 		s_dbInitialized = true;
-		LogDbInitialized();
+		_logger.LogInformation("VsaTemplate DB Initialized");
 	}
 
 	#region Main Functions
@@ -72,11 +72,11 @@ public partial class DbContext : DataConnection
 			foreach (var b in SqlBlockRegex().Split(script).Where(s => !string.IsNullOrWhiteSpace(s)))
 				_ = this.Execute(b);
 
-			LogExecutedScript(scriptName);
+			_logger.LogInformation($"Executed script '{scriptName}'.");
 		}
 		catch (Exception ex)
 		{
-			LogUnableToRunScript(ex, scriptName);
+			_logger.LogError(ex, $"Unable to run script '{scriptName}'.");
 			throw;
 		}
 	}
@@ -90,22 +90,6 @@ public partial class DbContext : DataConnection
 			.Where(s => Path.GetExtension(s).Equals(".sql", StringComparison.OrdinalIgnoreCase))
 			.Select(s => s.Replace(ResourcePrefix, "", StringComparison.OrdinalIgnoreCase))
 			.ToList();
-
-	#endregion
-
-	#region Logging
-
-	[LoggerMessage(Level = LogLevel.Error, Message = "Unable to run script '{ScriptName}'.")]
-	private partial void LogUnableToRunScript(Exception ex, string scriptName);
-
-	[LoggerMessage(Level = LogLevel.Information, Message = "Initializing VsaTemplate DB")]
-	private partial void LogInitializingDb();
-
-	[LoggerMessage(Level = LogLevel.Information, Message = "Executed script '{ScriptName}'.")]
-	private partial void LogExecutedScript(string scriptName);
-
-	[LoggerMessage(Level = LogLevel.Information, Message = "VsaTemplate DB Initialized")]
-	private partial void LogDbInitialized();
 
 	#endregion
 }
