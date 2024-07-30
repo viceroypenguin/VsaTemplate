@@ -16,7 +16,7 @@
 
   <PropertyGroup>
 	<RootNamespace>VsaTemplate.Web</RootNamespace>
-	<NoWarn>$(NoWarn);CA1036</NoWarn>
+	<NoWarn>$(NoWarn)</NoWarn>
   </PropertyGroup>
 
   <ItemGroup Label="Usings">
