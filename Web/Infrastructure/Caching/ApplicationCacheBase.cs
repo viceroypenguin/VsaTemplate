@@ -9,7 +9,15 @@ public abstract class ApplicationCacheBase<TRequest, TResponse>(
 	Owned<IHandler<TRequest, TResponse>> handler
 ) where TResponse : class
 {
+	private readonly object _lock = new();
+
 	protected abstract string TransformKey(TRequest request);
+
+	protected virtual MemoryCacheEntryOptions GetCacheEntryOptions() =>
+		new()
+		{
+			SlidingExpiration = TimeSpan.FromMinutes(5),
+		};
 
 	private CacheValue GetCacheValue(TRequest request)
 	{
@@ -17,10 +25,17 @@ public abstract class ApplicationCacheBase<TRequest, TResponse>(
 
 		if (!memoryCache.TryGetValue(key, out var result))
 		{
-			using var entry = memoryCache.CreateEntry(key);
+			lock (_lock)
+			{
+				if (!memoryCache.TryGetValue(key, out result))
+				{
+					using var entry = memoryCache.CreateEntry(key)
+						.SetOptions(GetCacheEntryOptions());
 
-			result = new CacheValue(request, handler);
-			entry.Value = result;
+					result = new CacheValue(request, handler);
+					entry.Value = result;
+				}
+			}
 		}
 
 		return (CacheValue)result!;
