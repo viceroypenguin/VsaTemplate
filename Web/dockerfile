@@ -1,0 +1,33 @@
+# init deployment image
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS init
+WORKDIR /app
+USER app
+
+# expose http
+EXPOSE 8080
+
+# build image
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+# copy files
+COPY . .
+
+# restore packages
+RUN dotnet restore -r linux-x64
+
+# build project
+RUN --mount=type=secret,id=ScaffoldConnectionString \
+	ScaffoldConnectionString=$(cat /run/secrets/ScaffoldConnectionString) \
+	dotnet build "./Web/Web.csproj" \
+		-c Release -r linux-x64 --no-self-contained --no-restore
+
+# publish project
+RUN dotnet publish "./Web/Web.csproj" -c Release -r linux-x64 --no-self-contained -o /app/publish --no-build
+
+# copy project to deployment image
+FROM init AS publish
+COPY --from=build /app/publish .
+
+# set entrypoint
+ENTRYPOINT ["dotnet", "Web.dll"]
