@@ -83,7 +83,7 @@ public partial class DbContext : DataConnection
 	#endregion
 
 	#region Embedded Scripts
-	private const string ResourcePrefix = "VsaTemplate.Api.Database.Scripts.";
+	private const string ResourcePrefix = "VsaTemplate.Web.Database.Scripts.";
 	private static List<string> GetEmbeddedScripts() =>
 		Assembly.GetExecutingAssembly()
 			.GetManifestResourceNames()
