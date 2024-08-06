@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<RootNamespace>VsaTemplate.Api.Tests</RootNamespace>
+	<OutputType>Exe</OutputType>
+	<IsPackable>false</IsPackable>
+	<IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+	<PackageReference Include="coverlet.collector" PrivateAssets="All" />
+	<PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+	<PackageReference Include="Microsoft.NET.Test.Sdk" />
+	<PackageReference Include="Testcontainers" />
+	<PackageReference Include="Testcontainers.MsSql" />
+	<PackageReference Include="xunit.runner.visualstudio" PrivateAssets="All" />
+	<PackageReference Include="xunit.v3" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<ProjectReference Include="../Api/Api.csproj" />
+  </ItemGroup>
+
+</Project>

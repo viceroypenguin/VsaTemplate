@@ -7,6 +7,7 @@
 	<PackageVersion Include="Auth0.AspNetCore.Authentication" Version="1.4.1" />
 	<PackageVersion Include="AutoRegisterInject" Version="1.4.1" />
 	<PackageVersion Include="CommunityToolkit.Diagnostics" Version="8.2.2" />
+	<PackageVersion Include="coverlet.collector" Version="6.0.2" />
 	<PackageVersion Include="docopt.net" Version="0.8.1" />
 	<PackageVersion Include="DryIoc.dll" Version="5.4.3" />
 	<PackageVersion Include="DryIoc.Microsoft.DependencyInjection" Version="6.2.0" />
@@ -19,12 +20,14 @@
 	<PackageVersion Include="linq2db" Version="5.4.1" />
 	<PackageVersion Include="MailKit" Version="4.7.1.1" />
 	<PackageVersion Include="Meziantou.Analyzer" Version="2.0.163" />
+	<PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.7" />
 	<PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="8.0.7" />
 	<PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
 	<PackageVersion Include="Microsoft.Bcl.HashCode" Version="1.1.1" />
 	<PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
 	<PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.10.0" />
 	<PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.1" />
+	<PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
 	<PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
 	<PackageVersion Include="PolySharp" Version="1.14.1" />
 	<PackageVersion Include="Riok.Mapperly" Version="3.6.0" />
@@ -50,8 +53,12 @@
 	<PackageVersion Include="System.Text.Encodings.Web" Version="8.0.0" />
 	<PackageVersion Include="System.Text.Json" Version="8.0.4" />
 	<PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
+	<PackageVersion Include="Testcontainers" Version="3.9.0" />
+	<PackageVersion Include="Testcontainers.MsSql" Version="3.9.0" />
 	<PackageVersion Include="ThisAssembly.Git" Version="1.4.3" />
 	<PackageVersion Include="ThisAssembly.Resources" Version="1.4.1" />
 	<PackageVersion Include="Vogen" Version="4.0.16" />
+	<PackageVersion Include="xunit.runner.visualstudio" Version="3.0.0-pre.20" />
+	<PackageVersion Include="xunit.v3" Version="0.2.0-pre.69" />
   </ItemGroup>
 </Project>

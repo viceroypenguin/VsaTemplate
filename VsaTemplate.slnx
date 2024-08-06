@@ -18,4 +18,8 @@
     <Project Path="Api\Api.csproj" />
     <Project Path="Web\Web.csproj" />
   </Folder>
+  <Folder Name="/4. Tests/">
+    <Project Path="Api.Tests\Api.Tests.csproj" />
+    <Project Path="Web.Tests\Web.Tests.csproj" />
+  </Folder>
 </Solution>

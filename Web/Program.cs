@@ -7,7 +7,6 @@ using Isle.Configuration;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 using VsaTemplate.Web;
-using VsaTemplate.Web.Components;
 using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Infrastructure;
 using VsaTemplate.Web.Infrastructure.Authentication;
@@ -27,7 +26,8 @@ try
 {
 	var builder = WebApplication.CreateBuilder(args);
 
-	_ = builder.Configuration.AddJsonFile("secrets.json", optional: true);
+	if (builder.Configuration.GetValue("UseSecretsJson", defaultValue: true) is true)
+		_ = builder.Configuration.AddJsonFile("secrets.json", optional: true);
 
 	using var container = new Container();
 	_ = builder.Host.UseServiceProviderFactory(
@@ -42,9 +42,11 @@ try
 	);
 
 	builder.Services.AddAuthorizationPolicies();
+
 	builder.Services.AddWebAuthentication(
 		builder.Configuration["Auth0:Domain"],
-		builder.Configuration["Auth0:ClientId"]
+		builder.Configuration["Auth0:ClientId"],
+		builder.Configuration.GetValue("UseAuth0", defaultValue: true)
 	);
 
 	_ = builder.Services.ConfigureAllOptions();
@@ -81,7 +83,9 @@ try
 	var app = builder.Build();
 	_ = app.InitializeDatabase();
 
-	_ = app.UseHttpsRedirection();
+	if (builder.Configuration.GetValue("UseHttpsRedirection", defaultValue: true) is true)
+		_ = app.UseHttpsRedirection();
+
 	_ = app.UseStaticFiles();
 	_ = app.UseSwagger();
 	_ = app.UseSwaggerUI();
@@ -98,10 +102,11 @@ try
 		endpoints =>
 		{
 			_ = endpoints.MapAccountServices();
-			_ = endpoints.MapWebEndpoints();
 
-			_ = endpoints.MapRazorComponents<App>()
-				.AddInteractiveServerRenderMode();
+			_ = endpoints
+				.MapGroup("")
+				.RequireAuthorization()
+				.MapWebEndpoints();
 		}
 	);
 
@@ -120,4 +125,4 @@ finally
 	}
 }
 
-public partial class Program;
+public sealed partial class Program;

@@ -10,58 +10,74 @@ namespace VsaTemplate.Web.Infrastructure.Authentication;
 
 public static class AuthenticationStartupExtensions
 {
-	public static void AddWebAuthentication(this IServiceCollection services, string? domain, string? clientId)
+	public static void AddWebAuthentication(
+		this IServiceCollection services,
+		string? domain,
+		string? clientId,
+		bool useAuth0
+	)
 	{
-		Guard.IsNotNull(domain);
-		Guard.IsNotNull(clientId);
-
-		_ = services
+		var authBuilder = services
 			.AddAuthentication(o =>
 			{
-				o.DefaultAuthenticateScheme = ApiKeyAuthenticationHandler.AuthenticationScheme;
-				o.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-				o.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+				if (useAuth0)
+				{
+					o.DefaultAuthenticateScheme = ApiKeyAuthenticationHandler.AuthenticationScheme;
+					o.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+					o.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+				}
+				else
+				{
+					o.DefaultScheme = ApiKeyAuthenticationHandler.AuthenticationScheme;
+				}
 			})
-			.AddScheme<AuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(
+			.AddScheme<ApiKeyAuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(
 				ApiKeyAuthenticationHandler.AuthenticationScheme,
-				configureOptions: null
-			)
-			.AddAuth0WebAppAuthentication(o =>
-			{
-				o.Domain = domain;
-				o.ClientId = clientId;
-				o.Scope = "openid profile email";
+				configureOptions: o => o.UseCookiesBackup = useAuth0
+			);
 
-				o.OpenIdConnectEvents = new()
-				{
-					OnTicketReceived = ProcessTicket,
-				};
-			});
-
-		static async Task ProcessTicket(TicketReceivedContext ctx)
+		if (useAuth0)
 		{
-			var user = ctx.Principal;
-			if (user is null)
-				ThrowHelper.ThrowInvalidOperationException("Got a ticket, but no valid user attached.");
+			Guard.IsNotNull(domain);
+			Guard.IsNotNull(clientId);
 
-			var auth0Id = user.Claims.FirstOrDefault(c => c.Type is ClaimTypes.NameIdentifier)?.Value;
-			if (string.IsNullOrWhiteSpace(auth0Id))
-				ThrowHelper.ThrowInvalidOperationException("Completed Auth0 login, but no Auth0 Id present.");
-
-			var emailAddress = user.Claims.FirstOrDefault(c => c.Type is ClaimTypes.Email)?.Value;
-			if (string.IsNullOrWhiteSpace(emailAddress))
-				ThrowHelper.ThrowInvalidOperationException("Completed Auth0 login, but no email address present.");
-
-			var usersService = ctx.HttpContext.RequestServices.GetRequiredService<GetUserId.Handler>();
-			var claims = await usersService.HandleAsync(
-				new()
+			_ = authBuilder
+				.AddAuth0WebAppAuthentication(o =>
 				{
-					Auth0UserId = Auth0UserId.From(auth0Id),
-					EmailAddress = emailAddress,
-				});
+					o.Domain = domain;
+					o.ClientId = clientId;
+					o.Scope = "openid profile email";
 
-			user.AddIdentity(new ClaimsIdentity(claims));
+					o.OpenIdConnectEvents = new()
+					{
+						OnTicketReceived = ProcessTicket,
+					};
+				});
 		}
 	}
 
+	private static async Task ProcessTicket(TicketReceivedContext ctx)
+	{
+		var user = ctx.Principal;
+		if (user is null)
+			ThrowHelper.ThrowInvalidOperationException("Got a ticket, but no valid user attached.");
+
+		var auth0Id = user.Claims.FirstOrDefault(c => c.Type is ClaimTypes.NameIdentifier)?.Value;
+		if (string.IsNullOrWhiteSpace(auth0Id))
+			ThrowHelper.ThrowInvalidOperationException("Completed Auth0 login, but no Auth0 Id present.");
+
+		var emailAddress = user.Claims.FirstOrDefault(c => c.Type is ClaimTypes.Email)?.Value;
+		if (string.IsNullOrWhiteSpace(emailAddress))
+			ThrowHelper.ThrowInvalidOperationException("Completed Auth0 login, but no email address present.");
+
+		var usersService = ctx.HttpContext.RequestServices.GetRequiredService<GetUserId.Handler>();
+		var claims = await usersService.HandleAsync(
+			new()
+			{
+				Auth0UserId = Auth0UserId.From(auth0Id),
+				EmailAddress = emailAddress,
+			});
+
+		user.AddIdentity(new ClaimsIdentity(claims));
+	}
 }

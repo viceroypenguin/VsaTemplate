@@ -9,13 +9,18 @@ using VsaTemplate.Api.Infrastructure.Authorization;
 
 namespace VsaTemplate.Api.Infrastructure.Authentication;
 
+public sealed class ApiKeyAuthenticationSchemeOptions : AuthenticationSchemeOptions
+{
+	public bool UseCookiesBackup { get; set; }
+}
+
 [RegisterScoped]
 public sealed class ApiKeyAuthenticationHandler(
-	IOptionsMonitor<AuthenticationSchemeOptions> options,
+	IOptionsMonitor<ApiKeyAuthenticationSchemeOptions> options,
 	ILoggerFactory logger,
 	UrlEncoder encoder,
 	ValidApiKeyCache validApiKeyCache
-) : AuthenticationHandler<AuthenticationSchemeOptions>(
+) : AuthenticationHandler<ApiKeyAuthenticationSchemeOptions>(
 	options,
 	logger,
 	encoder
@@ -30,7 +35,10 @@ public sealed class ApiKeyAuthenticationHandler(
 		if (result.Succeeded)
 			return result;
 
-		return await Context.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+		if (Options.UseCookiesBackup)
+			return await Context.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+		return AuthenticateResult.NoResult();
 	}
 
 	private async Task<AuthenticateResult> AuthenticateApiKey()
