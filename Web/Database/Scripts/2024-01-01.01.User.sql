@@ -20,3 +20,10 @@ create table [User]
 create unique index [UK_User_Auth0UserId]
 on [User](Auth0UserId)
 where Auth0UserId is not null;
+
+set identity_insert [User] on;
+
+insert [User](UserId, EmailAddress, Name, IsActive, Roles)
+values (-1, 'system@vsatemplate.com', 'System', 1, '[]');
+
+set identity_insert [User] off;

@@ -18,8 +18,6 @@ using VsaTemplate.Web.Infrastructure.Hangfire;
 using VsaTemplate.Web.Infrastructure.Logging;
 using VsaTemplate.Web.Infrastructure.Startup;
 
-#pragma warning disable CA1852 // Type can be sealed because it has no subtypes in its containing assembly and is not externally visible
-
 Log.Logger = new LoggerConfiguration()
 	.WriteTo.Console(formatProvider: null)
 	.CreateBootstrapLogger();
@@ -121,3 +119,5 @@ finally
 		await Log.CloseAndFlushAsync();
 	}
 }
+
+public partial class Program;

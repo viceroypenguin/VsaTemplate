@@ -16,7 +16,6 @@
 
   <PropertyGroup>
 	<RootNamespace>VsaTemplate.Api</RootNamespace>
-	<NoWarn>$(NoWarn)</NoWarn>
   </PropertyGroup>
 
   <ItemGroup Label="Usings">
