@@ -24,6 +24,6 @@ where Auth0UserId is not null;
 set identity_insert [User] on;
 
 insert [User](UserId, EmailAddress, Name, IsActive, Roles)
-values (-1, 'system@vsatemplate.com', 'System', 1, '[]');
+values (-1, 'system@vsatemplate.com', 'System', 1, '["Admin"]');
 
 set identity_insert [User] off;
