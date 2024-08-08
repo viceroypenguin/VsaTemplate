@@ -7,6 +7,7 @@ using Isle.Configuration;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 using VsaTemplate.Web;
+using VsaTemplate.Web.Components;
 using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Infrastructure;
 using VsaTemplate.Web.Infrastructure.Authentication;
@@ -107,6 +108,9 @@ try
 				.MapGroup("")
 				.RequireAuthorization()
 				.MapWebEndpoints();
+
+			_ = endpoints.MapRazorComponents<App>()
+				.AddInteractiveServerRenderMode();
 		}
 	);
 
