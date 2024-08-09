@@ -12,6 +12,8 @@ public static class StartupExtensions
 	public static IServiceCollection AddSwagger(this IServiceCollection services) =>
 		services.AddSwaggerGen(o =>
 		{
+			_ = o.MapVogenTypes();
+
 			o.CustomSchemaIds(t => t.FullName?.Replace('+', '.'));
 
 			o.AddSecurityDefinition(
