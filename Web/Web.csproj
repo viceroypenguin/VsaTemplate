@@ -45,6 +45,7 @@
 	<PackageReference Include="MailKit" />
 	<PackageReference Include="Meziantou.Analyzer" PrivateAssets="All" />
 	<PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+	<PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
 	<PackageReference Include="Microsoft.Data.SqlClient" />
 	<PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
 	<PackageReference Include="Riok.Mapperly" />

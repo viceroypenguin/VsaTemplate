@@ -22,6 +22,7 @@
 	<PackageReference Include="docopt.net" />
 	<PackageReference Include="Humanizer" />
 	<PackageReference Include="linq2db" />
+	<PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
 	<PackageReference Include="Microsoft.Data.SqlClient" />
 	<PackageReference Include="SuperLinq" />
 	<PackageReference Include="System.Text.Json" />
