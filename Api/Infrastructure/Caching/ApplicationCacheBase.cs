@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Immediate.Handlers.Shared;
 using Microsoft.Extensions.Caching.Memory;
 using VsaTemplate.Api.Infrastructure.DependencyInjection;
@@ -47,6 +48,7 @@ public abstract class ApplicationCacheBase<TRequest, TResponse>(
 	public void SetValue(TRequest request, TResponse precomputedResponse) =>
 		GetCacheValue(request).SetValue(precomputedResponse);
 
+	[SuppressMessage("Design", "CA1001:Types that own disposable fields should be disposable")]
 	private sealed class CacheValue(
 		TRequest request,
 		Owned<IHandler<TRequest, TResponse>> handler
@@ -61,9 +63,10 @@ public abstract class ApplicationCacheBase<TRequest, TResponse>(
 			if (_response is not null)
 				return _response;
 
-			var cts = new CancellationTokenSource();
-			_tokenSource = cts;
-			var token = cts.Token;
+			lock (_lock)
+				_tokenSource ??= new CancellationTokenSource();
+
+			var token = _tokenSource.Token;
 
 			try
 			{
