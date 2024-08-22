@@ -1,8 +1,9 @@
 using System.Security.Claims;
 using VsaTemplate.Api.Features.Users.Models;
 using VsaTemplate.Api.Features.Users.Services;
+using VsaTemplate.Api.Infrastructure.Authorization;
 
-namespace VsaTemplate.Api.Infrastructure.Authorization;
+namespace VsaTemplate.Api.Infrastructure.Startup;
 
 [RegisterSingleton(typeof(AddRolesMiddleware))]
 public sealed class AddRolesMiddleware(
