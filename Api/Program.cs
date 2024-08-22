@@ -26,7 +26,7 @@ try
 {
 	var builder = WebApplication.CreateBuilder(args);
 
-	if (builder.Configuration.GetValue("UseSecretsJson", defaultValue: true) is true)
+	if (builder.Configuration.GetValue("UseSecretsJson", defaultValue: true))
 		_ = builder.Configuration.AddJsonFile("secrets.json", optional: true);
 
 	using var container = new Container();
@@ -83,7 +83,7 @@ try
 	var app = builder.Build();
 	_ = app.InitializeDatabase();
 
-	if (builder.Configuration.GetValue("UseHttpsRedirection", defaultValue: true) is true)
+	if (builder.Configuration.GetValue("UseHttpsRedirection", defaultValue: true))
 		_ = app.UseHttpsRedirection();
 
 	_ = app.UseStaticFiles();
