@@ -57,7 +57,8 @@ public static partial class UpdateTodo
 
 		var userId = await currentUserService.GetCurrentUserId();
 		todoCache
-			.SetTodo(
+			.SetValue(
+				new() { TodoId = command.TodoId },
 				new()
 				{
 					TodoId = command.TodoId,

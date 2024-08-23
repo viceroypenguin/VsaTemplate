@@ -17,7 +17,7 @@ public sealed partial class TodoAuthorizationBehavior<TRequest, TResponse>(
 	public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
 	{
 		var userId = await currentUserService.GetCurrentUserId();
-		var todo = await todoCache.GetTodo(request.TodoId);
+		var todo = await todoCache.GetValue(new() { TodoId = request.TodoId });
 
 		if (todo is not null && todo.UserId != userId)
 		{
