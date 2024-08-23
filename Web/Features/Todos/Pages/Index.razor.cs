@@ -55,6 +55,8 @@ public sealed partial class Index : BlazorComponentBase
 			new()
 			{
 				Name = _newTodoText,
+				TodoPriority = TodoPriority.Mid,
+				TodoStatus = TodoStatus.Active,
 			}
 		);
 
