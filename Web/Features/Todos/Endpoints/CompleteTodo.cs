@@ -3,6 +3,7 @@ using Immediate.Handlers.Shared;
 using Immediate.Validations.Shared;
 using LinqToDB;
 using VsaTemplate.Web.Database;
+using VsaTemplate.Web.Features.Shared.Exceptions;
 using VsaTemplate.Web.Features.Todos.Authorization;
 using VsaTemplate.Web.Features.Todos.Models;
 using VsaTemplate.Web.Features.Users.Services;
@@ -20,10 +21,10 @@ public static partial class CompleteTodo
 		public static string Policy => Policies.ValidUser;
 
 		public required TodoId TodoId { get; init; }
-		public bool Completed { get; init; } = true;
+		public required bool Completed { get; init; }
 	}
 
-	private static async ValueTask<bool> HandleAsync(
+	private static async ValueTask HandleAsync(
 		[AsParameters]
 		Command command,
 		CurrentUserService currentUserService,
@@ -46,6 +47,7 @@ public static partial class CompleteTodo
 				token: token
 			);
 
-		return count == 1;
+		if (count != 1)
+			NotFoundException.ThrowNotFoundException("Todo");
 	}
 }

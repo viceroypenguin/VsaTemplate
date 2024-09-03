@@ -71,7 +71,7 @@ public sealed partial class Index : BlazorComponentBase
 
 	private async Task Complete(TodoItem t)
 	{
-		var success = await CompleteTodo.HandleAsync(
+		_ = await CompleteTodo.HandleAsync(
 			new()
 			{
 				TodoId = t.TodoId,
@@ -79,17 +79,14 @@ public sealed partial class Index : BlazorComponentBase
 			}
 		);
 
-		if (success)
+		if (!t.IsComplete && !_showCompleted)
 		{
-			if (!t.IsComplete && !_showCompleted)
-			{
-				_ = _todos.Remove(t);
-				StateHasChanged();
-			}
-			else
-			{
-				t.IsComplete = !t.IsComplete;
-			}
+			_ = _todos.Remove(t);
+			StateHasChanged();
+		}
+		else
+		{
+			t.IsComplete = !t.IsComplete;
 		}
 	}
 }

@@ -33,7 +33,7 @@ try
 	_ = builder.Host.UseServiceProviderFactory(
 		new DryIocServiceProviderFactory(container));
 
-	builder.Host.ConfigureSerilog();
+	builder.ConfigureSerilog();
 
 	_ = builder.Services.AddSingleton(typeof(Owned<>));
 

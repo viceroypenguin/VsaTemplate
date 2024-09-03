@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Refit;
 using Testcontainers.MsSql;
+using VsaTemplate.Api.Client;
 using VsaTemplate.Api.Database;
 using VsaTemplate.Api.Features.Users.Models;
 using VsaTemplate.Api.Tests.Fixtures;
@@ -19,6 +21,7 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime
 	private WebApplicationFactory<Program> _factory = default!;
 
 	public const string AdminToken = nameof(AdminToken);
+	public const string UserToken = nameof(UserToken);
 
 	public ApplicationFactoryFixture()
 	{
@@ -38,6 +41,7 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime
 		using var context = _factory.Services.GetRequiredService<DbContext>();
 
 		await InsertApiKey(context, AdminToken, ["Admin"]);
+		await InsertApiKey(context, UserToken, []);
 	}
 
 	private static async Task InsertApiKey(DbContext context, string tokenName, IReadOnlyList<string> permissions)
@@ -45,7 +49,7 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime
 		var newUserId = await context.InsertWithInt32IdentityAsync(
 			new Database.Models.User()
 			{
-				Name = $"API Key For: -1",
+				Name = $"Api Key For: -1",
 				EmailAddress = tokenName,
 				IsActive = true,
 				Roles = JsonSerializer.Serialize(permissions),
@@ -67,19 +71,23 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime
 		await _container.DisposeAsync();
 	}
 
-	public HttpClient GetHttpClient() => _factory.CreateClient();
-
-	public HttpClient GetAdminHttpClient()
+	private IApiClient GetHttpClient(string token)
 	{
-		var client = GetHttpClient();
+		var client = _factory.CreateClient();
 
 		client.DefaultRequestHeaders.Add(
 			"X-Api-Key",
-			AdminToken
+			token
 		);
 
-		return client;
+		return RestService.For<IApiClient>(client);
 	}
+
+	public IApiClient GetAdminClient() =>
+		GetHttpClient(AdminToken);
+
+	public IApiClient GetUserClient() =>
+		GetHttpClient(UserToken);
 }
 
 file sealed class TestWebApplicationFactory(string connectionString) : WebApplicationFactory<Program>

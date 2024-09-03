@@ -11,15 +11,15 @@ namespace VsaTemplate.Web.Infrastructure.Logging;
 
 public static class LoggingStartupExtensions
 {
-	public static void ConfigureSerilog(this IHostBuilder host) =>
-		host
+	public static void ConfigureSerilog(this WebApplicationBuilder builder) =>
+		builder.Host
 			.UseSerilog((ctx, lc) => lc
 				.MinimumLevel.Information()
 				.MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
 				.MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
 				.MinimumLevel.Override("System.Net.Http.HttpClient.Refit.Implementation", LogEventLevel.Warning)
 				.Enrich.FromLogContext()
-				.Enrich.WithEnvironmentName()
+				.Enrich.WithProperty("EnvironmentName", builder.Environment.EnvironmentName)
 				.Enrich.WithThreadId()
 				.Enrich.WithProperty("ExecutionId", Guid.NewGuid())
 				.Enrich.WithProperty("Commit", ThisAssembly.Git.Commit)

@@ -23,6 +23,7 @@
 
   <ItemGroup>
 	<ProjectReference Include="../Api/Api.csproj" />
+	<ProjectReference Include="../Api.Client/Api.Client.csproj" />
   </ItemGroup>
 
 </Project>

@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Refit;
 using Testcontainers.MsSql;
+using VsaTemplate.Web.Client;
 using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.Users.Models;
 using VsaTemplate.Web.Tests.Fixtures;
@@ -19,6 +21,7 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime
 	private WebApplicationFactory<Program> _factory = default!;
 
 	public const string AdminToken = nameof(AdminToken);
+	public const string UserToken = nameof(UserToken);
 
 	public ApplicationFactoryFixture()
 	{
@@ -38,6 +41,7 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime
 		using var context = _factory.Services.GetRequiredService<DbContext>();
 
 		await InsertWebKey(context, AdminToken, ["Admin"]);
+		await InsertWebKey(context, UserToken, []);
 	}
 
 	private static async Task InsertWebKey(DbContext context, string tokenName, IReadOnlyList<string> permissions)
@@ -67,19 +71,23 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime
 		await _container.DisposeAsync();
 	}
 
-	public HttpClient GetHttpClient() => _factory.CreateClient();
-
-	public HttpClient GetAdminHttpClient()
+	private IWebClient GetHttpClient(string token)
 	{
-		var client = GetHttpClient();
+		var client = _factory.CreateClient();
 
 		client.DefaultRequestHeaders.Add(
 			"X-Api-Key",
-			AdminToken
+			token
 		);
 
-		return client;
+		return RestService.For<IWebClient>(client);
 	}
+
+	public IWebClient GetAdminClient() =>
+		GetHttpClient(AdminToken);
+
+	public IWebClient GetUserClient() =>
+		GetHttpClient(UserToken);
 }
 
 file sealed class TestWebApplicationFactory(string connectionString) : WebApplicationFactory<Program>

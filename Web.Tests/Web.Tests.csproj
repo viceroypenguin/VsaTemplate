@@ -23,6 +23,7 @@
 
   <ItemGroup>
 	<ProjectReference Include="../Web/Web.csproj" />
+	<ProjectReference Include="../Web.Client/Web.Client.csproj" />
   </ItemGroup>
 
 </Project>
