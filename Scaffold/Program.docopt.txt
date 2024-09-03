@@ -1,0 +1,13 @@
+Scaffolder.
+
+Usage:
+  scaffolder.exe 
+       --connection-string=STR
+       --output-file=FILE 
+       [--] FILE ...
+  scaffolder.exe (-h | --help)
+
+Options:
+  -h --help                                   Show this screen.
+  --connection-string=STR                     Connection String.
+  --output-file=FILE                          Output file.
