@@ -63,7 +63,7 @@
 	<PackageVersion Include="ThisAssembly.Git" Version="1.4.3" />
 	<PackageVersion Include="ThisAssembly.Resources" Version="1.4.1" />
 	<PackageVersion Include="Vogen" Version="4.0.19" />
-	<PackageVersion Include="xunit.runner.visualstudio" Version="3.0.0-pre.20" />
+	<PackageVersion Include="xunit.runner.visualstudio" Version="3.0.0-pre.35" />
 	<PackageVersion Include="xunit.v3" Version="0.2.0-pre.69" />
   </ItemGroup>
 </Project>
