@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<RootNamespace>VsaTemplate.Api.Client</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup Label="Usings">
+	<Using Include="Vogen" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<PackageReference Include="Refit" />
+	<PackageReference Include="Vogen" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<ProjectReference Include="../Api/Api.csproj" />
+  </ItemGroup>
+
+</Project>
