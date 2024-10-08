@@ -13,4 +13,8 @@
 	<PackageReference Include="Vogen" />
   </ItemGroup>
 
+  <ItemGroup>
+	<ProjectReference Include="../Web/Web.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -9,6 +9,7 @@ using Testcontainers.MsSql;
 using VsaTemplate.Api.Client;
 using VsaTemplate.Api.Database;
 using VsaTemplate.Api.Features.Users.Models;
+using VsaTemplate.Api.Infrastructure.DependencyInjection;
 using VsaTemplate.Api.Tests.Fixtures;
 
 [assembly: AssemblyFixture(typeof(ApplicationFactoryFixture))]
@@ -88,6 +89,9 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime
 
 	public IApiClient GetUserClient() =>
 		GetHttpClient(UserToken);
+
+	public Owned<DbContext>.IOwnedScope GetDbContext() =>
+		_factory.Services.GetRequiredService<Owned<DbContext>>().GetScope();
 }
 
 file sealed class TestWebApplicationFactory(string connectionString) : WebApplicationFactory<Program>

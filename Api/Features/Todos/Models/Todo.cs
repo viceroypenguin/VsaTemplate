@@ -17,7 +17,7 @@ public readonly partial record struct TodoId : IValidationTarget<TodoId>
 	}
 }
 
-public sealed class Todo : ITodoRequest
+public sealed record Todo : ITodoRequest
 {
 	public required TodoId TodoId { get; init; }
 	public required string Name { get; init; }
