@@ -35,7 +35,7 @@
 	<PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
 	<PackageVersion Include="PolySharp" Version="1.14.1" />
 	<PackageVersion Include="Refit" Version="7.2.1" />
-	<PackageVersion Include="Riok.Mapperly" Version="3.6.0" />
+	<PackageVersion Include="Riok.Mapperly" Version="4.0.0" />
 	<PackageVersion Include="Scriban" Version="5.10.0" />
 	<PackageVersion Include="Serilog.AspNetCore" Version="8.0.2" />
 	<PackageVersion Include="Serilog.Enrichers.Environment" Version="3.0.1" />
