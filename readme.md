@@ -81,10 +81,7 @@ this is not implemented in this template.
 Microsoft SQL Server is the database platform that I have used for my career. The concepts in this template will work fine 
 with SQLite or PostgreSQL, either with Linq2Db or EFC; it is simply not currently implemented for them. 
 
-### Four Projects
-
-> [!NOTE]
-> Normally VSA recommends only one or two projects
+### Six Projects
 
 #### 1. `Scaffold` Project 
 
@@ -132,6 +129,28 @@ Blazor+API projects. The core architecture of each is very similar and follows t
 
   * The `Shared` folder will contain business logic code that is intended to be consumed broadly, like extension
     methods, etc.
+
+#### 5. `Api.Client`/`Web.Client` Project
+
+These projects contain `Refit` clients which build on `HttpClient` to provide strong-typed api definitions for C#. These
+are strictly used to provide foundations for the unit tests. 
+
+#### 6. `Api.Tests`/`Web.Tests` Project
+
+These projects perform integration testing on the `Api`/`Web` project. The `ApplicationFactoryFixture` class sets up a
+testing environment consisting of the following:
+
+* An MSSQL Test Container containing a single target database, which is then initialized using the database migration scripts.
+
+* A `WebApplicationFactory` based on the `Program.cs`, configured to access the MSSQL Test Container.
+
+* Exposes `HttpClient` instances coded for various permission levels. These `HttpClient` instances can then be provided
+  to the `Refit` clients exposed by the `Api.Client`/`Web.Client` projects to make API calls testing the full
+  integration of the api calls.
+
+  * Integration tests are preferred over unit tests. Unit tests rely on an accurate mocking of the real service, which is
+    frequently difficult to accomplish, or allowing the consuming code to operate in the face of differences between the two.
+    Only implementing integration tests is easier; especially when test containers are 
 
 ## Installation
 
