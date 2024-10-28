@@ -7,7 +7,6 @@ namespace VsaTemplate.Web.Tests;
 public sealed class TodosTests(ApplicationFactoryFixture fixture)
 {
 	[Test]
-	[Timeout(-1)]
 	public async Task FullCycleTest(CancellationToken token)
 	{
 		var client = fixture.GetUserClient();
