@@ -3,10 +3,12 @@ using VsaTemplate.Web.Tests.Fixtures;
 
 namespace VsaTemplate.Web.Tests;
 
+[ClassDataSource<ApplicationFactoryFixture>(Shared = SharedType.ForAssembly)]
 public sealed class TodosTests(ApplicationFactoryFixture fixture)
 {
-	[Fact]
-	public async Task FullCycleTest()
+	[Test]
+	[Timeout(-1)]
+	public async Task FullCycleTest(CancellationToken token)
 	{
 		var client = fixture.GetUserClient();
 
@@ -18,10 +20,10 @@ public sealed class TodosTests(ApplicationFactoryFixture fixture)
 				TodoPriority = TodoPriority.Mid,
 				TodoStatus = TodoStatus.Active,
 			},
-			TestContext.Current.CancellationToken
+			token
 		);
 
-		await ValidateTodo(client, todo, showCompleted: false);
+		await ValidateTodo(client, todo, showCompleted: false, token);
 
 		await client.UpdateTodo(
 			new()
@@ -32,33 +34,40 @@ public sealed class TodosTests(ApplicationFactoryFixture fixture)
 				TodoPriority = TodoPriority.High,
 				TodoStatus = TodoStatus.Active,
 			},
-			TestContext.Current.CancellationToken
+			token
 		);
 
 		await ValidateTodo(
 			client,
 			todo with { Comment = "Make a change", TodoPriority = TodoPriority.High, },
-			showCompleted: false
+			showCompleted: false,
+			token
 		);
 
 		await client.CompleteTodo(
 			todo.TodoId,
 			completed: true,
-			token: TestContext.Current.CancellationToken
+			token: token
 		);
 
 		await ValidateTodo(
 			client,
 			todo with { Comment = "Make a change", TodoPriority = TodoPriority.High, TodoStatus = TodoStatus.Completed, },
-			showCompleted: true
+			showCompleted: true,
+			token
 		);
 	}
 
-	private static async Task ValidateTodo(Client.IWebClient client, Todo todo, bool showCompleted)
+	private static async Task ValidateTodo(
+		Client.IWebClient client,
+		Todo todo,
+		bool showCompleted,
+		CancellationToken token
+	)
 	{
 		var todos = await client.GetTodos(
 			showCompleted,
-			TestContext.Current.CancellationToken
+			token
 		);
 
 		var getTodo = Assert.Single(todos.Where(t => t.TodoId == todo.TodoId));

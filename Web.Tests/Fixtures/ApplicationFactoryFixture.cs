@@ -6,17 +6,15 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Refit;
 using Testcontainers.MsSql;
+using TUnit.Core.Interfaces;
 using VsaTemplate.Web.Client;
 using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.Users.Models;
 using VsaTemplate.Web.Infrastructure.DependencyInjection;
-using VsaTemplate.Web.Tests.Fixtures;
-
-[assembly: AssemblyFixture(typeof(ApplicationFactoryFixture))]
 
 namespace VsaTemplate.Web.Tests.Fixtures;
 
-public sealed class ApplicationFactoryFixture : IAsyncLifetime
+public sealed class ApplicationFactoryFixture : IAsyncInitializer, IAsyncDisposable
 {
 	private readonly MsSqlContainer _container;
 	private WebApplicationFactory<Program> _factory = default!;
@@ -29,7 +27,7 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime
 		_container = new MsSqlBuilder().Build();
 	}
 
-	public async ValueTask InitializeAsync()
+	public async Task InitializeAsync()
 	{
 		await _container.StartAsync();
 
