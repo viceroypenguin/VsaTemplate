@@ -1,0 +1,17 @@
+#nullable enable
+
+using LinqToDB;
+using LinqToDB.Data;
+using {{ root_namespace }}.Database.Models;
+{{~ for s in schemas ~}}
+using {{ root_namespace }}.Database.Models.{{ s }};
+{{~ end ~}}
+
+namespace {{ root_namespace }}.Database;
+
+public sealed partial class DbContext : DataConnection
+{
+	{{~ for t in tables ~}}
+	public ITable<{{ t.type_name }}> {{ t.property_name }} => this.GetTable<{{ t.type_name }}>();
+	{{~ end ~}}
+}
