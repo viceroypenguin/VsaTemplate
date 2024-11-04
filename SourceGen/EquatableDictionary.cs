@@ -20,7 +20,7 @@ public readonly struct EquatableDictionary<TValue>(
 	{
 		var hashCode = new HashCode();
 
-		foreach (var kvp in dictionary.OrderBy(kvp => kvp.Key))
+		foreach (var kvp in dictionary.OrderBy(kvp => kvp.Key, StringComparer.Ordinal))
 		{
 			hashCode.Add(kvp.Key);
 			hashCode.Add(kvp.Value);

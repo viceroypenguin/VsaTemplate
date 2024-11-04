@@ -41,7 +41,6 @@
 	<PackageReference Include="Isle.Extensions.Logging" />
 	<PackageReference Include="linq2db" />
 	<PackageReference Include="MailKit" />
-	<PackageReference Include="Meziantou.Analyzer" PrivateAssets="All" />
 	<PackageReference Include="Microsoft.AspNetCore.OpenApi" />
 	<PackageReference Include="Microsoft.Data.SqlClient" />
 	<PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />

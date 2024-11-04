@@ -82,7 +82,7 @@ public sealed partial class DbGenerator
 	{
 		var tables = context
 			.Select(x => new { x.PropertyName, x.TypeName })
-			.OrderBy(x => x.TypeName);
+			.OrderBy(x => x.TypeName, StringComparer.Ordinal);
 
 		var output = template
 			.Render(new
@@ -105,7 +105,7 @@ public sealed partial class DbGenerator
 	{
 		var types = context
 			.Select(x => new { x.UnderlyingTypeName, x.TypeName })
-			.OrderBy(x => x.TypeName);
+			.OrderBy(x => x.TypeName, StringComparer.Ordinal);
 
 		var output = template.Render(
 			new

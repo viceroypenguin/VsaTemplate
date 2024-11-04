@@ -65,7 +65,7 @@ public sealed partial class DbGenerator : IIncrementalGenerator
 			.Select((x, _) => x.SchemaName)
 			.Where(x => x is not null)
 			.Collect()
-			.Select((x, _) => x.Distinct().OrderBy(x => x).ToEquatableReadOnlyList());
+			.Select((x, _) => x.Distinct(StringComparer.Ordinal).OrderBy(x => x, StringComparer.Ordinal).ToEquatableReadOnlyList());
 
 		var entityTemplate = Utility.GetScribanTemplate("DbScaffold.Entity");
 		context.RegisterSourceOutput(

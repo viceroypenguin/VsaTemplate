@@ -23,6 +23,6 @@ public static class Utility
 		this IncrementalValuesProvider<T?> provider
 	) where T : struct =>
 		provider
-			.Where(x => x != null)
+			.Where(x => x is not null)
 			.Select((x, _) => x!.Value);
 }
