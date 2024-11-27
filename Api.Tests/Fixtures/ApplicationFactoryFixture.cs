@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using LinqToDB;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -17,6 +18,8 @@ namespace VsaTemplate.Api.Tests.Fixtures;
 public sealed class ApplicationFactoryFixture : IAsyncInitializer, IAsyncDisposable
 {
 	private readonly MsSqlContainer _container;
+
+	[SuppressMessage("Usage", "TUnit0023:Member should be disposed within a clean up method")]
 	private WebApplicationFactory<Program> _factory = default!;
 
 	public const string AdminToken = nameof(AdminToken);

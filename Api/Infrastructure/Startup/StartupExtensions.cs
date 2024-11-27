@@ -12,7 +12,7 @@ public static class StartupExtensions
 	public static IServiceCollection AddSwagger(this IServiceCollection services) =>
 		services.AddSwaggerGen(o =>
 		{
-			_ = o.MapVogenTypes();
+			_ = o.MapVogenTypesInApi();
 
 			o.CustomSchemaIds(t => t.FullName?.Replace('+', '.'));
 

@@ -3,7 +3,7 @@ using VsaTemplate.Api.Tests.Fixtures;
 
 namespace VsaTemplate.Api.Tests;
 
-[ClassDataSource<ApplicationFactoryFixture>(Shared = SharedType.ForAssembly)]
+[ClassDataSource<ApplicationFactoryFixture>(Shared = SharedType.PerAssembly)]
 public sealed class TodosTests(ApplicationFactoryFixture fixture)
 {
 	[Test]

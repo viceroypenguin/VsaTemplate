@@ -66,8 +66,8 @@ try
 	_ = builder.Services.AddHttpContextAccessor();
 	_ = builder.Services.AddCascadingAuthenticationState();
 	_ = builder.Services.AutoRegisterFromWeb();
-	_ = builder.Services.AddHandlers();
-	_ = builder.Services.AddBehaviors();
+	_ = builder.Services.AddWebHandlers();
+	_ = builder.Services.AddWebBehaviors();
 	_ = builder.Services.AddEndpointsApiExplorer();
 	_ = builder.Services.AddSwagger();
 	_ = builder.Services.AddAntiforgery();
