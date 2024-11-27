@@ -42,7 +42,7 @@ public partial class BlazorComponentBase : OwningComponentBase
 	}
 
 	[LoggerMessage(
-		Level = LogLevel.Warning,
+		Level = LogLevel.Information,
 		Message = "Page Navigation to {Url}"
 	)]
 	private static partial void LogNavigation(
