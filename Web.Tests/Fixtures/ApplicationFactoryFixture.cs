@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using Immediate.Cache;
 using LinqToDB;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
@@ -11,7 +12,6 @@ using TUnit.Core.Interfaces;
 using VsaTemplate.Web.Client;
 using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.Users.Models;
-using VsaTemplate.Web.Infrastructure.DependencyInjection;
 
 namespace VsaTemplate.Web.Tests.Fixtures;
 
@@ -91,7 +91,7 @@ public sealed class ApplicationFactoryFixture : IAsyncInitializer, IAsyncDisposa
 	public IWebClient GetUserClient() =>
 		GetHttpClient(UserToken);
 
-	public Owned<DbContext>.IOwnedScope GetDbContext() =>
+	public OwnedScope<DbContext> GetDbContext() =>
 		_factory.Services.GetRequiredService<Owned<DbContext>>().GetScope();
 }
 

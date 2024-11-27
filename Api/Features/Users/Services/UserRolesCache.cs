@@ -1,9 +1,8 @@
 using System.Globalization;
+using Immediate.Cache;
 using Immediate.Handlers.Shared;
 using Microsoft.Extensions.Caching.Memory;
 using VsaTemplate.Api.Features.Users.Queries;
-using VsaTemplate.Api.Infrastructure.Caching;
-using VsaTemplate.Api.Infrastructure.DependencyInjection;
 
 namespace VsaTemplate.Api.Features.Users.Services;
 

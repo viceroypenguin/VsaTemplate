@@ -36,6 +36,7 @@
 	<PackageReference Include="DryIoc.Microsoft.DependencyInjection" />
 	<PackageReference Include="Hangfire" />
 	<PackageReference Include="Immediate.Apis" />
+	<PackageReference Include="Immediate.Cache" />
 	<PackageReference Include="Immediate.Handlers" />
 	<PackageReference Include="Immediate.Validations" />
 	<PackageReference Include="Isle.Extensions.Logging" />

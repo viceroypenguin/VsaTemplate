@@ -30,10 +30,11 @@ public static partial class CreateApiKey
 		CurrentUserService currentUserService,
 		UserRolesCache userRolesCache,
 		DbContext context,
-		CancellationToken token)
+		CancellationToken token
+	)
 	{
 		var userId = await currentUserService.GetCurrentUserId();
-		var currentUserRoles = await userRolesCache.GetValue(new() { UserId = userId });
+		var currentUserRoles = await userRolesCache.GetValue(new() { UserId = userId }, token);
 
 		if (request.Roles.Except(currentUserRoles, StringComparer.OrdinalIgnoreCase).Any())
 			throw new InvalidOperationException("Unable to create new API Key with additional permission.");
