@@ -30,7 +30,7 @@ public sealed class CurrentUserService(
 		var user = GetCurrentUser();
 
 		var claim = user?.FindFirstValue(Claims.Id) ?? "";
-		if (!UserId.TryParse(claim, out var userId))
+		if (!UserId.TryParse(claim, provider: null, out var userId))
 			ThrowInvalidUserId(claim);
 
 		return ValueTask.FromResult(userId);

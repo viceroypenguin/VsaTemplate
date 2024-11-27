@@ -43,7 +43,7 @@ public sealed class CurrentUserService(
 		var user = await GetCurrentUser();
 
 		var claim = user?.FindFirstValue(Claims.Id) ?? "";
-		if (!UserId.TryParse(claim, out var userId))
+		if (!UserId.TryParse(claim, provider: null, out var userId))
 			ThrowInvalidUserId(claim);
 
 		return userId;
@@ -57,7 +57,7 @@ public sealed class CurrentUserService(
 	private async Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
 	{
 		var claim = principal.FindFirstValue(Claims.Id) ?? "";
-		if (!UserId.TryParse(claim, out var userId))
+		if (!UserId.TryParse(claim, provider: null, out var userId))
 			ThrowInvalidUserId(claim);
 
 		var roles = await userRolesCache.GetValue(new() { UserId = userId, });

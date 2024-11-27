@@ -15,7 +15,7 @@ public sealed class AddRolesMiddleware(
 		if (context.User is { } user)
 		{
 			var claim = user.FindFirstValue(Claims.Id) ?? "";
-			if (UserId.TryParse(claim, out var userId))
+			if (UserId.TryParse(claim, provider: null, out var userId))
 			{
 				var roles = await userRolesCache.GetValue(new() { UserId = userId, });
 
