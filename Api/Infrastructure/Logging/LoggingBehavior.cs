@@ -35,16 +35,32 @@ public sealed partial class LoggingBehavior<TRequest, TResponse>(
 			var sw = Stopwatch.StartNew();
 			var response = await Next(request, cancellationToken);
 			using (var scope = _logger.BeginScope(properties))
-				_logger.LogInformation($"Executed {HandlerType.Named("Type")} handler in {sw.Elapsed.TotalMilliseconds.Named("Elapsed")} ms");
+				LogSuccess(HandlerType, sw.Elapsed.TotalMilliseconds);
 
 			return response;
 		}
 		catch (Exception ex)
 		{
 			using (var scope = _logger.BeginScope(properties))
-				_logger.LogError(ex, $"Exception during {HandlerType.Named("Type")} handler");
+				LogException(HandlerType, ex);
 
 			throw;
 		}
 	}
+
+	[LoggerMessage(
+		Level = LogLevel.Information,
+		Message = "Executed {Type} handler in {Elapsed} ms"
+	)]
+	private partial void LogSuccess(
+		Type type,
+		double elapsed);
+
+	[LoggerMessage(
+		Level = LogLevel.Error,
+		Message = "Exception during {Type} handler"
+	)]
+	private partial void LogException(
+		Type type,
+		Exception exception);
 }

@@ -33,11 +33,20 @@ public partial class BlazorComponentBase : OwningComponentBase
 	}
 
 	private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e) =>
-		Logger.LogInformation($"Page Navigation to {e.Location.Named("Url")}");
+		LogNavigation(Logger, e.Location);
 
 	protected override void Dispose(bool disposing)
 	{
 		NavigationManager.LocationChanged -= NavigationManager_LocationChanged;
 		base.Dispose(disposing);
 	}
+
+	[LoggerMessage(
+		Level = LogLevel.Warning,
+		Message = "Page Navigation to {Url}"
+	)]
+	private static partial void LogNavigation(
+		ILogger logger,
+		string url
+	);
 }

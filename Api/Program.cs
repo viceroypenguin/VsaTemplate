@@ -4,7 +4,6 @@ using DryIoc;
 using DryIoc.Microsoft.DependencyInjection;
 using Hangfire;
 using Immediate.Cache;
-using Isle.Configuration;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 using VsaTemplate.Api;
@@ -20,7 +19,6 @@ using VsaTemplate.Api.Infrastructure.Startup;
 Log.Logger = new LoggerConfiguration()
 	.WriteTo.Console(formatProvider: null)
 	.CreateBootstrapLogger();
-IsleConfiguration.Configure(b => { });
 
 try
 {

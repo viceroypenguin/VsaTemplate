@@ -40,7 +40,6 @@
 	<PackageReference Include="Immediate.Cache" />
 	<PackageReference Include="Immediate.Handlers" />
 	<PackageReference Include="Immediate.Validations" />
-	<PackageReference Include="Isle.Extensions.Logging" />
 	<PackageReference Include="linq2db" />
 	<PackageReference Include="MailKit" />
 	<PackageReference Include="Microsoft.AspNetCore.OpenApi" />

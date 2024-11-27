@@ -21,7 +21,7 @@ public sealed partial class TodoAuthorizationBehavior<TRequest, TResponse>(
 
 		if (todo is not null && todo.UserId != userId)
 		{
-			logger.LogWarning($"Unauthorized access: User {userId}, TodoId {todo.TodoId}");
+			LogUnauthorizedAccess(logger, userId, request.TodoId);
 			ThrowUnauthorizedAccess(userId, request.TodoId);
 		}
 
@@ -31,4 +31,14 @@ public sealed partial class TodoAuthorizationBehavior<TRequest, TResponse>(
 	[StackTraceHidden]
 	private static void ThrowUnauthorizedAccess(UserId userId, TodoId todoId) =>
 		throw new InvalidOperationException($"Unauthorized access: User {userId}, TodoId {todoId}");
+
+	[LoggerMessage(
+		Level = LogLevel.Warning,
+		Message = "Unauthorized access: User {UserId}, TodoId {TodoId}"
+	)]
+	private static partial void LogUnauthorizedAccess(
+		ILogger logger,
+		UserId userId,
+		TodoId todoId
+	);
 }
