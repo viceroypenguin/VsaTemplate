@@ -11,5 +11,6 @@ using VsaTemplate.Api.Infrastructure.Logging;
 
 [assembly: VogenDefaults(
 	conversions: Conversions.Default | Conversions.LinqToDbValueConverter,
-	deserializationStrictness: DeserializationStrictness.AllowAnything
+	deserializationStrictness: DeserializationStrictness.AllowAnything,
+	openApiSchemaCustomizations: OpenApiSchemaCustomizations.Omit
 )]

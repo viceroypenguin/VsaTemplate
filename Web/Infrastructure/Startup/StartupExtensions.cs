@@ -1,28 +1,26 @@
 using Auth0.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.OpenApi;
 using Microsoft.OpenApi.Models;
-using VsaTemplate.Web.Infrastructure.Authentication;
 
 namespace VsaTemplate.Web.Infrastructure.Startup;
 
 public static class StartupExtensions
 {
-	public static IServiceCollection AddSwagger(this IServiceCollection services) =>
-		services.AddSwaggerGen(o =>
+	public static IServiceCollection AddWebOpenApi(this IServiceCollection services) =>
+		services.AddOpenApi(o =>
 		{
-			_ = o.MapVogenTypesInWeb();
+			o.CreateSchemaReferenceId = t =>
+				t.Type.IsNested
+					? $"{t.Type.DeclaringType!.Name}+{t.Type.Name}"
+					: OpenApiOptions.CreateDefaultSchemaReferenceId(t);
 
-			o.CustomSchemaIds(t => t.FullName?.Replace('+', '.'));
-
-			o.AddSecurityDefinition(
-				"ApiKey",
-				new()
+			_ = o.AddSchemaTransformer(
+				(schema, context, cancellationToken) =>
 				{
-					In = ParameterLocation.Header,
-					Name = ApiKeyAuthenticationHandler.HeaderName,
-					Type = SecuritySchemeType.ApiKey,
+
+					return Task.CompletedTask;
 				}
 			);
 
@@ -34,43 +32,48 @@ public static class StartupExtensions
 					Id = "ApiKey",
 				},
 				In = ParameterLocation.Header,
+				Type = SecuritySchemeType.ApiKey,
+				Name = "X-Api-Key",
 			};
 
-			o.AddSecurityRequirement(
-				new()
+			_ = o.AddDocumentTransformer(
+				(document, context, cancellationToken) =>
 				{
-					{ key, [] },
+					document.Components ??= new()
+					{
+						SecuritySchemes =
+						{
+							["ApiKey"] = key,
+						},
+					};
+
+					return Task.CompletedTask;
 				}
 			);
 
-			o.DocInclusionPredicate((_, api) =>
-				api.ActionDescriptor
-					.EndpointMetadata
-					.OfType<IRouteDiagnosticsMetadata>()
-					.FirstOrDefault()
-					is { Route: var route }
-				&& route.StartsWith("/api", StringComparison.OrdinalIgnoreCase)
-			);
-
-			o.TagActionsBy(api =>
-			{
-				var routeMetadata = api.ActionDescriptor
-					.EndpointMetadata
-					.OfType<IRouteDiagnosticsMetadata>()
-					.FirstOrDefault();
-
-				if (routeMetadata is not { Route: var route })
-					throw new InvalidOperationException("Unable to determine tag for endpoint.");
-
-				var splits = route["/api/".Length..].Split('/');
-				if (splits is not [{ } tag, ..]
-					|| string.IsNullOrWhiteSpace(tag))
+			_ = o.AddOperationTransformer(
+				(operation, context, cancellationToken) =>
 				{
-					throw new InvalidOperationException("Unable to determine tag for endpoint.");
-				}
+					if (context.Description.RelativePath?.Split(
+							"/",
+							StringSplitOptions.RemoveEmptyEntries
+						) is ["api", var name, ..])
+					{
+						operation.Tags.Add(new OpenApiTag
+						{
+							Name = name[..1].ToUpperInvariant() + name[1..],
+						});
 
-				return [tag[..1].ToUpperInvariant() + tag[1..]];
-			});
+						operation.Security = [new() { [key] = [] }];
+					}
+					else
+					{
+						operation.Security = [];
+					}
+
+					return Task.CompletedTask;
+				}
+			);
 		});
 
 	public static IEndpointRouteBuilder MapAccountServices(this IEndpointRouteBuilder app)

@@ -5,6 +5,7 @@ using DryIoc.Microsoft.DependencyInjection;
 using Hangfire;
 using Immediate.Cache;
 using Microsoft.AspNetCore.Mvc;
+using Scalar.AspNetCore;
 using Serilog;
 using VsaTemplate.Api;
 using VsaTemplate.Api.Database;
@@ -66,7 +67,7 @@ try
 	_ = builder.Services.AddApiHandlers();
 	_ = builder.Services.AddApiBehaviors();
 	_ = builder.Services.AddEndpointsApiExplorer();
-	_ = builder.Services.AddSwagger();
+	_ = builder.Services.AddApiOpenApi();
 	_ = builder.Services.AddAntiforgery();
 	_ = builder.Services.AddProblemDetails(ExceptionStartupExtensions.ConfigureProblemDetails);
 
@@ -85,8 +86,6 @@ try
 		_ = app.UseHttpsRedirection();
 
 	_ = app.UseStaticFiles();
-	_ = app.UseSwagger();
-	_ = app.UseSwaggerUI();
 	_ = app.UseMiddleware<AddRequestIdHeaderMiddleware>();
 	_ = app.UseMiddleware<AddRolesMiddleware>();
 	_ = app.UseExceptionHandler();
@@ -99,6 +98,9 @@ try
 	_ = app.UseEndpoints(
 		endpoints =>
 		{
+			_ = endpoints.MapOpenApi().CacheOutput();
+			_ = endpoints.MapScalarApiReference();
+
 			_ = endpoints.MapAccountServices();
 			_ = endpoints.MapApiEndpoints();
 		}

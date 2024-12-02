@@ -47,8 +47,8 @@
 	<PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
 	<PackageReference Include="Newtonsoft.Json" />
 	<PackageReference Include="Refit" />
+	<PackageReference Include="Scalar.AspNetCore" />
 	<PackageReference Include="SimpleBase" />
-	<PackageReference Include="Swashbuckle.AspNetCore" />
 	<PackageReference Include="Serilog.AspNetCore" />
 	<PackageReference Include="Serilog.Enrichers.Environment" />
 	<PackageReference Include="Serilog.Enrichers.Thread" />
