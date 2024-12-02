@@ -2,6 +2,7 @@ using Immediate.Apis.Shared;
 using Immediate.Handlers.Shared;
 using Immediate.Validations.Shared;
 using LinqToDB;
+using Microsoft.AspNetCore.Http.HttpResults;
 using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.Todos.Models;
 using VsaTemplate.Web.Features.Users.Services;
@@ -13,6 +14,9 @@ namespace VsaTemplate.Web.Features.Todos.Endpoints;
 [MapPost("/api/todos/create")]
 public static partial class CreateTodo
 {
+	internal static Created<Todo> TransformResult(Todo todo) =>
+		TypedResults.Created($"/api/todos/{todo.TodoId}", todo);
+
 	[Validate]
 	public sealed partial record Command : IAuthorizedRequest, IValidationTarget<Command>
 	{
