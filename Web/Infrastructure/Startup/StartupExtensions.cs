@@ -56,6 +56,7 @@ public static class StartupExtensions
 				{
 					if (context.Description.RelativePath?.Split(
 							"/",
+							count: 3,
 							StringSplitOptions.RemoveEmptyEntries
 						) is ["api", var name, ..])
 					{
