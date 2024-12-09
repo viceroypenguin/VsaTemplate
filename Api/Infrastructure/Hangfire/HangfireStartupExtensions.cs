@@ -5,8 +5,11 @@ namespace VsaTemplate.Api.Infrastructure.Hangfire;
 
 public static class HangfireStartupExtensions
 {
-	public static void AddHangfire(this IServiceCollection services, string? connectionString)
+	public static void AddHangfire(this IServiceCollection services, bool enabled, string? connectionString)
 	{
+		if (!enabled)
+			return;
+
 		Guard.IsNotNullOrWhiteSpace(connectionString);
 
 		_ = services.AddHangfire(configuration => configuration

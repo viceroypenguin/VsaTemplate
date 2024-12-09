@@ -37,6 +37,7 @@ try
 	_ = builder.Services.AddSingleton(typeof(Owned<>));
 
 	builder.Services.AddHangfire(
+		builder.Configuration.GetValue("Hangfire:Enabled", defaultValue: true),
 		builder.Configuration["DbContextOptions:ConnectionString"]
 	);
 
@@ -91,7 +92,10 @@ try
 	_ = app.UseExceptionHandler();
 	_ = app.UseRouting();
 	_ = app.UseAuthorization();
-	_ = app.UseHangfire();
+
+	if (app.Configuration.GetValue("Hangfire:Enabled", defaultValue: true))
+		_ = app.UseHangfire();
+
 	_ = app.UseAntiforgery();
 	_ = app.UseLogging();
 
