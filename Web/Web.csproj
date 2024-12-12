@@ -44,8 +44,6 @@
 	<PackageReference Include="MailKit" />
 	<PackageReference Include="Microsoft.AspNetCore.OpenApi" />
 	<PackageReference Include="Microsoft.Data.SqlClient" />
-	<PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
-	<PackageReference Include="Newtonsoft.Json" />
 	<PackageReference Include="Refit" />
 	<PackageReference Include="Scalar.AspNetCore" />
 	<PackageReference Include="SimpleBase" />
@@ -58,7 +56,6 @@
 	<PackageReference Include="Serilog.Sinks.Seq" />
 	<PackageReference Include="SuperLinq" />
 	<PackageReference Include="System.Linq.Async" />
-	<PackageReference Include="System.Text.Json" />
 	<PackageReference Include="ThisAssembly.Git" PrivateAssets="All" />
 	<PackageReference Include="Vogen" />
   </ItemGroup>

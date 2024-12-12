@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
 	<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+	<CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,7 +31,6 @@
 	<PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.11.0" />
 	<PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.11.0" />
 	<PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.2" />
-	<PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
 	<PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
 	<PackageVersion Include="PolySharp" Version="1.15.0" />
 	<PackageVersion Include="Refit" Version="8.0.0" />
