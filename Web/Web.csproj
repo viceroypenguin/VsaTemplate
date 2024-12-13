@@ -44,7 +44,6 @@
 	<PackageReference Include="MailKit" />
 	<PackageReference Include="Microsoft.AspNetCore.OpenApi" />
 	<PackageReference Include="Microsoft.Data.SqlClient" />
-	<PackageReference Include="Refit" />
 	<PackageReference Include="Scalar.AspNetCore" />
 	<PackageReference Include="SimpleBase" />
 	<PackageReference Include="Serilog.AspNetCore" />
