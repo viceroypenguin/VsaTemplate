@@ -34,7 +34,7 @@ public static class LoggingStartupExtensions
 						])
 				)
 				.WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
-				.WriteTo.Seq(serverUrl: "http://172.16.31.6:5341/"));
+				.WriteTo.Seq(serverUrl: "http://172.16.31.6:5341/", formatProvider: CultureInfo.InvariantCulture));
 
 	public static IApplicationBuilder UseLogging(this IApplicationBuilder app) =>
 		app.UseSerilogRequestLogging(o =>
