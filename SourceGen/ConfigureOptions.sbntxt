@@ -1,0 +1,17 @@
+#nullable enable
+
+namespace Microsoft.Extensions.DependencyInjection;
+
+public static class ConfigureAllOptionsExtensions
+{
+	public static IServiceCollection ConfigureAllOptions(this IServiceCollection services)
+	{
+		{{~ for c in classes ~}}
+		services
+			.AddOptions<{{~ c.name ~}}>()
+			.BindConfiguration("{{~ c.path ~}}");
+		{{~ end ~}}
+
+		return services;
+	}
+}

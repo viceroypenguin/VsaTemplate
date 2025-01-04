@@ -1,0 +1,28 @@
+@rendermode InteractiveServer
+
+<aside class="menu">
+    <p class="menu-label">General</p>
+    <ul class="menu-list">
+        <li><NavLink ActiveClass="is-active" Match="NavLinkMatch.All" href="/">Home</NavLink></li>
+    </ul>
+
+    <AuthorizeView>
+        <Authorized>
+            <p class="menu-label">Todo App</p>
+            <ul class="menu-list">
+                <li><NavLink ActiveClass="is-active" Match="NavLinkMatch.All" href="/Todo">Edit Todo List</NavLink></li>
+            </ul>
+        </Authorized>
+    </AuthorizeView>
+
+    <AuthorizeView Policy="@Policies.Admin">
+        <Authorized>
+            <p class="menu-label">Administration</p>
+            <ul class="menu-list">
+                <li><a href="/hangfire">Hangfire</a></li>
+                <li><a href="/scalar/v1">Scalar</a></li>
+                <li><a>@("Commit: " + ThisAssembly.Git.Sha)</a></li>
+            </ul>
+        </Authorized>
+    </AuthorizeView>
+</aside>
