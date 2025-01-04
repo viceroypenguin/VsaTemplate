@@ -25,7 +25,7 @@ public sealed partial class DbContext : DataConnection
 	public DbContext(IOptions<DbContextOptions> options, ILogger<DbContext> logger)
 		: base(
 			dataProvider: SqlServerTools.GetDataProvider(
-				SqlServerVersion.v2019,
+				SqlServerVersion.v2022,
 				SqlServerProvider.MicrosoftDataSqlClient),
 			connectionString: GetConnectionString(options),
 			mappingSchema: s_mappingSchema

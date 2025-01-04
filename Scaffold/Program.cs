@@ -264,6 +264,6 @@ static DataConnection GetSqlServerConnection(string connectionString, string dat
 
 	return SqlServerTools.CreateDataConnection(
 		builder.ToString(),
-		SqlServerVersion.v2019,
+		SqlServerVersion.v2022,
 		SqlServerProvider.MicrosoftDataSqlClient);
 }
