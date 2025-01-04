@@ -2,6 +2,7 @@ using Auth0.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.OpenApi;
+using Microsoft.OpenApi.Extensions;
 using Microsoft.OpenApi.Models;
 
 namespace VsaTemplate.Web.Infrastructure.Startup;
@@ -19,6 +20,29 @@ public static class StartupExtensions
 			_ = o.AddSchemaTransformer(
 				(schema, context, cancellationToken) =>
 				{
+					var type = context.JsonTypeInfo.Type;
+
+					foreach (var attribute in type.GetCustomAttributes(inherit: false))
+					{
+						var underlyingType = attribute switch
+						{
+							ValueObjectAttribute => typeof(int),
+
+							var a when a.GetType() is
+							{
+								Namespace: "Vogen",
+								Name: "ValueObjectAttribute"
+							} t =>
+								t.GenericTypeArguments[0],
+
+							_ => null,
+						};
+
+						if (underlyingType is null)
+							continue;
+
+						schema.Type = OpenApiTypeMapper.MapTypeToOpenApiPrimitiveType(underlyingType).Type;
+					}
 
 					return Task.CompletedTask;
 				}
