@@ -1,5 +1,4 @@
-
-namespace VsaTemplate.Api.Infrastructure;
+namespace VsaTemplate.Api.Infrastructure.Middleware;
 
 [RegisterSingleton(typeof(AddRequestIdHeaderMiddleware))]
 public sealed class AddRequestIdHeaderMiddleware : IMiddleware

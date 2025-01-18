@@ -55,7 +55,6 @@
 	<PackageReference Include="Serilog.Sinks.Seq" />
 	<PackageReference Include="SuperLinq" />
 	<PackageReference Include="System.Linq.Async" />
-	<PackageReference Include="ThisAssembly.Git" PrivateAssets="All" />
 	<PackageReference Include="Vogen" />
   </ItemGroup>
 

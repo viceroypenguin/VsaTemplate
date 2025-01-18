@@ -10,12 +10,12 @@ using Serilog;
 using VsaTemplate.Web;
 using VsaTemplate.Web.Components;
 using VsaTemplate.Web.Database;
-using VsaTemplate.Web.Infrastructure;
 using VsaTemplate.Web.Infrastructure.Authentication;
 using VsaTemplate.Web.Infrastructure.Authorization;
 using VsaTemplate.Web.Infrastructure.Exceptions;
 using VsaTemplate.Web.Infrastructure.Hangfire;
 using VsaTemplate.Web.Infrastructure.Logging;
+using VsaTemplate.Web.Infrastructure.Middleware;
 using VsaTemplate.Web.Infrastructure.Startup;
 
 Log.Logger = new LoggerConfiguration()

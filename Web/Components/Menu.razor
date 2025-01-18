@@ -1,3 +1,4 @@
+@using VsaTemplate.Web.Infrastructure.Startup
 @rendermode InteractiveServer
 
 <aside class="menu">
@@ -21,7 +22,7 @@
             <ul class="menu-list">
                 <li><a href="/hangfire">Hangfire</a></li>
                 <li><a href="/scalar/v1">Scalar</a></li>
-                <li><a>@("Commit: " + ThisAssembly.Git.Sha)</a></li>
+                <li><a>@("Commit: " + ThisAssembly.ShortRevisionId)</a></li>
             </ul>
         </Authorized>
     </AuthorizeView>

@@ -6,6 +6,7 @@ using Serilog.Exceptions.Core;
 using Serilog.Exceptions.MsSqlServer.Destructurers;
 using Serilog.Exceptions.Refit.Destructurers;
 using VsaTemplate.Web.Infrastructure.Hangfire;
+using VsaTemplate.Web.Infrastructure.Startup;
 
 namespace VsaTemplate.Web.Infrastructure.Logging;
 
@@ -22,7 +23,7 @@ public static class LoggingStartupExtensions
 				.Enrich.WithProperty("EnvironmentName", builder.Environment.EnvironmentName)
 				.Enrich.WithThreadId()
 				.Enrich.WithProperty("ExecutionId", Guid.NewGuid())
-				.Enrich.WithProperty("Commit", ThisAssembly.Git.Commit)
+				.Enrich.WithProperty("Commit", ThisAssembly.RevisionId)
 				.Enrich.With<HangfireJobIdEnricher>()
 				.Enrich.WithExceptionDetails(
 					new DestructuringOptionsBuilder()

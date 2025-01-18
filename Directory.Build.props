@@ -14,7 +14,11 @@
 
 	<AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
 
+	<!-- Generating documentation file required for unused usings analyzer -->
 	<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	<!-- 1591 is undocumented apis; don't actually care about documentation atm. -->
 	<NoWarn>$(NoWarn),1591</NoWarn>
+
+	<PublishRepositoryUrl>true</PublishRepositoryUrl>
   </PropertyGroup>
 </Project>

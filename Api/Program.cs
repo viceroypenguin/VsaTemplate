@@ -9,12 +9,12 @@ using Scalar.AspNetCore;
 using Serilog;
 using VsaTemplate.Api;
 using VsaTemplate.Api.Database;
-using VsaTemplate.Api.Infrastructure;
 using VsaTemplate.Api.Infrastructure.Authentication;
 using VsaTemplate.Api.Infrastructure.Authorization;
 using VsaTemplate.Api.Infrastructure.Exceptions;
 using VsaTemplate.Api.Infrastructure.Hangfire;
 using VsaTemplate.Api.Infrastructure.Logging;
+using VsaTemplate.Api.Infrastructure.Middleware;
 using VsaTemplate.Api.Infrastructure.Startup;
 
 Log.Logger = new LoggerConfiguration()
