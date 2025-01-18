@@ -32,10 +32,36 @@ public sealed class CurrentUserService(
 		if (await GetCurrentUser() is not { } user)
 			return false;
 
-		user = await TransformAsync(user);
+		user = new(
+			user
+				.Identities
+				.Where(i => i.AuthenticationType is not "Roles-Cache")
+				.Append(
+					await GetRoleClaimsIdentity(user)
+				)
+		);
 
 		var auth = await authorizationService.AuthorizeAsync(user, policy);
 		return auth.Succeeded;
+	}
+
+	public async Task<ClaimsIdentity> GetRoleClaimsIdentity(ClaimsPrincipal principal)
+	{
+		var claim = principal.FindFirstValue(Claims.Id) ?? "";
+		if (!UserId.TryParse(claim, provider: null, out var userId))
+			ThrowInvalidUserId(claim);
+
+		var roles = await userRolesCache.GetValue(new() { UserId = userId, }, CancellationToken.None);
+
+		return new ClaimsIdentity(
+			principal.Claims
+				.Where(c => !string.Equals(c.Type, ClaimTypes.Role, StringComparison.Ordinal))
+				.Concat(
+					roles
+						.Select(r => new Claim(ClaimTypes.Role, r))
+				),
+			authenticationType: "Roles-Cache"
+		);
 	}
 
 	public async ValueTask<UserId> GetCurrentUserId()
@@ -53,24 +79,4 @@ public sealed class CurrentUserService(
 	[DoesNotReturn]
 	private static void ThrowInvalidUserId(string userId) =>
 		throw new InvalidOperationException($"Unknown user id: {userId}");
-
-	private async Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
-	{
-		var claim = principal.FindFirstValue(Claims.Id) ?? "";
-		if (!UserId.TryParse(claim, provider: null, out var userId))
-			ThrowInvalidUserId(claim);
-
-		var roles = await userRolesCache.GetValue(new() { UserId = userId, });
-
-		return new ClaimsPrincipal(
-			new ClaimsIdentity(
-				principal.Claims
-					.Where(c => !string.Equals(c.Type, ClaimTypes.Role, StringComparison.Ordinal))
-					.Concat(
-						roles
-							.Select(r => new Claim(ClaimTypes.Role, r))
-					)
-			)
-		);
-	}
 }

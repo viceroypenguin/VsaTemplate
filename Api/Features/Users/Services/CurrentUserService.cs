@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components.Authorization;
 using VsaTemplate.Api.Features.Users.Models;
 using VsaTemplate.Api.Infrastructure.Authorization;
 
@@ -10,30 +11,68 @@ namespace VsaTemplate.Api.Features.Users.Services;
 [RegisterSingleton]
 public sealed class CurrentUserService(
 	IAuthorizationService authorizationService,
-	IHttpContextAccessor httpContextAccessor
+	IHttpContextAccessor httpContextAccessor,
+	AuthenticationStateProvider authenticationStateProvider,
+	UserRolesCache userRolesCache
 )
 {
-	private ClaimsPrincipal? GetCurrentUser() =>
-		httpContextAccessor.HttpContext?.User;
+	private async ValueTask<ClaimsPrincipal?> GetCurrentUser()
+	{
+		if (httpContextAccessor.HttpContext is { User: { } user })
+			return user;
+
+		var authenticationState = await authenticationStateProvider
+			.GetAuthenticationStateAsync();
+
+		return authenticationState?.User;
+	}
 
 	public async ValueTask<bool> IsAuthorized(string policy)
 	{
-		if (GetCurrentUser() is not { } user)
+		if (await GetCurrentUser() is not { } user)
 			return false;
+
+		user = new(
+			user
+				.Identities
+				.Where(i => i.AuthenticationType is not "Roles-Cache")
+				.Append(
+					await GetRoleClaimsIdentity(user)
+				)
+		);
 
 		var auth = await authorizationService.AuthorizeAsync(user, policy);
 		return auth.Succeeded;
 	}
 
-	public ValueTask<UserId> GetCurrentUserId()
+	public async Task<ClaimsIdentity> GetRoleClaimsIdentity(ClaimsPrincipal principal)
 	{
-		var user = GetCurrentUser();
+		var claim = principal.FindFirstValue(Claims.Id) ?? "";
+		if (!UserId.TryParse(claim, provider: null, out var userId))
+			ThrowInvalidUserId(claim);
+
+		var roles = await userRolesCache.GetValue(new() { UserId = userId, }, CancellationToken.None);
+
+		return new ClaimsIdentity(
+			principal.Claims
+				.Where(c => !string.Equals(c.Type, ClaimTypes.Role, StringComparison.Ordinal))
+				.Concat(
+					roles
+						.Select(r => new Claim(ClaimTypes.Role, r))
+				),
+			authenticationType: "Roles-Cache"
+		);
+	}
+
+	public async ValueTask<UserId> GetCurrentUserId()
+	{
+		var user = await GetCurrentUser();
 
 		var claim = user?.FindFirstValue(Claims.Id) ?? "";
 		if (!UserId.TryParse(claim, provider: null, out var userId))
 			ThrowInvalidUserId(claim);
 
-		return ValueTask.FromResult(userId);
+		return userId;
 	}
 
 	[StackTraceHidden]
