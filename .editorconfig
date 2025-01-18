@@ -301,6 +301,7 @@ dotnet_diagnostic.SYSLIB1045.severity = error           # SYSLIB1045: Use Genera
 # Miscellaneous analyzers
 dotnet_diagnostic.CA1032.severity = none                # CA1032: Implement standard exception constructors
 dotnet_diagnostic.CA1034.severity = none                # CA1034: Nested types should not be visible
+dotnet_diagnostic.CA1040.severity = none                # CA1040: Avoid empty interfaces
 dotnet_diagnostic.CA1051.severity = error               # CA1051: Do not declare visible instance fields
 dotnet_diagnostic.CA1062.severity = none                # CA1062: Validate arguments of public methods
 dotnet_diagnostic.CA1307.severity = error               # CA1307: Specify StringComparison for clarity
