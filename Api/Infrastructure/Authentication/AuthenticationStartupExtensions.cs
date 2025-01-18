@@ -76,7 +76,9 @@ public static class AuthenticationStartupExtensions
 			{
 				Auth0UserId = Auth0UserId.From(auth0Id),
 				EmailAddress = emailAddress,
-			});
+			},
+			CancellationToken.None
+		);
 
 		user.AddIdentity(new ClaimsIdentity(claims));
 	}
