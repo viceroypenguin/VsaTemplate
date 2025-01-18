@@ -45,6 +45,20 @@ public sealed class CurrentUserService(
 		return auth.Succeeded;
 	}
 
+	public async ValueTask<bool> IsAdmin()
+	{
+		var userId = await GetCurrentUserId();
+		var roles = await userRolesCache.GetValue(new() { UserId = userId, }, CancellationToken.None);
+		return roles.Contains("Admin", StringComparer.OrdinalIgnoreCase);
+	}
+
+	public async ValueTask<bool> IsInRole(string role)
+	{
+		var userId = await GetCurrentUserId();
+		var roles = await userRolesCache.GetValue(new() { UserId = userId, }, CancellationToken.None);
+		return roles.Contains("Admin", StringComparer.OrdinalIgnoreCase) || roles.Contains(role, StringComparer.OrdinalIgnoreCase);
+	}
+
 	public async Task<ClaimsIdentity> GetRoleClaimsIdentity(ClaimsPrincipal principal)
 	{
 		var claim = principal.FindFirstValue(Claims.Id) ?? "";

@@ -28,7 +28,7 @@ try
 	if (builder.Configuration.GetValue("UseSecretsJson", defaultValue: true))
 		_ = builder.Configuration.AddJsonFile("secrets.json", optional: true);
 
-	using var container = new Container();
+	await using var container = new Container();
 	_ = builder.Host.UseServiceProviderFactory(
 		new DryIocServiceProviderFactory(container));
 

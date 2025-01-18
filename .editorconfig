@@ -321,6 +321,7 @@ dotnet_diagnostic.CA1828.severity = warning             # CA1828: Do not use Cou
 dotnet_diagnostic.CA1829.severity = warning             # CA1829: Use Length/Count property instead of Enumerable.Count method
 dotnet_diagnostic.CA1841.severity = error               # CA1841: Prefer Dictionary Contains methods
 dotnet_diagnostic.CA1845.severity = warning             # CA1845: Use span-based 'string.Concat'
+dotnet_diagnostic.CA1848.severity = suggestion          # CA1848: Use the LoggerMessage delegates
 dotnet_diagnostic.CA1852.severity = warning             # CA1852: CA1852: Seal internal types
 dotnet_diagnostic.CA1853.severity = warning             # CA1853: Unnecessary call to 'Dictionary.ContainsKey(key)'
 dotnet_diagnostic.CA1854.severity = warning             # CA1854: Prefer the IDictionary.TryGetValue(TKey, out TValue) method
