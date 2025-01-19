@@ -1,0 +1,10 @@
+<Project>
+  <Target Name="_SetupSourceControlMetadata" AfterTargets="InitializeSourceControlInformation">
+	<ItemGroup>
+	  <!-- The full commit SHA -->
+	  <AssemblyMetadata Include="SourceRevision" Value="$(SourceRevisionId)" />
+	  <!-- e.g. refs/heads/master -->
+	  <AssemblyMetadata Include="SourceBranch" Value="$(SourceBranchName)" />
+	</ItemGroup>
+  </Target>
+</Project>
