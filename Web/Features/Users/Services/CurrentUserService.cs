@@ -63,11 +63,11 @@ public sealed class CurrentUserService(
 	{
 		var claim = principal.FindFirstValue(Claims.Id) ?? "";
 		if (!UserId.TryParse(claim, provider: null, out var userId))
-			ThrowInvalidUserId(claim);
+			return new([], authenticationType: "Roles-Cache");
 
 		var roles = await userRolesCache.GetValue(new() { UserId = userId, }, CancellationToken.None);
 
-		return new ClaimsIdentity(
+		return new(
 			principal.Claims
 				.Where(c => !string.Equals(c.Type, ClaimTypes.Role, StringComparison.Ordinal))
 				.Concat(

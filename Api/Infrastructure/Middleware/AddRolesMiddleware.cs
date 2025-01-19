@@ -9,7 +9,7 @@ public sealed class AddRolesMiddleware(
 {
 	public async Task InvokeAsync(HttpContext context, RequestDelegate next)
 	{
-		if (context.User is { } user)
+		if (context.User is { Identity.IsAuthenticated: true } user)
 		{
 			user.AddIdentity(
 				await userService.GetRoleClaimsIdentity(user)
