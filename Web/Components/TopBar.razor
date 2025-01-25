@@ -1,0 +1,38 @@
+@rendermode InteractiveServer
+
+<nav class="navbar">
+    <div class="container">
+        <div class="navbar-brand">
+            <a class="navbar-item">VSA Template</a>
+        </div>
+
+        <div class="navbar-end">
+            <AuthorizeView>
+                <Authorized>
+                    <div class="navbar-item has-dropdown is-hoverable">
+                        <a class="navbar-link">
+                            @context.User.Identity?.Name
+                        </a>
+
+                        <div class="navbar-dropdown">
+                            <a class="navbar-item" href="/logout">
+                                <span class="icon mr-1">
+                                    <i class="fa-solid fa-right-from-bracket"></i>
+                                </span>
+                                Logout
+                            </a>
+                        </div>
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <a class="navbar-item" href="/login?redirectUri=/">
+                        <span class="icon mr-1">
+                            <i class="fas fa-sign-in-alt"></i>
+                        </span>
+                        Login
+                    </a>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+    </div>
+</nav>

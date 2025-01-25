@@ -1,0 +1,17 @@
+#nullable enable
+
+using LinqToDB.Data;
+
+namespace {{ root_namespace }}.Database;
+
+public sealed partial class DbContext : DataConnection
+{
+	private void SyncAllEnums()
+	{
+		{{~ for n in names ~}}
+		Sync{{ n }}();
+		{{~ end ~}}
+
+		_logger.LogInformation("Synchronized all enums.");
+	}
+}

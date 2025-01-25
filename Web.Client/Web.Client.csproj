@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<RootNamespace>VsaTemplate.Web.Client</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+	<PackageReference Include="Refit" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<ProjectReference Include="../Web/Web.csproj" />
+  </ItemGroup>
+
+</Project>
