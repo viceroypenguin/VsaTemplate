@@ -1,9 +1,10 @@
 using System.Globalization;
 using Immediate.Cache;
 using Immediate.Handlers.Shared;
+using LinqToDB;
 using Microsoft.Extensions.Caching.Memory;
+using VsaTemplate.Api.Database;
 using VsaTemplate.Api.Features.Todos.Models;
-using VsaTemplate.Api.Features.Todos.Queries;
 
 namespace VsaTemplate.Api.Features.Todos.Services;
 
@@ -18,4 +19,23 @@ public sealed class TodoCache(
 {
 	protected override string TransformKey(GetTodo.Request request) =>
 		string.Create(CultureInfo.InvariantCulture, $"Todo-{request.TodoId}");
+}
+
+[Handler]
+public static partial class GetTodo
+{
+	public sealed record Request
+	{
+		public required TodoId TodoId { get; init; }
+	}
+
+	private static async ValueTask<Todo> HandleAsync(
+		Request request,
+		DbContext context,
+		CancellationToken token
+	) =>
+		await context.Todos
+			.Where(t => t.TodoId == request.TodoId)
+			.Select(Todo.FromDatabaseEntity)
+			.FirstAsync(token);
 }

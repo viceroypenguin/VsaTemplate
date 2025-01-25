@@ -4,6 +4,7 @@ using Immediate.Handlers.Shared;
 using Immediate.Validations.Shared;
 using LinqToDB;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using VsaTemplate.Api.Database;
 using VsaTemplate.Api.Features.Users.Models;
 using VsaTemplate.Api.Infrastructure.Authorization;
@@ -15,9 +16,14 @@ namespace VsaTemplate.Api.Features.Users.Endpoints;
 [Authorize(Policy = Policies.Admin)]
 public static partial class CreateUser
 {
+	internal static Created<Response> TransformResult(Response response) =>
+		TypedResults.Created($"/api/users/{response.UserId}", response);
+
 	[Validate]
 	public sealed partial record Command : IValidationTarget<Command>
 	{
+		public static string? Policy => Policies.Admin;
+
 		[NotEmpty]
 		public required string EmailAddress { get; init; }
 
@@ -28,13 +34,19 @@ public static partial class CreateUser
 		public required IReadOnlyList<string> Roles { get; init; }
 	}
 
-	private static async ValueTask<User> HandleAsync(
+	public sealed record Response
+	{
+		public required UserId UserId { get; init; }
+	}
+
+	private static async ValueTask<Response> HandleAsync(
 		Command query,
 		DbContext context,
-		CancellationToken token)
+		CancellationToken token
+	)
 	{
-		var user = await context.Users
-			.InsertWithOutputAsync(
+		var userId = await context
+			.InsertWithInt32IdentityAsync(
 				new Database.Models.User
 				{
 					Name = query.Name,
@@ -42,8 +54,12 @@ public static partial class CreateUser
 					IsActive = query.IsActive,
 					Roles = JsonSerializer.Serialize(query.Roles),
 				},
-				token: token);
+				token: token
+			);
 
-		return user.ToDto();
+		return new()
+		{
+			UserId = UserId.From(userId),
+		};
 	}
 }

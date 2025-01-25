@@ -14,8 +14,8 @@ namespace VsaTemplate.Web.Features.Todos.Endpoints;
 [MapPost("/api/todos/create")]
 public static partial class CreateTodo
 {
-	internal static Created<Todo> TransformResult(Todo todo) =>
-		TypedResults.Created($"/api/todos/{todo.TodoId}", todo);
+	internal static Created<Response> TransformResult(Response response) =>
+		TypedResults.Created($"/api/todos/{response.TodoId}", response);
 
 	[Validate]
 	public sealed partial record Command : IAuthorizedRequest, IValidationTarget<Command>
@@ -30,7 +30,12 @@ public static partial class CreateTodo
 		public TodoPriority TodoPriority { get; init; }
 	}
 
-	private static async ValueTask<Todo> HandleAsync(
+	public sealed record Response
+	{
+		public TodoId TodoId { get; init; }
+	}
+
+	private static async ValueTask<Response> HandleAsync(
 		Command command,
 		DbContext context,
 		CurrentUserService currentUserService,
@@ -51,14 +56,9 @@ public static partial class CreateTodo
 			token: token
 		);
 
-		return new Todo
+		return new()
 		{
 			TodoId = (TodoId)id,
-			Name = command.Name,
-			Comment = command.Comment,
-			TodoPriority = command.TodoPriority,
-			TodoStatus = command.TodoStatus,
-			UserId = userId,
 		};
 	}
 }

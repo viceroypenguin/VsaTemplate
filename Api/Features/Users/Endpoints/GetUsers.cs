@@ -21,6 +21,6 @@ public static partial class GetUsers
 		CancellationToken token
 	) =>
 		await context.Users
-			.SelectDto()
+			.Select(User.FromDatabaseEntity)
 			.ToListAsync(token);
 }

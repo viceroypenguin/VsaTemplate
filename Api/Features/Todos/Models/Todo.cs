@@ -1,5 +1,5 @@
+using System.Linq.Expressions;
 using Immediate.Validations.Shared;
-using VsaTemplate.Api.Features.Todos.Authorization;
 using VsaTemplate.Api.Features.Users.Models;
 
 namespace VsaTemplate.Api.Features.Todos.Models;
@@ -17,7 +17,7 @@ public readonly partial record struct TodoId : IValidationTarget<TodoId>
 	}
 }
 
-public sealed record Todo : ITodoRequest
+public sealed record Todo
 {
 	public required TodoId TodoId { get; init; }
 	public required string Name { get; init; }
@@ -25,4 +25,15 @@ public sealed record Todo : ITodoRequest
 	public required TodoStatus TodoStatus { get; init; }
 	public required TodoPriority TodoPriority { get; init; }
 	public required UserId UserId { get; init; }
+
+	public static readonly Expression<Func<Database.Models.Todo, Todo>> FromDatabaseEntity =
+		t => new Todo
+		{
+			TodoId = t.TodoId,
+			Name = t.Name,
+			Comment = t.Comment,
+			TodoStatus = t.TodoStatusId,
+			TodoPriority = t.TodoPriorityId,
+			UserId = t.UserId,
+		};
 }

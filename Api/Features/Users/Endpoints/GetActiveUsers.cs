@@ -22,6 +22,6 @@ public static partial class GetActiveUsers
 	) =>
 		await context.Users
 			.Where(u => u.IsActive)
-			.SelectDto()
+			.Select(User.FromDatabaseEntity)
 			.ToListAsync(token);
 }

@@ -1,3 +1,6 @@
+using System.Linq.Expressions;
+using System.Text.Json;
+
 namespace VsaTemplate.Api.Features.Users.Models;
 
 public sealed record User
@@ -18,4 +21,19 @@ public sealed record User
 	public bool Equals(User? other) =>
 		other != null
 		&& UserId.Equals(other.UserId);
+
+	public static readonly Expression<Func<Database.Models.User, User>> FromDatabaseEntity =
+		u => new()
+		{
+			UserId = u.UserId,
+			Name = u.Name,
+			Auth0UserId = u.Auth0UserId,
+			EmailAddress = u.EmailAddress,
+			IsActive = u.IsActive,
+			LastLogin = u.LastLogin,
+			Roles = ToRoles(u.Roles),
+		};
+
+	private static List<string> ToRoles(string roles) =>
+		JsonSerializer.Deserialize<List<string>>(roles)!;
 }

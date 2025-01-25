@@ -12,7 +12,7 @@ using VsaTemplate.Api.Infrastructure.Authorization;
 namespace VsaTemplate.Api.Features.Users.Endpoints;
 
 [Handler]
-[MapPut("/api/users/active")]
+[MapPut("/api/users")]
 [Authorize(Policy = Policies.Admin)]
 public static partial class UpdateUser
 {
@@ -31,14 +31,14 @@ public static partial class UpdateUser
 		public required IReadOnlyList<string> Roles { get; init; }
 	}
 
-	private static async ValueTask<User> HandleAsync(
+	private static async ValueTask HandleAsync(
 		Query query,
 		DbContext context,
 		CancellationToken token)
 	{
 		var rows = await context.Users
-			.Where(u => u.UserId == query.UserId.Value)
-			.UpdateWithOutputAsync(
+			.Where(u => u.UserId == query.UserId)
+			.UpdateAsync(
 				u => new()
 				{
 					Name = query.Name,
@@ -46,13 +46,10 @@ public static partial class UpdateUser
 					IsActive = query.IsActive,
 					Roles = JsonSerializer.Serialize(query.Roles, JsonSerializerOptions.Default),
 				},
-				(del, ins) => ins
-			)
-			.ToListAsync(token);
+				token: token
+			);
 
-		if (rows.Count != 1)
+		if (rows != 1)
 			NotFoundException.ThrowNotFoundException("User");
-
-		return rows[0].ToDto();
 	}
 }

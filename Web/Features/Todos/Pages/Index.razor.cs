@@ -63,9 +63,10 @@ public sealed partial class Index : BlazorComponentBase
 		_todos.Add(new()
 		{
 			TodoId = todo.TodoId,
-			Name = todo.Name,
+			Name = _newTodoText,
 			IsComplete = false,
 		});
+
 		_newTodoText = "";
 	}
 

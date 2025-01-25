@@ -27,6 +27,6 @@ public static partial class GetUser
 	) =>
 		await context.Users
 			.Where(u => u.UserId == query.UserId)
-			.SelectDto()
+			.Select(User.FromDatabaseEntity)
 			.FirstNotFoundAsync("User", token);
 }

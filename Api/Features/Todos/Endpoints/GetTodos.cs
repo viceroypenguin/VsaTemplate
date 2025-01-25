@@ -36,7 +36,7 @@ public static partial class GetTodos
 			todos = todos.Where(t => t.TodoStatusId != TodoStatus.Completed);
 
 		return await todos
-			.SelectDto()
+			.Select(Todo.FromDatabaseEntity)
 			.ToListAsync(token);
 	}
 }
