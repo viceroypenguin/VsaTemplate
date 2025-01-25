@@ -46,10 +46,11 @@ public static partial class UpdateUser
 					IsActive = query.IsActive,
 					Roles = JsonSerializer.Serialize(query.Roles, JsonSerializerOptions.Default),
 				},
-				(del, ins) => ins,
-				token);
+				(del, ins) => ins
+			)
+			.ToListAsync(token);
 
-		if (rows.Length != 1)
+		if (rows.Count != 1)
 			NotFoundException.ThrowNotFoundException("User");
 
 		return rows[0].ToDto();
