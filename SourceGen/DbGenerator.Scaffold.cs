@@ -99,19 +99,27 @@ public sealed partial class DbGenerator
 		SourceProductionContext spc,
 		IEnumerable<(string ColumnName, string TypeName, string UnderlyingTypeName, bool IsEnum)> context,
 		string rootNamespace,
-		EquatableReadOnlyList<string?> schemas,
 		Template template
 	)
 	{
 		var types = context
-			.Select(x => new { x.UnderlyingTypeName, x.TypeName })
+			.Where(x => !x.IsEnum)
+			.Select(x => new
+			{
+				SqlDataType = x.UnderlyingTypeName switch
+				{
+					"int" => "Int32",
+					"string" => "DbVarChar",
+					_ => "Unknown",
+				},
+				x.TypeName,
+			})
 			.OrderBy(x => x.TypeName, StringComparer.Ordinal);
 
 		var output = template.Render(
 			new
 			{
 				Types = types,
-				Schemas = schemas.Collection,
 				RootNamespace = rootNamespace,
 			});
 

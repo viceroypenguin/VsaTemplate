@@ -81,8 +81,8 @@ public sealed partial class DbGenerator : IIncrementalGenerator
 
 		var schemaTemplate = Utility.GetScribanTemplate("DbScaffold.Schema");
 		context.RegisterSourceOutput(
-			allTypes.Combine(rootNamespace).Combine(schemas),
-			(spc, types) => RenderSchema(spc, types.Left.Left, types.Left.Right, types.Right, schemaTemplate)
+			allTypes.Combine(rootNamespace),
+			(spc, types) => RenderSchema(spc, types.Left, types.Right, schemaTemplate)
 		);
 
 		var perEnumTemplate = Utility.GetScribanTemplate("PerEnum");

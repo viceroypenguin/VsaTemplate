@@ -2,11 +2,10 @@
 
 using System.Globalization;
 using LinqToDB;
+using LinqToDB.Common;
 using LinqToDB.Data;
 using LinqToDB.Mapping;
-{{~ for s in schemas ~}}
-using {{ root_namespace }}.Database.Models.{{ s }};
-{{~ end ~}}
+using LinqToDB.SqlQuery;
 
 namespace {{ root_namespace }}.Database;
 
@@ -17,9 +16,10 @@ public sealed partial class DbContext : DataConnection
 		var schema = new MappingSchema();
 
 		{{~ for t in types ~}}
+		schema.AddScalarType(typeof({{ t.type_name }}), SqlDataType.{{ t.sql_data_type }});
 		_ = schema.SetValueToSqlConverter(typeof({{ t.type_name }}), (sb, _, o) => sb.AppendFormat(CultureInfo.InvariantCulture, $"'{o}'"));
-		{{~ end ~}}
 
+		{{~ end ~}}
 		return schema;
 	}
 }
