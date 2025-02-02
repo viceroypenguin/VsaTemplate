@@ -1,0 +1,22 @@
+[*.cs]
+dotnet_diagnostic.CA1031.severity = none                # CA1031: Do not catch general exception types
+dotnet_diagnostic.CA1852.severity = none                # CA1852: Type can be sealed because it has no subtypes in its containing assembly and is not externally visible
+dotnet_diagnostic.CA2007.severity = none                # CA2007: Consider calling ConfigureAwait on the awaited task
+
+dotnet_diagnostic.SYSLIB1045.severity = none			# SYSLIB1045: Convert to 'GeneratedRegexAttribute'.
+
+dotnet_diagnostic.IDE0005.severity = none
+
+[obj/Debug/**/*.cs]
+# Mark code as excluded and generated
+# NB: This disables regular analyzers by default
+exclude = true
+generated_code = true
+
+# Disable any active Roslyn analyzers
+dotnet_analyzer_diagnostic.severity = none
+
+# These are security analyzers and must be manually disabled
+dotnet_diagnostic.CA5350.severity = none
+dotnet_diagnostic.CA5351.severity = none
+dotnet_diagnostic.CA5394.severity = none
