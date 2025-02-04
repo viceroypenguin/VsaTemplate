@@ -1,15 +1,15 @@
-﻿@rendermode InteractiveServer
+@rendermode InteractiveServer
 @inject IJSRuntime JSRuntime
 
 <span class="local-time @Class" 
   @ref="divElement" 
   @attributes="Attributes"
   data-format="@Format" 
-  data-time="@DateTime.UtcDateTime.ToString("O")"></span>
+  data-time="@DateTime?.UtcDateTime.ToString("O")"></span>
 
 @code {
     [Parameter]
-    public DateTimeOffset DateTime { get; set; }
+    public DateTimeOffset? DateTime { get; set; }
 
     [Parameter]
     public required string Format { get; set; }
@@ -44,6 +44,9 @@
     [JSInvokable]
     public static Task<string> DateFormat(string tagDate, int offsetMinutes, string? formatValue)
     {
+        if (string.IsNullOrWhiteSpace(tagDate))
+            return Task.FromResult("");
+
         var date = DateTimeOffset.Parse(tagDate);
         var offset = new TimeSpan(hours: 0, minutes: offsetMinutes, seconds: 0);
         date = date.ToOffset(offset);
