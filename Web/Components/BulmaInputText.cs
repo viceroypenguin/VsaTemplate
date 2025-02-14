@@ -99,8 +99,7 @@ public sealed partial class BulmaInputText<TValue, TComponent> : BlazorComponent
 		builder.CloseElement();
 	}
 
-	private void UpdateAttributesForState(State state)
-	{
+	private void UpdateAttributesForState(State state) =>
 		AdditionalAttributes = new Dictionary<string, object>(
 			AdditionalAttributes?.AsEnumerable() ?? [],
 			StringComparer.OrdinalIgnoreCase
@@ -108,7 +107,6 @@ public sealed partial class BulmaInputText<TValue, TComponent> : BlazorComponent
 		{
 			["class"] = GetInputCssForState(state),
 		};
-	}
 
 	private State GetState()
 	{
