@@ -1,0 +1,53 @@
+@page "/todo"
+@inherits BlazorComponentBase
+@rendermode InteractiveServer
+
+@if (_todos is null)
+{
+    @: Loading...
+    return;
+}
+
+<div class="level">
+    <div class="level-left">
+        <div class="level-item">
+            <div class="field has-addons">
+                <p class="control">
+                    <InputText class="input" @bind-Value="@_newTodoText" placeholder="New Todo Item..." />
+                </p>
+                <p class="control">
+                    <button class="button" @onclick="AddTodo">
+                        Add
+                    </button>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="level-right">
+        <label class="checkbox">
+            Show Completed
+            <input type="checkbox" checked="@_showCompleted"
+                   @onchange="@(args => LoadTodos((bool)args.Value!))" />
+        </label>
+    </div>
+</div>
+
+<div class="content">
+    <ul>
+        @foreach (var t in _todos)
+        {
+            <li>
+                <label class="checkbox" style="@(t.IsComplete ? "text-decoration: line-through" : "")">
+                    <input type="checkbox"
+                           checked="@t.IsComplete"
+                           @onclick="@(() => Complete(t))"
+                           @onclick:preventDefault="true"
+                           @onclick:stopPropagation="true" />
+
+                    @t.Name
+                </label>
+            </li>
+        }
+    </ul>
+</div>
