@@ -1,0 +1,621 @@
+[
+  {
+    "PropertyName": "ApiKeys",
+    "TypeName": "ApiKey",
+    "TableName": "ApiKey",
+    "SchemaName": null,
+    "Properties": {
+      "Collection": [
+        {
+          "TypeName": "int",
+          "PropertyName": "ApiKeyId",
+          "ColumnName": "ApiKeyId",
+          "IsNullable": false,
+          "DataType": "int",
+          "ForceNotNull": false,
+          "IsPrimaryKey": true,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "int",
+          "PropertyName": "OwnerUserId",
+          "ColumnName": "OwnerUserId",
+          "IsNullable": false,
+          "DataType": "int",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        }
+      ],
+      "Count": 2
+    },
+    "Associations": {
+      "Collection": [
+        {
+          "Name": "FK_ApiKey_Owner",
+          "CanBeNull": false,
+          "ThisKeys": "OwnerUserId",
+          "OtherName": "OwnerUser",
+          "OtherType": "User",
+          "OtherKeys": "UserId"
+        },
+        {
+          "Name": "FK_ApiKey_User",
+          "CanBeNull": false,
+          "ThisKeys": "ApiKeyId",
+          "OtherName": "User",
+          "OtherType": "User",
+          "OtherKeys": "UserId"
+        }
+      ],
+      "Count": 2
+    }
+  },
+  {
+    "PropertyName": "Todos",
+    "TypeName": "Todo",
+    "TableName": "Todo",
+    "SchemaName": null,
+    "Properties": {
+      "Collection": [
+        {
+          "TypeName": "string",
+          "PropertyName": "Comment",
+          "ColumnName": "Comment",
+          "IsNullable": true,
+          "DataType": "varchar(max)",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "string",
+          "PropertyName": "Name",
+          "ColumnName": "Name",
+          "IsNullable": false,
+          "DataType": "varchar(200)",
+          "ForceNotNull": true,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "int",
+          "PropertyName": "TodoId",
+          "ColumnName": "TodoId",
+          "IsNullable": false,
+          "DataType": "int",
+          "ForceNotNull": false,
+          "IsPrimaryKey": true,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": true,
+          "SkipOnInsert": true,
+          "SkipOnUpdate": true
+        },
+        {
+          "TypeName": "int",
+          "PropertyName": "TodoPriorityId",
+          "ColumnName": "TodoPriorityId",
+          "IsNullable": false,
+          "DataType": "int",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "int",
+          "PropertyName": "TodoStatusId",
+          "ColumnName": "TodoStatusId",
+          "IsNullable": false,
+          "DataType": "int",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "int",
+          "PropertyName": "UserId",
+          "ColumnName": "UserId",
+          "IsNullable": false,
+          "DataType": "int",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "global::System.DateTime",
+          "PropertyName": "ValidFrom",
+          "ColumnName": "ValidFrom",
+          "IsNullable": false,
+          "DataType": "datetime2(7)",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": true,
+          "SkipOnUpdate": true
+        },
+        {
+          "TypeName": "global::System.DateTime",
+          "PropertyName": "ValidTo",
+          "ColumnName": "ValidTo",
+          "IsNullable": false,
+          "DataType": "datetime2(7)",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": true,
+          "SkipOnUpdate": true
+        }
+      ],
+      "Count": 8
+    },
+    "Associations": {
+      "Collection": [
+        {
+          "Name": "FK_Todo_TodoPriority",
+          "CanBeNull": false,
+          "ThisKeys": "TodoPriorityId",
+          "OtherName": "TodoPriority",
+          "OtherType": "TodoPriority",
+          "OtherKeys": "TodoPriorityId"
+        },
+        {
+          "Name": "FK_Todo_TodoStatus",
+          "CanBeNull": false,
+          "ThisKeys": "TodoStatusId",
+          "OtherName": "TodoStatus",
+          "OtherType": "TodoStatus",
+          "OtherKeys": "TodoStatusId"
+        },
+        {
+          "Name": "FK_Todo_User",
+          "CanBeNull": false,
+          "ThisKeys": "UserId",
+          "OtherName": "User",
+          "OtherType": "User",
+          "OtherKeys": "UserId"
+        }
+      ],
+      "Count": 3
+    }
+  },
+  {
+    "PropertyName": "TodoHistories",
+    "TypeName": "TodoHistory",
+    "TableName": "TodoHistory",
+    "SchemaName": null,
+    "Properties": {
+      "Collection": [
+        {
+          "TypeName": "string",
+          "PropertyName": "Comment",
+          "ColumnName": "Comment",
+          "IsNullable": true,
+          "DataType": "varchar(max)",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": true,
+          "SkipOnUpdate": true
+        },
+        {
+          "TypeName": "string",
+          "PropertyName": "Name",
+          "ColumnName": "Name",
+          "IsNullable": false,
+          "DataType": "varchar(200)",
+          "ForceNotNull": true,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": true,
+          "SkipOnUpdate": true
+        },
+        {
+          "TypeName": "int",
+          "PropertyName": "TodoId",
+          "ColumnName": "TodoId",
+          "IsNullable": false,
+          "DataType": "int",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": true,
+          "SkipOnUpdate": true
+        },
+        {
+          "TypeName": "int",
+          "PropertyName": "TodoPriorityId",
+          "ColumnName": "TodoPriorityId",
+          "IsNullable": false,
+          "DataType": "int",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": true,
+          "SkipOnUpdate": true
+        },
+        {
+          "TypeName": "int",
+          "PropertyName": "TodoStatusId",
+          "ColumnName": "TodoStatusId",
+          "IsNullable": false,
+          "DataType": "int",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": true,
+          "SkipOnUpdate": true
+        },
+        {
+          "TypeName": "int",
+          "PropertyName": "UserId",
+          "ColumnName": "UserId",
+          "IsNullable": false,
+          "DataType": "int",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": true,
+          "SkipOnUpdate": true
+        },
+        {
+          "TypeName": "global::System.DateTime",
+          "PropertyName": "ValidFrom",
+          "ColumnName": "ValidFrom",
+          "IsNullable": false,
+          "DataType": "datetime2(7)",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": true,
+          "SkipOnUpdate": true
+        },
+        {
+          "TypeName": "global::System.DateTime",
+          "PropertyName": "ValidTo",
+          "ColumnName": "ValidTo",
+          "IsNullable": false,
+          "DataType": "datetime2(7)",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": true,
+          "SkipOnUpdate": true
+        }
+      ],
+      "Count": 8
+    },
+    "Associations": {
+      "Collection": [],
+      "Count": 0
+    }
+  },
+  {
+    "PropertyName": "TodoPriorities",
+    "TypeName": "TodoPriority",
+    "TableName": "TodoPriority",
+    "SchemaName": null,
+    "Properties": {
+      "Collection": [
+        {
+          "TypeName": "string",
+          "PropertyName": "Name",
+          "ColumnName": "Name",
+          "IsNullable": false,
+          "DataType": "varchar(200)",
+          "ForceNotNull": true,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "int",
+          "PropertyName": "TodoPriorityId",
+          "ColumnName": "TodoPriorityId",
+          "IsNullable": false,
+          "DataType": "int",
+          "ForceNotNull": false,
+          "IsPrimaryKey": true,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        }
+      ],
+      "Count": 2
+    },
+    "Associations": {
+      "Collection": [
+        {
+          "Name": "FK_Todo_TodoPriority_BackReference",
+          "CanBeNull": true,
+          "ThisKeys": "TodoPriorityId",
+          "OtherName": "Todos",
+          "OtherType": "IEnumerable\u003CTodo\u003E",
+          "OtherKeys": "TodoPriorityId"
+        }
+      ],
+      "Count": 1
+    }
+  },
+  {
+    "PropertyName": "TodoStatuses",
+    "TypeName": "TodoStatus",
+    "TableName": "TodoStatus",
+    "SchemaName": null,
+    "Properties": {
+      "Collection": [
+        {
+          "TypeName": "string",
+          "PropertyName": "Name",
+          "ColumnName": "Name",
+          "IsNullable": false,
+          "DataType": "varchar(200)",
+          "ForceNotNull": true,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "int",
+          "PropertyName": "TodoStatusId",
+          "ColumnName": "TodoStatusId",
+          "IsNullable": false,
+          "DataType": "int",
+          "ForceNotNull": false,
+          "IsPrimaryKey": true,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        }
+      ],
+      "Count": 2
+    },
+    "Associations": {
+      "Collection": [
+        {
+          "Name": "FK_Todo_TodoStatus_BackReference",
+          "CanBeNull": true,
+          "ThisKeys": "TodoStatusId",
+          "OtherName": "Todos",
+          "OtherType": "IEnumerable\u003CTodo\u003E",
+          "OtherKeys": "TodoStatusId"
+        }
+      ],
+      "Count": 1
+    }
+  },
+  {
+    "PropertyName": "Users",
+    "TypeName": "User",
+    "TableName": "User",
+    "SchemaName": null,
+    "Properties": {
+      "Collection": [
+        {
+          "TypeName": "string",
+          "PropertyName": "Auth0UserId",
+          "ColumnName": "Auth0UserId",
+          "IsNullable": true,
+          "DataType": "nvarchar(100)",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "string",
+          "PropertyName": "EmailAddress",
+          "ColumnName": "EmailAddress",
+          "IsNullable": false,
+          "DataType": "nvarchar(500)",
+          "ForceNotNull": true,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "bool",
+          "PropertyName": "IsActive",
+          "ColumnName": "IsActive",
+          "IsNullable": false,
+          "DataType": "bit",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "global::System.DateTimeOffset",
+          "PropertyName": "LastLogin",
+          "ColumnName": "LastLogin",
+          "IsNullable": true,
+          "DataType": "datetimeoffset(7)",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "string",
+          "PropertyName": "Name",
+          "ColumnName": "Name",
+          "IsNullable": true,
+          "DataType": "nvarchar(200)",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "string",
+          "PropertyName": "Roles",
+          "ColumnName": "Roles",
+          "IsNullable": false,
+          "DataType": "nvarchar(max)",
+          "ForceNotNull": true,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "int",
+          "PropertyName": "UserId",
+          "ColumnName": "UserId",
+          "IsNullable": false,
+          "DataType": "int",
+          "ForceNotNull": false,
+          "IsPrimaryKey": true,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": true,
+          "SkipOnInsert": true,
+          "SkipOnUpdate": true
+        }
+      ],
+      "Count": 7
+    },
+    "Associations": {
+      "Collection": [
+        {
+          "Name": "FK_ApiKey_User_BackReference",
+          "CanBeNull": true,
+          "ThisKeys": "UserId",
+          "OtherName": "ApiKey",
+          "OtherType": "ApiKey?",
+          "OtherKeys": "ApiKeyId"
+        },
+        {
+          "Name": "FK_ApiKey_Owner_BackReference",
+          "CanBeNull": true,
+          "ThisKeys": "UserId",
+          "OtherName": "ApiKeys",
+          "OtherType": "IEnumerable\u003CApiKey\u003E",
+          "OtherKeys": "OwnerUserId"
+        },
+        {
+          "Name": "FK_Todo_User_BackReference",
+          "CanBeNull": true,
+          "ThisKeys": "UserId",
+          "OtherName": "Todos",
+          "OtherType": "IEnumerable\u003CTodo\u003E",
+          "OtherKeys": "UserId"
+        }
+      ],
+      "Count": 3
+    }
+  },
+  {
+    "PropertyName": "VersionHistories",
+    "TypeName": "VersionHistory",
+    "TableName": "VersionHistory",
+    "SchemaName": null,
+    "Properties": {
+      "Collection": [
+        {
+          "TypeName": "global::System.DateTimeOffset",
+          "PropertyName": "ExecutionEnd",
+          "ColumnName": "ExecutionEnd",
+          "IsNullable": false,
+          "DataType": "datetimeoffset(7)",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "global::System.DateTimeOffset",
+          "PropertyName": "ExecutionStart",
+          "ColumnName": "ExecutionStart",
+          "IsNullable": false,
+          "DataType": "datetimeoffset(7)",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "string",
+          "PropertyName": "SqlFile",
+          "ColumnName": "SqlFile",
+          "IsNullable": false,
+          "DataType": "varchar(50)",
+          "ForceNotNull": true,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "int",
+          "PropertyName": "VersionHistoryId",
+          "ColumnName": "VersionHistoryId",
+          "IsNullable": false,
+          "DataType": "int",
+          "ForceNotNull": false,
+          "IsPrimaryKey": true,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": true,
+          "SkipOnInsert": true,
+          "SkipOnUpdate": true
+        }
+      ],
+      "Count": 4
+    },
+    "Associations": {
+      "Collection": [],
+      "Count": 0
+    }
+  }
+]

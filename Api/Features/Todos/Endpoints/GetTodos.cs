@@ -1,0 +1,42 @@
+using Immediate.Apis.Shared;
+using Immediate.Handlers.Shared;
+using LinqToDB;
+using Microsoft.AspNetCore.Authorization;
+using SuperLinq;
+using VsaTemplate.Api.Database;
+using VsaTemplate.Api.Features.Todos.Models;
+using VsaTemplate.Api.Features.Users.Services;
+using VsaTemplate.Api.Infrastructure.Authorization;
+
+namespace VsaTemplate.Api.Features.Todos.Endpoints;
+
+[Handler]
+[MapGet("/api/todos")]
+[Authorize(Policy = Policies.ValidUser)]
+public static partial class GetTodos
+{
+	public sealed record Query
+	{
+		public required bool? ShowCompleted { get; init; }
+	}
+
+	private static async ValueTask<IReadOnlyList<Todo>> HandleAsync(
+		Query query,
+		CurrentUserService currentUserService,
+		DbContext context,
+		CancellationToken token
+	)
+	{
+		var userId = await currentUserService.GetCurrentUserId();
+
+		var todos = context.Todos
+			.Where(t => t.UserId == userId);
+
+		if (query.ShowCompleted is not true)
+			todos = todos.Where(t => t.TodoStatusId != TodoStatus.Completed);
+
+		return await todos
+			.Select(Todo.FromDatabaseEntity)
+			.ToListAsync(token);
+	}
+}
