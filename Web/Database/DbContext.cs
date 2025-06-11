@@ -1,4 +1,5 @@
 using CommunityToolkit.Diagnostics;
+using LinqToDB;
 using LinqToDB.Data;
 using LinqToDB.DataProvider.SqlServer;
 using LinqToDB.Mapping;
@@ -24,11 +25,15 @@ public sealed partial class DbContext : DataConnection
 
 	public DbContext(IOptions<DbContextOptions> options, ILogger<DbContext> logger)
 		: base(
-			dataProvider: SqlServerTools.GetDataProvider(
-				SqlServerVersion.v2022,
-				SqlServerProvider.MicrosoftDataSqlClient),
-			connectionString: GetConnectionString(options),
-			mappingSchema: s_mappingSchema
+			new DataOptions()
+				.UseDataProvider(
+					SqlServerTools.GetDataProvider(
+						SqlServerVersion.v2022,
+						SqlServerProvider.MicrosoftDataSqlClient
+					)
+				)
+				.UseConnectionString(GetConnectionString(options))
+				.UseMappingSchema(s_mappingSchema)
 		)
 	{
 		_logger = logger;
