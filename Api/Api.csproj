@@ -54,7 +54,6 @@
 	<PackageReference Include="Serilog.Exceptions.Refit" />
 	<PackageReference Include="Serilog.Sinks.Seq" />
 	<PackageReference Include="SuperLinq" />
-	<PackageReference Include="System.Linq.Async" />
 	<PackageReference Include="Vogen" />
   </ItemGroup>
 
