@@ -33,8 +33,6 @@
 	<PackageReference Include="Auth0.AspNetCore.Authentication" />
 	<PackageReference Include="AutoRegisterInject" PrivateAssets="All" />
 	<PackageReference Include="CommunityToolkit.Diagnostics" />
-	<PackageReference Include="DryIoc.dll" />
-	<PackageReference Include="DryIoc.Microsoft.DependencyInjection" />
 	<PackageReference Include="Hangfire" />
 	<PackageReference Include="Immediate.Apis" />
 	<PackageReference Include="Immediate.Cache" />

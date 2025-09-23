@@ -1,7 +1,5 @@
 using System.Diagnostics;
 using System.Text.Json.Serialization;
-using DryIoc;
-using DryIoc.Microsoft.DependencyInjection;
 using Hangfire;
 using Immediate.Cache;
 using Microsoft.AspNetCore.Mvc;
@@ -28,10 +26,6 @@ try
 
 	if (builder.Configuration.GetValue("UseSecretsJson", defaultValue: true))
 		_ = builder.Configuration.AddJsonFile("secrets.json", optional: true);
-
-	await using var container = new Container();
-	_ = builder.Host.UseServiceProviderFactory(
-		new DryIocServiceProviderFactory(container));
 
 	builder.ConfigureSerilog();
 
