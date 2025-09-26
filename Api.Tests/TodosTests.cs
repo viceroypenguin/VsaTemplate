@@ -3,15 +3,15 @@ using VsaTemplate.Api.Tests.Fixtures;
 
 namespace VsaTemplate.Api.Tests;
 
-[ClassDataSource<ApplicationFactoryFixture>(Shared = SharedType.PerAssembly)]
 public sealed class TodosTests(ApplicationFactoryFixture fixture)
 {
-	[Test]
-	public async Task FullCycleTest(CancellationToken token)
+	[Fact]
+	public async Task FullCycleTest()
 	{
 		var client = fixture.GetUserClient();
+		var token = TestContext.Current.CancellationToken;
 
-		var todo = await client.CreateTodo(
+		var todoResponse = await client.CreateTodo(
 			new()
 			{
 				Name = "Test",
@@ -21,6 +21,16 @@ public sealed class TodosTests(ApplicationFactoryFixture fixture)
 			},
 			token
 		);
+
+		var todo = new Todo
+		{
+			TodoId = todoResponse.TodoId,
+			Name = "Test",
+			Comment = "This is a test",
+			TodoPriority = TodoPriority.Mid,
+			TodoStatus = TodoStatus.Active,
+			UserId = fixture.UserTokenUserId,
+		};
 
 		await ValidateTodo(client, todo, showCompleted: false, token);
 
@@ -69,7 +79,7 @@ public sealed class TodosTests(ApplicationFactoryFixture fixture)
 			token
 		);
 
-		var getTodo = Assert.Single(todos.Where(t => t.TodoId == todo.TodoId));
+		var getTodo = Assert.Single(todos, t => t.TodoId == todo.TodoId);
 		Assert.Equal(todo, getTodo);
 	}
 }

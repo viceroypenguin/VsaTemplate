@@ -51,9 +51,8 @@
 	<PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
 	<PackageVersion Include="Testcontainers" Version="4.7.0" />
 	<PackageVersion Include="Testcontainers.MsSql" Version="4.7.0" />
-	<PackageVersion Include="TUnit.Engine" Version="0.25.21" />
 	<PackageVersion Include="Vogen" Version="8.0.2" />
-	<PackageVersion Include="xunit.v3.assert" Version="3.0.1" />
+	<PackageVersion Include="xunit.v3" Version="3.0.1" />
   </ItemGroup>
 
   <ItemGroup>

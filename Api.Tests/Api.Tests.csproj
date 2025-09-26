@@ -12,8 +12,7 @@
 	<PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
 	<PackageReference Include="Testcontainers" />
 	<PackageReference Include="Testcontainers.MsSql" />
-	<PackageReference Include="TUnit.Engine" />
-	<PackageReference Include="xunit.v3.assert" />
+	<PackageReference Include="xunit.v3" />
   </ItemGroup>
 
   <ItemGroup>

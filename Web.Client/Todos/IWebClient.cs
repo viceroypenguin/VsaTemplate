@@ -10,7 +10,7 @@ public partial interface IWebClient
 	Task<IReadOnlyList<Todo>> GetTodos(bool? showCompleted = default, CancellationToken token = default);
 
 	[Post("/api/todos/create")]
-	Task<Todo> CreateTodo([Body] CreateTodo.Command command, CancellationToken token = default);
+	Task<CreateTodo.Response> CreateTodo([Body] CreateTodo.Command command, CancellationToken token = default);
 
 	[Put("/api/todos")]
 	Task UpdateTodo([Body] UpdateTodo.Command command, CancellationToken token = default);

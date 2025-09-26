@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Immediate.Cache;
 using LinqToDB;
@@ -8,29 +7,28 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Refit;
 using Testcontainers.MsSql;
-using TUnit.Core.Interfaces;
 using VsaTemplate.Web.Client;
 using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.Users.Models;
+using VsaTemplate.Web.Tests.Fixtures;
+
+[assembly: AssemblyFixture(typeof(ApplicationFactoryFixture))]
 
 namespace VsaTemplate.Web.Tests.Fixtures;
 
-public sealed class ApplicationFactoryFixture : IAsyncInitializer, IAsyncDisposable
+public sealed class ApplicationFactoryFixture : IAsyncLifetime, IAsyncDisposable
 {
-	private readonly MsSqlContainer _container;
+	private readonly MsSqlContainer _container = new MsSqlBuilder().Build();
 
-	[SuppressMessage("Usage", "TUnit0023:Member should be disposed within a clean up method")]
 	private WebApplicationFactory<Program> _factory = default!;
+
+	public UserId AdminTokenUserId { get; private set; }
+	public UserId UserTokenUserId { get; private set; }
 
 	public const string AdminToken = nameof(AdminToken);
 	public const string UserToken = nameof(UserToken);
 
-	public ApplicationFactoryFixture()
-	{
-		_container = new MsSqlBuilder().Build();
-	}
-
-	public async Task InitializeAsync()
+	public async ValueTask InitializeAsync()
 	{
 		await _container.StartAsync();
 
@@ -40,13 +38,13 @@ public sealed class ApplicationFactoryFixture : IAsyncInitializer, IAsyncDisposa
 		// ensure server started
 		_ = _factory.Server;
 
-		using var context = _factory.Services.GetRequiredService<DbContext>();
+		await using var context = _factory.Services.GetRequiredService<DbContext>();
 
-		await InsertWebKey(context, AdminToken, ["Admin"]);
-		await InsertWebKey(context, UserToken, []);
+		AdminTokenUserId = await InsertApiKey(context, AdminToken, ["Admin"]);
+		UserTokenUserId = await InsertApiKey(context, UserToken, []);
 	}
 
-	private static async Task InsertWebKey(DbContext context, string tokenName, IReadOnlyList<string> permissions)
+	private static async Task<UserId> InsertApiKey(DbContext context, string tokenName, IReadOnlyList<string> permissions)
 	{
 		var newUserId = await context.InsertWithInt32IdentityAsync(
 			new Database.Models.User()
@@ -55,7 +53,8 @@ public sealed class ApplicationFactoryFixture : IAsyncInitializer, IAsyncDisposa
 				EmailAddress = tokenName,
 				IsActive = true,
 				Roles = JsonSerializer.Serialize(permissions),
-			}
+			},
+			token: TestContext.Current.CancellationToken
 		);
 
 		_ = await context.InsertAsync(
@@ -63,8 +62,11 @@ public sealed class ApplicationFactoryFixture : IAsyncInitializer, IAsyncDisposa
 			{
 				ApiKeyId = newUserId,
 				OwnerUserId = UserId.From(-1),
-			}
+			},
+			token: TestContext.Current.CancellationToken
 		);
+
+		return UserId.From(newUserId);
 	}
 
 	public async ValueTask DisposeAsync()
