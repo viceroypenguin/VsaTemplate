@@ -2,7 +2,7 @@ using VsaTemplate.Api.Features.Users.Services;
 
 namespace VsaTemplate.Api.Infrastructure.Middleware;
 
-[RegisterSingleton(typeof(AddRolesMiddleware))]
+[RegisterSingleton(Registration = RegistrationStrategy.Self)]
 public sealed class AddRolesMiddleware(
 	CurrentUserService userService
 ) : IMiddleware

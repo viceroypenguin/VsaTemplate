@@ -1,6 +1,6 @@
 namespace VsaTemplate.Web.Infrastructure.Middleware;
 
-[RegisterSingleton(typeof(AddRequestIdHeaderMiddleware))]
+[RegisterSingleton(Registration = RegistrationStrategy.Self)]
 public sealed class AddRequestIdHeaderMiddleware : IMiddleware
 {
 	public Task InvokeAsync(HttpContext context, RequestDelegate next)

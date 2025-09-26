@@ -6,7 +6,6 @@
   
   <ItemGroup>
 	<PackageVersion Include="Auth0.AspNetCore.Authentication" Version="1.5.0" />
-	<PackageVersion Include="AutoRegisterInject" Version="1.4.1" />
 	<PackageVersion Include="CommunityToolkit.Diagnostics" Version="8.4.0" />
 	<PackageVersion Include="coverlet.collector" Version="6.0.4" />
 	<PackageVersion Include="docopt.net" Version="0.8.1" />
@@ -16,6 +15,7 @@
 	<PackageVersion Include="Immediate.Cache" Version="1.0.0" />
 	<PackageVersion Include="Immediate.Handlers" Version="3.0.0" />
 	<PackageVersion Include="Immediate.Validations" Version="3.1.0" />
+	<PackageVersion Include="Injectio" Version="5.0.0" />
 	<PackageVersion Include="linq2db" Version="6.0.0-preview.4" />
 	<PackageVersion Include="MailKit" Version="4.13.0" />
 	<PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.9" />
@@ -51,8 +51,8 @@
 	<PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
 	<PackageVersion Include="Testcontainers" Version="4.7.0" />
 	<PackageVersion Include="Testcontainers.MsSql" Version="4.7.0" />
-	<PackageVersion Include="Vogen" Version="8.0.2" />
 	<PackageVersion Include="TUnit.Engine" Version="0.25.21" />
+	<PackageVersion Include="Vogen" Version="8.0.2" />
 	<PackageVersion Include="xunit.v3.assert" Version="3.0.1" />
   </ItemGroup>
 

@@ -59,7 +59,7 @@ try
 	_ = builder.Services.AddMemoryCache();
 	_ = builder.Services.AddHttpContextAccessor();
 	_ = builder.Services.AddCascadingAuthenticationState();
-	_ = builder.Services.AutoRegisterFromWeb();
+	_ = builder.Services.AddWeb();
 	_ = builder.Services.AddWebHandlers();
 	_ = builder.Services.AddWebBehaviors();
 	_ = builder.Services.AddEndpointsApiExplorer();

@@ -14,7 +14,7 @@ public sealed class DbContextOptions
 	public string? ConnectionStringInit { get; set; }
 }
 
-[RegisterTransient]
+[RegisterTransient(Registration = RegistrationStrategy.Self)]
 public sealed partial class DbContext : DataConnection
 {
 	private static readonly MappingSchema s_mappingSchema = BuildMappingSchema();
