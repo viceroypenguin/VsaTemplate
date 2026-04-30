@@ -16,7 +16,6 @@ public static partial class CreateApiKey
 {
 	public sealed record Request : IAuthorizedRequest
 	{
-		public static string? Policy => Policies.ValidUser;
 		public required IReadOnlyList<string> Roles { get; init; }
 	}
 

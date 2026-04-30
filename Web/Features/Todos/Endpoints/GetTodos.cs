@@ -15,8 +15,6 @@ public static partial class GetTodos
 {
 	public sealed record Query : IAuthorizedRequest
 	{
-		public static string Policy => Policies.ValidUser;
-
 		public required bool? ShowCompleted { get; init; }
 	}
 

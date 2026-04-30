@@ -20,8 +20,6 @@ public static partial class CreateTodo
 	[Validate]
 	public sealed partial record Command : IAuthorizedRequest, IValidationTarget<Command>
 	{
-		public static string Policy => Policies.ValidUser;
-
 		[NotEmpty]
 		public required string Name { get; init; }
 

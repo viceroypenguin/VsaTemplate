@@ -18,8 +18,6 @@ public static partial class CompleteTodo
 	[Validate]
 	public sealed partial record Command : IAuthorizedRequest, ITodoRequest, IValidationTarget<Command>
 	{
-		public static string Policy => Policies.ValidUser;
-
 		public required TodoId TodoId { get; init; }
 		public required bool Completed { get; init; }
 	}
