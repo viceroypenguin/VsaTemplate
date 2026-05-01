@@ -1,10 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
-using VsaTemplate.Web.Infrastructure.Exceptions;
+using HttpStatusExceptions;
 
 namespace VsaTemplate.Web.Features.Shared.Exceptions;
 
 public sealed class ConflictException(string message)
-	: VsaTemplateException(message, statusCode: 409)
+	: HttpStatusException(statusCode: 409, message)
 {
 	[DoesNotReturn]
 	public static void ThrowConflictException(string message) =>

@@ -1,3 +1,5 @@
+using HttpStatusExceptions;
+using HttpStatusExceptions.AspNetCore;
 using Immediate.Validations.Shared;
 using Microsoft.AspNetCore.Mvc;
 
@@ -27,11 +29,7 @@ public static class ExceptionStartupExtensions
 					Status = StatusCodes.Status400BadRequest,
 				},
 
-				VsaTemplateException ex => new()
-				{
-					Detail = ex.Message,
-					Status = ex.StatusCode,
-				},
+				HttpStatusException ex => ex.ToProblemDetails(),
 
 				UnauthorizedAccessException ex => new()
 				{
