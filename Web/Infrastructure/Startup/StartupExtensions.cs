@@ -31,7 +31,7 @@ public static class StartupExtensions
 							var a when a.GetType() is
 							{
 								Namespace: "Vogen",
-								Name: "ValueObjectAttribute"
+								Name: "ValueObjectAttribute",
 							} t =>
 								t.GenericTypeArguments[0],
 

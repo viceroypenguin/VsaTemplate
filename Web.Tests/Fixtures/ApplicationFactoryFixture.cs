@@ -49,7 +49,7 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime, IAsyncDisposable
 		var newUserId = await context.InsertWithInt32IdentityAsync(
 			new Database.Models.User()
 			{
-				Name = $"Api Key For: -1",
+				Name = "Api Key For: -1",
 				EmailAddress = tokenName,
 				IsActive = true,
 				Roles = JsonSerializer.Serialize(permissions),

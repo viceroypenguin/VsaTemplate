@@ -92,7 +92,7 @@ public sealed partial class DbGenerator
 				RootNamespace = rootNamespace,
 			});
 
-		spc.AddSource($"DbContext.Context.g.cs", SourceText.From(output, Encoding.UTF8));
+		spc.AddSource("DbContext.Context.g.cs", SourceText.From(output, Encoding.UTF8));
 	}
 
 	private static void RenderSchema(
@@ -123,6 +123,6 @@ public sealed partial class DbGenerator
 				RootNamespace = rootNamespace,
 			});
 
-		spc.AddSource($"DbContext.Schema.g.cs", SourceText.From(output, Encoding.UTF8));
+		spc.AddSource("DbContext.Schema.g.cs", SourceText.From(output, Encoding.UTF8));
 	}
 }

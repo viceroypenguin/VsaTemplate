@@ -1,3 +1,4 @@
+#pragma warning disable CS1591
 #nullable enable
 
 using LinqToDB;
@@ -10,7 +11,7 @@ using {{ root_namespace }}.Database.Models.{{ s }};
 namespace {{ root_namespace }}.Database.Models{{ if !string.empty schema_name; "." + schema_name ; end }};
 
 [Table("{{ table_name }}"{{ if !string.empty schema_name }}, Schema = "{{ schema_name }}"{{ end }})]
-public sealed class {{ type_name }}
+public sealed record {{ type_name }}
 {
 	{{~ for p in properties ~}}
 	[Column(

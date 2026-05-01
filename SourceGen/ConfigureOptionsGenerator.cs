@@ -36,7 +36,8 @@ public sealed class ConfigureOptionsGenerator : IIncrementalGenerator
 			{
 				var output = template
 					.Render(new { classes = c });
-				spc.AddSource($"ConfigureOptions.g.cs", SourceText.From(output, Encoding.UTF8));
+
+				spc.AddSource("ConfigureOptions.g.cs", SourceText.From(output, Encoding.UTF8));
 			});
 	}
 }

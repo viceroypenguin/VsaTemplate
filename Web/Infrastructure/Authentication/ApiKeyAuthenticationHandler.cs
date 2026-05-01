@@ -51,7 +51,7 @@ public sealed class ApiKeyAuthenticationHandler(
 		if (await validApiKeyCache.GetValue(new() { ApiKey = key }) is not
 			{
 				IsValid: true,
-				UserId: { } userId
+				UserId: { } userId,
 			})
 		{
 			return AuthenticateResult.NoResult();
