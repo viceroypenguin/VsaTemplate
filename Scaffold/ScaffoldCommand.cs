@@ -23,7 +23,7 @@ internal sealed class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Settings>
 		public required string OutputFile { get; init; }
 
 		[CommandArgument(0, "<files>")]
-		public required IReadOnlyList<string> Files { get; init; }
+		public required string[] Files { get; init; }
 	}
 
 	protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
