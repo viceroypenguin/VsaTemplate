@@ -18,7 +18,7 @@ namespace VsaTemplate.Web.Tests.Fixtures;
 
 public sealed class ApplicationFactoryFixture : IAsyncLifetime, IAsyncDisposable
 {
-	private readonly MsSqlContainer _container = new MsSqlBuilder().Build();
+	private readonly MsSqlContainer _container = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2025-latest").Build();
 
 	private WebApplicationFactory<Program> _factory = default!;
 
