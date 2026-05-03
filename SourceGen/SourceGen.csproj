@@ -19,11 +19,11 @@
   </ItemGroup>
 
   <ItemGroup>
+	<PackageReference Include="Meziantou.Polyfill" PrivateAssets="All" />
 	<PackageReference Include="Microsoft.Bcl.AsyncInterfaces" PrivateAssets="all" GeneratePathProperty="true" />
 	<PackageReference Include="Microsoft.Bcl.HashCode" PrivateAssets="all" GeneratePathProperty="true" />
 	<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
 	<PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
-	<PackageReference Include="PolySharp" PrivateAssets="All" />
 	<PackageReference Include="Scriban" PrivateAssets="all" GeneratePathProperty="true" />
 	<PackageReference Include="System.Buffers" PrivateAssets="all" GeneratePathProperty="true" />
 	<PackageReference Include="System.Collections.Immutable" PrivateAssets="all" GeneratePathProperty="true" />
