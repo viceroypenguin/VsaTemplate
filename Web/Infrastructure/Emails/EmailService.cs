@@ -1,34 +1,35 @@
 using CommunityToolkit.Diagnostics;
+using Immediate.Validations.Shared;
 using MailKit.Net.Smtp;
-using Microsoft.Extensions.Options;
 using MimeKit;
 
 namespace VsaTemplate.Web.Infrastructure.Emails;
 
 [ConfigureOptions]
-public sealed class EmailServiceOptions
+[Validate]
+public sealed partial class EmailServiceOptions : IValidationTarget<EmailServiceOptions>
 {
-	public required string Host { get; set; }
-	public required int Port { get; set; }
-	public required string Password { get; set; }
-	public required string Username { get; set; }
-	public required string FromEmailAddress { get; set; }
-	public required IReadOnlyList<string> AdminEmailAddresses { get; set; }
+	[NotEmpty]
+	public required string Host { get; init; }
+
+	public required int Port { get; init; }
+
+	[NotEmpty]
+	public required string Password { get; init; }
+
+	[NotEmpty]
+	public required string Username { get; init; }
+
+	[NotEmpty]
+	public required string FromEmailAddress { get; init; }
+
+	public required IReadOnlyList<string> AdminEmailAddresses { get; init; }
 }
 
 [RegisterScoped]
-public sealed class EmailService
+public sealed class EmailService(EmailServiceOptions options)
 {
-	private readonly EmailServiceOptions _options;
-
-	public EmailService(
-		IOptionsSnapshot<EmailServiceOptions> options)
-	{
-		Guard.IsNotNull(options);
-		Guard.IsNotNull(options.Value);
-
-		_options = options.Value;
-	}
+	private readonly EmailServiceOptions _options = options;
 
 	public async Task SendAdminEmail(string subject, string body, bool isHtml, CancellationToken cancellationToken = default)
 	{

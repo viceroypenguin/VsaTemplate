@@ -1,4 +1,5 @@
 using CommunityToolkit.Diagnostics;
+using Immediate.Validations.Shared;
 using LinqToDB;
 using LinqToDB.Data;
 using LinqToDB.DataProvider.SqlServer;
@@ -8,10 +9,13 @@ using Microsoft.Extensions.Options;
 namespace VsaTemplate.Web.Database;
 
 [ConfigureOptions]
-public sealed class DbContextOptions
+[Validate]
+public sealed partial class DbContextOptions : IValidationTarget<DbContextOptions>
 {
-	public required string ConnectionString { get; set; }
-	public string? ConnectionStringInit { get; set; }
+	[NotEmpty]
+	public required string ConnectionString { get; init; }
+
+	public string? ConnectionStringInit { get; init; }
 }
 
 [RegisterTransient(Registration = RegistrationStrategy.Self)]

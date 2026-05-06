@@ -19,6 +19,7 @@ using VsaTemplate.Web.Infrastructure.Exceptions;
 using VsaTemplate.Web.Infrastructure.Hangfire;
 using VsaTemplate.Web.Infrastructure.Logging;
 using VsaTemplate.Web.Infrastructure.Middleware;
+using VsaTemplate.Web.Infrastructure.Startup;
 
 Log.Logger = new LoggerConfiguration()
 	.WriteTo.Console(formatProvider: null)

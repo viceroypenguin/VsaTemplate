@@ -1,7 +1,10 @@
+using Immediate.Validations.Shared;
+
 namespace VsaTemplate.Web.Infrastructure.Logging;
 
 [ConfigureOptions]
-public sealed class LoggingOptions
+[Validate]
+public sealed partial class LoggingOptions : IValidationTarget<LoggingOptions>
 {
-	public required Uri? SeqUrl { get; init; }
+	public Uri? SeqUrl { get; init; }
 }

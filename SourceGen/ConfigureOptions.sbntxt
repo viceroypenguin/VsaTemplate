@@ -1,15 +1,14 @@
 #nullable enable
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace VsaTemplate.Web.Infrastructure.Startup;
 
 internal static class ConfigureAllOptionsExtensions
 {
 	public static IServiceCollection ConfigureAllOptions(this IServiceCollection services)
 	{
 		{{~ for c in classes ~}}
-		services
-			.AddOptions<{{~ c.name ~}}>()
-			.BindConfiguration("{{~ c.path ~}}");
+		services.AddRequiredOptions<{{~ c.name ~}}>("{{~ c.path ~}}");
 		{{~ end ~}}
 
 		return services;
