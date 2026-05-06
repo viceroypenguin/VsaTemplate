@@ -101,20 +101,25 @@ file sealed class TestWebApplicationFactory(string connectionString) : WebApplic
 {
 	protected override IHost CreateHost(IHostBuilder builder)
 	{
-		_ = builder.UseEnvironment("Testing");
-
-		_ = builder.ConfigureHostConfiguration(
-			cb => cb.AddInMemoryCollection(
-				new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
-				{
-					["UseSecretsJson"] = bool.FalseString,
-					["UseAuth0"] = bool.FalseString,
-					["UseHttpsRedirection"] = bool.FalseString,
-					["ProcessFeatureJob:Enabled"] = bool.FalseString,
-					["DbContextOptions:ConnectionString"] = connectionString,
-				}
+		_ = builder
+			.UseEnvironment("Testing")
+			.ConfigureHostConfiguration(
+				cb => cb.AddInMemoryCollection(
+					new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
+					{
+						["UseAuth0"] = bool.FalseString,
+						["ProcessFeatureJob:Enabled"] = bool.FalseString,
+					}
+				)
 			)
-		);
+			.ConfigureAppConfiguration(
+				cb => cb.AddInMemoryCollection(
+					new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
+					{
+						["DbContextOptions:ConnectionString"] = connectionString,
+					}
+				)
+			);
 
 		return base.CreateHost(builder);
 	}

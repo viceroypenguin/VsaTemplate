@@ -1,26 +1,24 @@
-using CommunityToolkit.Diagnostics;
 using Hangfire;
+using VsaTemplate.Web.Database;
 
 namespace VsaTemplate.Web.Infrastructure.Hangfire;
 
 public static class HangfireStartupExtensions
 {
-	public static void AddHangfire(this IServiceCollection services, bool enabled, string? connectionString)
+	public static void AddHangfire(this WebApplicationBuilder builder)
 	{
-		if (!enabled)
-			return;
+		var services = builder.Services;
 
-		Guard.IsNotNullOrWhiteSpace(connectionString);
-
-		_ = services.AddHangfire(configuration => configuration
-			.UseFilter(new HangfireJobIdEnricher())
-			.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-			.UseSimpleAssemblyNameTypeSerializer()
-			.UseRecommendedSerializerSettings()
-			.UseSqlServerStorage(
-				BuildHangfireConnectionString(connectionString),
-				new() { PrepareSchemaIfNecessary = false }
-			));
+		_ = services
+			.AddHangfire((sp, c) => c
+				.UseFilter(new HangfireJobIdEnricher())
+				.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+				.UseSimpleAssemblyNameTypeSerializer()
+				.UseRecommendedSerializerSettings()
+				.UseSqlServerStorage(
+					BuildHangfireConnectionString(sp.GetRequiredService<DbContextOptions>().ConnectionString),
+					new() { PrepareSchemaIfNecessary = false }
+				));
 
 		_ = services.AddHangfireServer();
 		_ = services.AddHostedService<HangfireInitializationService>();

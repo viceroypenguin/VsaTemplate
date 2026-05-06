@@ -7,6 +7,7 @@ using Serilog.Exceptions.MsSqlServer.Destructurers;
 using Serilog.Exceptions.Refit.Destructurers;
 using VsaTemplate.Web.Infrastructure.Hangfire;
 using VsaTemplate.Web.Infrastructure.Startup;
+using VsaTemplate.Web.Features.Shared.Extensions;
 
 namespace VsaTemplate.Web.Infrastructure.Logging;
 
@@ -14,7 +15,7 @@ public static class LoggingStartupExtensions
 {
 	public static void ConfigureSerilog(this WebApplicationBuilder builder) =>
 		builder.Host
-			.UseSerilog((ctx, lc) => lc
+			.UseSerilog((_, sp, lc) => lc
 				.MinimumLevel.Information()
 				.MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
 				.MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
@@ -35,7 +36,11 @@ public static class LoggingStartupExtensions
 						])
 				)
 				.WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
-				.WriteTo.Seq(serverUrl: "http://172.16.31.6:5341/", formatProvider: CultureInfo.InvariantCulture));
+				.ApplyIfNotNull(
+					sp.GetRequiredService<LoggingOptions>().SeqUrl,
+					(url, x) => x.WriteTo.Seq(serverUrl: url.ToString(), formatProvider: CultureInfo.InvariantCulture)
+				)
+			);
 
 	public static IApplicationBuilder UseLogging(this IApplicationBuilder app) =>
 		app.UseSerilogRequestLogging(o =>
