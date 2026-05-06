@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OpenApi;
-using Microsoft.OpenApi.Extensions;
 using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
 using Serilog;
@@ -99,8 +98,9 @@ finally
 
 file static class StartupExtensions
 {
-	public static IServiceCollection ConfigureWebOptions(this IServiceCollection services) =>
-		services
+	public static IServiceCollection ConfigureWebOptions(this IServiceCollection services)
+	{
+		return services
 			.ConfigureAllOptions()
 			.Configure<ApiBehaviorOptions>(
 				o => o.SuppressInferBindingSourcesForParameters = true
@@ -114,9 +114,11 @@ file static class StartupExtensions
 			.AddResponseCompression(
 				options => options.EnableForHttps = true
 			);
+	}
 
-	public static void AddWebServices(this IServiceCollection services) =>
-		services
+	public static void AddWebServices(this IServiceCollection services)
+	{
+		_ = services
 			// injectio
 			.AddWeb()
 			// IH
@@ -137,45 +139,18 @@ file static class StartupExtensions
 			// blazor
 			.AddRazorComponents()
 			.AddInteractiveServerComponents();
+	}
 
-	public static IServiceCollection AddWebOpenApi(this IServiceCollection services) =>
-		services.AddOpenApi(o =>
+	public static IServiceCollection AddWebOpenApi(this IServiceCollection services)
+	{
+		return services.AddOpenApi(o =>
 		{
 			o.CreateSchemaReferenceId = t =>
 				t.Type.IsNested
 					? $"{t.Type.DeclaringType!.Name}+{t.Type.Name}"
 					: OpenApiOptions.CreateDefaultSchemaReferenceId(t);
 
-			_ = o.AddSchemaTransformer(
-				(schema, context, cancellationToken) =>
-				{
-					var type = context.JsonTypeInfo.Type;
-
-					foreach (var attribute in type.GetCustomAttributes(inherit: false))
-					{
-						var underlyingType = attribute switch
-						{
-							ValueObjectAttribute => typeof(int),
-
-							var a when a.GetType() is
-							{
-								Namespace: "Vogen",
-								Name: "ValueObjectAttribute",
-							} t =>
-								t.GenericTypeArguments[0],
-
-							_ => null,
-						};
-
-						if (underlyingType is null)
-							continue;
-
-						schema.Type = OpenApiTypeMapper.MapTypeToOpenApiPrimitiveType(underlyingType).Type;
-					}
-
-					return Task.CompletedTask;
-				}
-			);
+			_ = o.MapVogenTypesInWeb();
 
 			var key = new OpenApiSecurityScheme()
 			{
@@ -229,6 +204,7 @@ file static class StartupExtensions
 				}
 			);
 		});
+	}
 
 	public static IEndpointRouteBuilder MapAccountServices(this IEndpointRouteBuilder app)
 	{

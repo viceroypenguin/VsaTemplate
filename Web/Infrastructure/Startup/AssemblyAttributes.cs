@@ -6,13 +6,13 @@ using VsaTemplate.Web.Infrastructure.Logging;
 
 [assembly: Behaviors(
 	typeof(LoggingBehavior<,>),
-	typeof(ValidationBehavior<,>),
 	typeof(AuthorizationBehavior<,>),
-	typeof(TodoAuthorizationBehavior<,>)
+	typeof(TodoAuthorizationBehavior<,>),
+	typeof(ValidationBehavior<,>)
 )]
 
 [assembly: VogenDefaults(
 	conversions: Conversions.Default | Conversions.LinqToDbValueConverter,
 	deserializationStrictness: DeserializationStrictness.AllowAnything,
-	openApiSchemaCustomizations: OpenApiSchemaCustomizations.Omit
+	openApiSchemaCustomizations: OpenApiSchemaCustomizations.GenerateOpenApiMappingExtensionMethod
 )]
