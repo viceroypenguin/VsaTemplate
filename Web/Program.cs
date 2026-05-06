@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OpenApi;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Scalar.AspNetCore;
 using Serilog;
 using VsaTemplate.Web;
@@ -153,28 +153,20 @@ file static class StartupExtensions
 
 			_ = o.MapVogenTypesInWeb();
 
-			var key = new OpenApiSecurityScheme()
-			{
-				Reference = new OpenApiReference
-				{
-					Type = ReferenceType.SecurityScheme,
-					Id = "ApiKey",
-				},
-				In = ParameterLocation.Header,
-				Type = SecuritySchemeType.ApiKey,
-				Name = "X-Api-Key",
-			};
-
 			_ = o.AddDocumentTransformer(
 				(document, context, cancellationToken) =>
 				{
-					document.Components ??= new()
+					var key = new OpenApiSecurityScheme()
 					{
-						SecuritySchemes =
-						{
-							["ApiKey"] = key,
-						},
+						Scheme = "ApiKey",
+						In = ParameterLocation.Header,
+						Type = SecuritySchemeType.ApiKey,
+						Name = "X-Api-Key",
 					};
+
+					document.Components ??= new();
+					document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>(StringComparer.Ordinal);
+					document.Components.SecuritySchemes["ApiKey"] = key;
 
 					return Task.CompletedTask;
 				}
@@ -189,12 +181,12 @@ file static class StartupExtensions
 							StringSplitOptions.RemoveEmptyEntries
 						) is ["api", var name, ..])
 					{
-						operation.Tags.Add(new OpenApiTag
-						{
-							Name = name[..1].ToUpperInvariant() + name[1..],
-						});
+						//operation.Tags.Add(new OpenApiTag
+						//{
+						//	Name = name[..1].ToUpperInvariant() + name[1..],
+						//});
 
-						operation.Security = [new() { [key] = [] }];
+						operation.Security = [new() { [new("ApiKey", context.Document)] = [] }];
 					}
 					else
 					{
