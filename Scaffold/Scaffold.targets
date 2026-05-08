@@ -41,7 +41,7 @@
   </Target>
 
   <Target Name="ScaffoldCore" Inputs="@(ScaffoldInputs)" Outputs="$(ScaffoldOutput)">
-	<Exec Command="&quot;$(MSBuildThisFileDirectory)/bin/$(Configuration)/Scaffold&quot; @(ScaffoldInput->'%(Identity)', ' ') -- @(ScaffoldFiles->'&quot;%(FullPath)&quot;', ' ')"
+	<Exec Command="&quot;$(MSBuildThisFileDirectory)/bin/$(Configuration)/Scaffold&quot; @(ScaffoldInput->'%(Identity)', ' ') @(ScaffoldFiles->'&quot;%(FullPath)&quot;', ' ')"
 				ConsoleToMSBuild="true" StandardOutputImportance="$(ScaffoldDetailed)" />
   </Target>
 
