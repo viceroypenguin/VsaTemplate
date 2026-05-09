@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Components.CompilerServices;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Rendering;
 
-namespace VsaTemplate.Web.Components;
+namespace VsaTemplate.Web.Utilities.Components;
 
 public sealed partial class BulmaInputText<TValue, TComponent> : BlazorComponentBase
 	where TComponent : InputBase<TValue>

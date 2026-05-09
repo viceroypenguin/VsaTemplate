@@ -2,7 +2,7 @@ using Immediate.Validations.Shared;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 
-namespace VsaTemplate.Web.Components;
+namespace VsaTemplate.Web.Utilities.Components;
 
 public sealed class ImmediateValidationsValidator : ComponentBase, IDisposable
 {
