@@ -1,7 +1,8 @@
 using Immediate.Handlers.Shared;
-using VsaTemplate.Web.Features.Users.Services;
+using VsaTemplate.Web.Features.AccessControl.Models;
+using VsaTemplate.Web.Features.AccessControl.Services;
 
-namespace VsaTemplate.Web.Infrastructure.Authorization;
+namespace VsaTemplate.Web.Features.AccessControl.Authorization;
 
 public sealed class AuthorizationBehavior<TRequest, TResponse>(
 	CurrentUserService currentUserService
@@ -10,10 +11,10 @@ public sealed class AuthorizationBehavior<TRequest, TResponse>(
 {
 	public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
 	{
-		var policy = TRequest.Policy;
+		var permission = TRequest.Permission;
 
-		if (!string.IsNullOrWhiteSpace(policy)
-			&& !await currentUserService.IsAuthorized(policy))
+		if (permission is not Permission.None
+			&& !await currentUserService.GetCurrentUserPermissions().HasPermission(permission))
 		{
 			throw new UnauthorizedAccessException();
 		}

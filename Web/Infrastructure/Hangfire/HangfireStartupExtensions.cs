@@ -9,7 +9,7 @@ public static class HangfireStartupExtensions
 	{
 		var services = builder.Services;
 
-		_ = services
+		services
 			.AddHangfire((sp, c) => c
 				.UseFilter(new HangfireJobIdEnricher())
 				.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
@@ -20,14 +20,14 @@ public static class HangfireStartupExtensions
 					new() { PrepareSchemaIfNecessary = false }
 				));
 
-		_ = services.AddHangfireServer();
-		_ = services.AddHostedService<HangfireInitializationService>();
+		services.AddHangfireServer();
+		services.AddHostedService<HangfireInitializationService>();
 
 		static string BuildHangfireConnectionString(string connectionString)
 		{
 			var builder = new Microsoft.Data.SqlClient.SqlConnectionStringBuilder(connectionString);
 			builder.ApplicationName = builder.ApplicationName.Replace("VsaTemplate", "Hangfire", StringComparison.OrdinalIgnoreCase);
-			_ = builder.Remove("MultipleActiveResultSets");
+			builder.Remove("MultipleActiveResultSets");
 			return builder.ConnectionString;
 		}
 	}
@@ -37,7 +37,7 @@ public static class HangfireStartupExtensions
 			"/hangfire",
 			new DashboardOptions
 			{
-				Authorization =
+				AsyncAuthorization =
 				[
 					new AdminAuthorizationFilter(),
 				],

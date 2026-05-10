@@ -14,7 +14,6 @@ using VsaTemplate.Web;
 using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.Shared.Layout;
 using VsaTemplate.Web.Infrastructure.Authentication;
-using VsaTemplate.Web.Infrastructure.Authorization;
 using VsaTemplate.Web.Infrastructure.Exceptions;
 using VsaTemplate.Web.Infrastructure.Hangfire;
 using VsaTemplate.Web.Infrastructure.Logging;
@@ -29,12 +28,10 @@ try
 {
 	var builder = WebApplication.CreateBuilder(args);
 
-	_ = builder.Configuration.AddJsonFile("secrets.json", optional: true);
+	builder.Configuration.AddJsonFile("secrets.json", optional: true);
 
 	builder.ConfigureSerilog();
 	builder.AddHangfire();
-
-	builder.Services.AddAuthorizationPolicies();
 
 	builder.Services.AddWebAuthentication(
 		builder.Configuration["Auth0:Domain"],
@@ -48,39 +45,33 @@ try
 
 	var app = builder.Build();
 
-	_ = app.InitializeDatabase();
+	await app.InitializeDatabase();
 
-	_ = app.UseStaticFiles();
+	app.UseStaticFiles();
 
-	_ = app.UseMiddleware<AddRequestIdHeaderMiddleware>();
-	_ = app.UseMiddleware<AddRolesMiddleware>();
+	app.UseMiddleware<AddRequestIdHeaderMiddleware>();
 
-	_ = app.UseExceptionHandler();
-	_ = app.UseRouting();
-	_ = app.UseAuthorization();
+	app.UseExceptionHandler();
+	app.UseRouting();
+	app.UseAuthorization();
 
-	_ = app.UseHangfire();
+	app.UseHangfire();
 
-	_ = app.UseAntiforgery();
-	_ = app.UseLogging();
+	app.UseAntiforgery();
+	app.UseLogging();
 
-	_ = app.UseEndpoints(
-		endpoints =>
-		{
-			_ = endpoints.MapOpenApi().CacheOutput();
-			_ = endpoints.MapScalarApiReference();
+	app.MapOpenApi().CacheOutput();
+	app.MapScalarApiReference();
 
-			_ = endpoints.MapAccountServices();
+	app.MapAccountServices();
 
-			_ = endpoints
-				.MapGroup("")
-				.RequireAuthorization()
-				.MapWebEndpoints();
+	app
+		.MapGroup("")
+		.RequireAuthorization()
+		.MapWebEndpoints();
 
-			_ = endpoints.MapRazorComponents<App>()
-				.AddInteractiveServerRenderMode();
-		}
-	);
+	app.MapRazorComponents<App>()
+		.AddInteractiveServerRenderMode();
 
 	await app.RunAsync();
 }
@@ -119,7 +110,7 @@ file static class StartupExtensions
 
 	public static void AddWebServices(this IServiceCollection services)
 	{
-		_ = services
+		services
 			// injectio
 			.AddWeb()
 			// IH
@@ -151,9 +142,9 @@ file static class StartupExtensions
 					? $"{t.Type.DeclaringType!.Name}+{t.Type.Name}"
 					: OpenApiOptions.CreateDefaultSchemaReferenceId(t);
 
-			_ = o.MapVogenTypesInWeb();
+			o.MapVogenTypesInWeb();
 
-			_ = o.AddDocumentTransformer(
+			o.AddDocumentTransformer(
 				(document, context, cancellationToken) =>
 				{
 					var key = new OpenApiSecurityScheme()
@@ -172,7 +163,7 @@ file static class StartupExtensions
 				}
 			);
 
-			_ = o.AddOperationTransformer(
+			o.AddOperationTransformer(
 				(operation, context, cancellationToken) =>
 				{
 					if (context.Description.RelativePath?.Split(
@@ -201,7 +192,7 @@ file static class StartupExtensions
 
 	public static IEndpointRouteBuilder MapAccountServices(this IEndpointRouteBuilder app)
 	{
-		_ = app
+		app
 			.MapGet("/Login", async (HttpContext context, string returnUrl = "/") =>
 			{
 				var authenticationProperties = new LoginAuthenticationPropertiesBuilder()
@@ -211,7 +202,7 @@ file static class StartupExtensions
 				await context.ChallengeAsync(Auth0Constants.AuthenticationScheme, authenticationProperties);
 			});
 
-		_ = app
+		app
 			.MapGet("/Logout", async (HttpContext context, string returnUrl = "/") =>
 			{
 				var authenticationProperties = new LogoutAuthenticationPropertiesBuilder()

@@ -7,9 +7,8 @@
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 @using Microsoft.JSInterop
 @using VsaTemplate.Web
-@using VsaTemplate.Web.Components
-@using VsaTemplate.Web.Infrastructure.Authorization
+@using VsaTemplate.Web.Utilities.Components
 @using SuperLinq;
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
 
-@attribute [Authorize(Policy = Policies.ValidUser)]
+@attribute [Authorize]

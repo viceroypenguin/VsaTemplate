@@ -10,7 +10,7 @@ public sealed partial class DbContext : DataConnection
 {
 	private void Sync{{ name }}()
 	{
-		_ = this.GetTable<{{ table }}>()
+		this.GetTable<{{ table }}>()
 			.Merge().Using(
 				new[]
 				{

@@ -49,7 +49,7 @@ public partial class DbContext : DataConnection
 
 			var endTime = DateTimeOffset.Now;
 
-			_ = this.Insert(
+			this.Insert(
 				new Models.VersionHistory()
 				{
 					SqlFile = s,
@@ -70,7 +70,7 @@ public partial class DbContext : DataConnection
 		{
 			var script = EmbeddedResource.GetContent(scriptName);
 			foreach (var b in SqlBlockRegex().Split(script).Where(s => !string.IsNullOrWhiteSpace(s)))
-				_ = this.Execute(b);
+				this.Execute(b);
 
 			LogExecutedScript(scriptName);
 		}

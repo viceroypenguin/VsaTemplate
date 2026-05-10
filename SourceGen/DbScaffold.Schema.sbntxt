@@ -18,7 +18,7 @@ public sealed partial class DbContext : DataConnection
 
 		{{~ for t in types ~}}
 		schema.AddScalarType(typeof({{ t.type_name }}), SqlDataType.{{ t.sql_data_type }});
-		_ = schema.SetValueToSqlConverter(typeof({{ t.type_name }}), (sb, _, o) => sb.AppendFormat(CultureInfo.InvariantCulture, $"'{o}'"));
+		schema.SetValueToSqlConverter(typeof({{ t.type_name }}), (sb, _, o) => sb.AppendFormat(CultureInfo.InvariantCulture, $"'{o}'"));
 
 		{{~ end ~}}
 		return schema;

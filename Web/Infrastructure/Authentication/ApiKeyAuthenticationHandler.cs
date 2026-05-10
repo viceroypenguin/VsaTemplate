@@ -1,11 +1,9 @@
-using System.Globalization;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.Options;
-using VsaTemplate.Web.Features.Users.Services;
-using VsaTemplate.Web.Infrastructure.Authorization;
+using VsaTemplate.Web.Features.AccessControl.Services;
 
 namespace VsaTemplate.Web.Infrastructure.Authentication;
 
@@ -62,7 +60,7 @@ public sealed class ApiKeyAuthenticationHandler(
 				new([
 					new ClaimsIdentity(
 						[
-							new Claim(Claims.Id, string.Create(CultureInfo.InvariantCulture, $"{userId}")),
+							new Claim("vsa-id", string.Create(provider: null, $"{userId}")),
 							new Claim(ClaimTypes.NameIdentifier, "Api Key"),
 						],
 						AuthenticationScheme

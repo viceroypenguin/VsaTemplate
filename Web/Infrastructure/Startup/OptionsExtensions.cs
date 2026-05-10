@@ -8,7 +8,7 @@ public static class OptionsExtensions
 	public static void AddRequiredOptions<T>(this IServiceCollection services, string section)
 		where T : class, IValidationTarget<T>
 	{
-		_ = services
+		services
 			.AddOptionsWithValidateOnStart<T>()
 			.Validate(
 				o =>
@@ -18,7 +18,7 @@ public static class OptionsExtensions
 				}
 			);
 
-		_ = services.AddOptions<T>().BindConfiguration(section);
-		_ = services.AddTransient(sp => sp.GetRequiredService<IOptionsMonitor<T>>().CurrentValue);
+		services.AddOptions<T>().BindConfiguration(section);
+		services.AddTransient(sp => sp.GetRequiredService<IOptionsMonitor<T>>().CurrentValue);
 	}
 }

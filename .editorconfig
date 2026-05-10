@@ -9,6 +9,17 @@ tab_width = 4
 indent_size = 4
 charset = utf-8
 
+# Build scripts
+[*.{yml,yaml}]
+indent_style = spaces
+indent_size = 2
+
+# XML project files
+[*.{csproj,vbproj,vcxproj,vcxproj.filters,proj,projitems,shproj,props,targets,ruleset,config,nuspec,resx,vsixmanifest,vsct}]
+indent_size = 2
+
+# Code files
+[*.cs]
 
 ### Naming rules: ###
 
@@ -138,18 +149,6 @@ dotnet_style_allow_statement_immediately_after_block_experimental = false:warnin
 csharp_style_allow_blank_line_after_token_in_arrow_expression_clause_experimental = false:warning
 csharp_style_allow_blank_line_after_token_in_conditional_expression_experimental = false:warning
 
-# Build scripts
-[*.{yml,yaml}]
-indent_style = spaces
-indent_size = 2
-
-# XML project files
-[*.{csproj,vbproj,vcxproj,vcxproj.filters,proj,projitems,shproj,props,targets,ruleset,config,nuspec,resx,vsixmanifest,vsct}]
-indent_size = 2
-
-# Code files
-[*.cs]
-
 ## C# style settings:
 
 # Newline settings
@@ -247,8 +246,6 @@ csharp_style_prefer_top_level_statements = true:silent
 csharp_style_prefer_tuple_swap = true:suggestion
 csharp_style_prefer_utf8_string_literals = true:suggestion
 csharp_style_throw_expression = true:warning
-csharp_style_unused_value_assignment_preference = discard_variable:warning
-csharp_style_unused_value_expression_statement_preference = discard_variable:warning
 
 # New Lines
 csharp_style_allow_embedded_statements_on_same_line_experimental = true:silent
@@ -257,7 +254,7 @@ csharp_style_allow_blank_line_after_colon_in_constructor_initializer_experimenta
 csharp_style_allow_blank_line_after_token_in_conditional_expression_experimental = true:silent
 csharp_style_allow_blank_line_after_token_in_arrow_expression_clause_experimental = true:silent
 
-
+## Specific Analyzer Configurations
 # Style Analytics
 dotnet_analyzer_diagnostic.category-Style.severity = warning
 dotnet_analyzer_diagnostic.category-Globalization.severity = error
@@ -269,7 +266,9 @@ dotnet_diagnostic.IDE0046.severity = silent             # IDE0046: Convert to co
 dotnet_diagnostic.IDE0043.severity = error              # IDE0043: Format string contains invalid placeholder
 dotnet_diagnostic.IDE0051.severity = warning            # IDE0051: Remove unused private member
 dotnet_diagnostic.IDE0052.severity = warning            # IDE0052: Remove unread private member
+dotnet_diagnostic.IDE0058.severity = none               # IDE0058: Expression value is never used
 dotnet_diagnostic.IDE0076.severity = warning            # IDE0076: Remove invalid global 'SuppressMessageAttribute'
+dotnet_diagnostic.IDE0305.severity = none               # IDE0305: Simplify collection initialization
 
 # XML Documentation
 dotnet_diagnostic.CS0105.severity = none                # CS0105: Using directive is unnecessary.
@@ -334,9 +333,6 @@ dotnet_diagnostic.CA2016.severity = error               # CA2016: Forward the Ca
 
 dotnet_diagnostic.RS2008.severity = none                # RS2008: Enable analyzer release tracking
 
-MA0053.public_class_should_be_sealed = true
-MA0053.exceptions_should_be_sealed = true
-
 dotnet_diagnostic.MA0004.severity = none                # MA0004: Use Task.ConfigureAwait
 dotnet_diagnostic.MA0006.severity = suggestion          # MA0006: Use String.Equals instead of equality operator
 dotnet_diagnostic.MA0010.severity = none                # MA0010: Mark attributes with AttributeUsageAttribute (duplicated by CA1018)
@@ -370,6 +366,17 @@ dotnet_diagnostic.MA0142.severity = warning             # MA0142: Use pattern ma
 dotnet_diagnostic.MA0147.severity = error               # MA0147: Avoid async void method for delegate
 dotnet_diagnostic.MA0154.severity = warning             # MA0154: Use langword in XML comment
 dotnet_diagnostic.MA0158.severity = warning             # MA0154: Use System.Threading.Lock
+
+dotnet_diagnostic.IHR0012.severity = suggestion         # IHR0012: Handler method should use CancellationToken
+dotnet_diagnostic.IHR0019.severity = warning            # IHR0019: Static handler may be converted to a sealed handler
+
+# Configurations
+dotnet_code_quality.ca1711.allowed_suffixes = Permission
+
+MA0053.public_class_should_be_sealed = true
+MA0053.exceptions_should_be_sealed = true
+
+dotnet_diagnostic.IHR0019.enable_when_handler_has_no_dependencies = true
 
 [Scaffold/*.cs]
 dotnet_diagnostic.CA1031.severity = none                # CA1031: Do not catch general exception types

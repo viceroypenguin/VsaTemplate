@@ -24,7 +24,7 @@ public sealed class HangfireInitializationService(IServiceProvider serviceProvid
 				continue;
 
 			var func = initializeJobMethod.MakeGenericMethod(c);
-			_ = func.Invoke(null, [jobManager, rja.RecurringJobId, rja.Cron, rja.TimeZone, rja.Queue,]);
+			func.Invoke(null, [jobManager, rja.RecurringJobId, rja.Cron, rja.TimeZone, rja.Queue,]);
 		}
 
 		return Task.CompletedTask;

@@ -16,7 +16,7 @@ public static class EmbeddedResource
 	{
 		using var stream = GetStream(relativePath);
 		var bytes = new byte[stream.Length];
-		_ = stream.Read(bytes, 0, bytes.Length);
+		stream.ReadExactly(bytes, 0, bytes.Length);
 		return bytes;
 	}
 

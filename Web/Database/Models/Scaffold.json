@@ -3,7 +3,7 @@
     "PropertyName": "ApiKeys",
     "TypeName": "ApiKey",
     "TableName": "ApiKey",
-    "SchemaName": null,
+    "SchemaName": "AccessControl",
     "Properties": {
       "Collection": [
         {
@@ -14,6 +14,32 @@
           "DataType": "int",
           "ForceNotNull": false,
           "IsPrimaryKey": true,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "global::System.DateTimeOffset",
+          "PropertyName": "CreatedDateTime",
+          "ColumnName": "CreatedDateTime",
+          "IsNullable": false,
+          "DataType": "datetimeoffset(7)",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "global::System.DateTimeOffset",
+          "PropertyName": "ExpirationDateTime",
+          "ColumnName": "ExpirationDateTime",
+          "IsNullable": false,
+          "DataType": "datetimeoffset(7)",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
           "PrimaryKeyOrder": null,
           "IsIdentity": false,
           "SkipOnInsert": false,
@@ -31,9 +57,22 @@
           "IsIdentity": false,
           "SkipOnInsert": false,
           "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "string",
+          "PropertyName": "PermissionsJson",
+          "ColumnName": "PermissionsJson",
+          "IsNullable": false,
+          "DataType": "varchar(max)",
+          "ForceNotNull": true,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
         }
       ],
-      "Count": 2
+      "Count": 5
     },
     "Associations": {
       "Collection": [
@@ -58,18 +97,18 @@
     }
   },
   {
-    "PropertyName": "Todos",
-    "TypeName": "Todo",
-    "TableName": "Todo",
-    "SchemaName": null,
+    "PropertyName": "Roles",
+    "TypeName": "Role",
+    "TableName": "Role",
+    "SchemaName": "AccessControl",
     "Properties": {
       "Collection": [
         {
-          "TypeName": "string",
-          "PropertyName": "Comment",
-          "ColumnName": "Comment",
-          "IsNullable": true,
-          "DataType": "varchar(max)",
+          "TypeName": "int",
+          "PropertyName": "EditedUserId",
+          "ColumnName": "EditedUserId",
+          "IsNullable": false,
+          "DataType": "int",
           "ForceNotNull": false,
           "IsPrimaryKey": false,
           "PrimaryKeyOrder": null,
@@ -91,9 +130,22 @@
           "SkipOnUpdate": false
         },
         {
+          "TypeName": "string",
+          "PropertyName": "PermissionsJson",
+          "ColumnName": "PermissionsJson",
+          "IsNullable": false,
+          "DataType": "varchar(max)",
+          "ForceNotNull": true,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
           "TypeName": "int",
-          "PropertyName": "TodoId",
-          "ColumnName": "TodoId",
+          "PropertyName": "RoleId",
+          "ColumnName": "RoleId",
           "IsNullable": false,
           "DataType": "int",
           "ForceNotNull": false,
@@ -104,9 +156,160 @@
           "SkipOnUpdate": true
         },
         {
+          "TypeName": "global::System.DateTime",
+          "PropertyName": "ValidFrom",
+          "ColumnName": "ValidFrom",
+          "IsNullable": false,
+          "DataType": "datetime2(7)",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": true,
+          "SkipOnUpdate": true
+        },
+        {
+          "TypeName": "global::System.DateTime",
+          "PropertyName": "ValidTo",
+          "ColumnName": "ValidTo",
+          "IsNullable": false,
+          "DataType": "datetime2(7)",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": true,
+          "SkipOnUpdate": true
+        }
+      ],
+      "Count": 6
+    },
+    "Associations": {
+      "Collection": [
+        {
+          "Name": "FK_Role_EditUser",
+          "CanBeNull": false,
+          "ThisKeys": "EditedUserId",
+          "OtherName": "EditedUser",
+          "OtherType": "User",
+          "OtherKeys": "UserId"
+        },
+        {
+          "Name": "FK_RoleUser_Role_BackReference",
+          "CanBeNull": true,
+          "ThisKeys": "RoleId",
+          "OtherName": "RoleUsers",
+          "OtherType": "IEnumerable\u003CRoleUser\u003E",
+          "OtherKeys": "RoleId"
+        }
+      ],
+      "Count": 2
+    }
+  },
+  {
+    "PropertyName": "RoleHistories",
+    "TypeName": "RoleHistory",
+    "TableName": "RoleHistory",
+    "SchemaName": "AccessControl",
+    "Properties": {
+      "Collection": [
+        {
           "TypeName": "int",
-          "PropertyName": "TodoPriorityId",
-          "ColumnName": "TodoPriorityId",
+          "PropertyName": "EditedUserId",
+          "ColumnName": "EditedUserId",
+          "IsNullable": false,
+          "DataType": "int",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": true,
+          "SkipOnUpdate": true
+        },
+        {
+          "TypeName": "string",
+          "PropertyName": "Name",
+          "ColumnName": "Name",
+          "IsNullable": false,
+          "DataType": "varchar(200)",
+          "ForceNotNull": true,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": true,
+          "SkipOnUpdate": true
+        },
+        {
+          "TypeName": "string",
+          "PropertyName": "PermissionsJson",
+          "ColumnName": "PermissionsJson",
+          "IsNullable": false,
+          "DataType": "varchar(max)",
+          "ForceNotNull": true,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": true,
+          "SkipOnUpdate": true
+        },
+        {
+          "TypeName": "int",
+          "PropertyName": "RoleId",
+          "ColumnName": "RoleId",
+          "IsNullable": false,
+          "DataType": "int",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": true,
+          "SkipOnUpdate": true
+        },
+        {
+          "TypeName": "global::System.DateTime",
+          "PropertyName": "ValidFrom",
+          "ColumnName": "ValidFrom",
+          "IsNullable": false,
+          "DataType": "datetime2(7)",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": true,
+          "SkipOnUpdate": true
+        },
+        {
+          "TypeName": "global::System.DateTime",
+          "PropertyName": "ValidTo",
+          "ColumnName": "ValidTo",
+          "IsNullable": false,
+          "DataType": "datetime2(7)",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": true,
+          "SkipOnUpdate": true
+        }
+      ],
+      "Count": 6
+    },
+    "Associations": {
+      "Collection": [],
+      "Count": 0
+    }
+  },
+  {
+    "PropertyName": "RoleUsers",
+    "TypeName": "RoleUser",
+    "TableName": "RoleUser",
+    "SchemaName": "AccessControl",
+    "Properties": {
+      "Collection": [
+        {
+          "TypeName": "int",
+          "PropertyName": "EditedUserId",
+          "ColumnName": "EditedUserId",
           "IsNullable": false,
           "DataType": "int",
           "ForceNotNull": false,
@@ -118,13 +321,13 @@
         },
         {
           "TypeName": "int",
-          "PropertyName": "TodoStatusId",
-          "ColumnName": "TodoStatusId",
+          "PropertyName": "RoleId",
+          "ColumnName": "RoleId",
           "IsNullable": false,
           "DataType": "int",
           "ForceNotNull": false,
-          "IsPrimaryKey": false,
-          "PrimaryKeyOrder": null,
+          "IsPrimaryKey": true,
+          "PrimaryKeyOrder": 2,
           "IsIdentity": false,
           "SkipOnInsert": false,
           "SkipOnUpdate": false
@@ -136,8 +339,8 @@
           "IsNullable": false,
           "DataType": "int",
           "ForceNotNull": false,
-          "IsPrimaryKey": false,
-          "PrimaryKeyOrder": null,
+          "IsPrimaryKey": true,
+          "PrimaryKeyOrder": 1,
           "IsIdentity": false,
           "SkipOnInsert": false,
           "SkipOnUpdate": false
@@ -169,28 +372,28 @@
           "SkipOnUpdate": true
         }
       ],
-      "Count": 8
+      "Count": 5
     },
     "Associations": {
       "Collection": [
         {
-          "Name": "FK_Todo_TodoPriority",
+          "Name": "FK_RoleUser_EditUser",
           "CanBeNull": false,
-          "ThisKeys": "TodoPriorityId",
-          "OtherName": "TodoPriority",
-          "OtherType": "TodoPriority",
-          "OtherKeys": "TodoPriorityId"
+          "ThisKeys": "EditedUserId",
+          "OtherName": "EditedUser",
+          "OtherType": "User",
+          "OtherKeys": "UserId"
         },
         {
-          "Name": "FK_Todo_TodoStatus",
+          "Name": "FK_RoleUser_Role",
           "CanBeNull": false,
-          "ThisKeys": "TodoStatusId",
-          "OtherName": "TodoStatus",
-          "OtherType": "TodoStatus",
-          "OtherKeys": "TodoStatusId"
+          "ThisKeys": "RoleId",
+          "OtherName": "Role",
+          "OtherType": "Role",
+          "OtherKeys": "RoleId"
         },
         {
-          "Name": "FK_Todo_User",
+          "Name": "FK_RoleUser_User",
           "CanBeNull": false,
           "ThisKeys": "UserId",
           "OtherName": "User",
@@ -202,42 +405,16 @@
     }
   },
   {
-    "PropertyName": "TodoHistories",
-    "TypeName": "TodoHistory",
-    "TableName": "TodoHistory",
-    "SchemaName": null,
+    "PropertyName": "RoleUserHistories",
+    "TypeName": "RoleUserHistory",
+    "TableName": "RoleUserHistory",
+    "SchemaName": "AccessControl",
     "Properties": {
       "Collection": [
         {
-          "TypeName": "string",
-          "PropertyName": "Comment",
-          "ColumnName": "Comment",
-          "IsNullable": true,
-          "DataType": "varchar(max)",
-          "ForceNotNull": false,
-          "IsPrimaryKey": false,
-          "PrimaryKeyOrder": null,
-          "IsIdentity": false,
-          "SkipOnInsert": true,
-          "SkipOnUpdate": true
-        },
-        {
-          "TypeName": "string",
-          "PropertyName": "Name",
-          "ColumnName": "Name",
-          "IsNullable": false,
-          "DataType": "varchar(200)",
-          "ForceNotNull": true,
-          "IsPrimaryKey": false,
-          "PrimaryKeyOrder": null,
-          "IsIdentity": false,
-          "SkipOnInsert": true,
-          "SkipOnUpdate": true
-        },
-        {
           "TypeName": "int",
-          "PropertyName": "TodoId",
-          "ColumnName": "TodoId",
+          "PropertyName": "EditedUserId",
+          "ColumnName": "EditedUserId",
           "IsNullable": false,
           "DataType": "int",
           "ForceNotNull": false,
@@ -249,21 +426,8 @@
         },
         {
           "TypeName": "int",
-          "PropertyName": "TodoPriorityId",
-          "ColumnName": "TodoPriorityId",
-          "IsNullable": false,
-          "DataType": "int",
-          "ForceNotNull": false,
-          "IsPrimaryKey": false,
-          "PrimaryKeyOrder": null,
-          "IsIdentity": false,
-          "SkipOnInsert": true,
-          "SkipOnUpdate": true
-        },
-        {
-          "TypeName": "int",
-          "PropertyName": "TodoStatusId",
-          "ColumnName": "TodoStatusId",
+          "PropertyName": "RoleId",
+          "ColumnName": "RoleId",
           "IsNullable": false,
           "DataType": "int",
           "ForceNotNull": false,
@@ -313,7 +477,7 @@
           "SkipOnUpdate": true
         }
       ],
-      "Count": 8
+      "Count": 5
     },
     "Associations": {
       "Collection": [],
@@ -321,110 +485,10 @@
     }
   },
   {
-    "PropertyName": "TodoPriorities",
-    "TypeName": "TodoPriority",
-    "TableName": "TodoPriority",
-    "SchemaName": null,
-    "Properties": {
-      "Collection": [
-        {
-          "TypeName": "string",
-          "PropertyName": "Name",
-          "ColumnName": "Name",
-          "IsNullable": false,
-          "DataType": "varchar(200)",
-          "ForceNotNull": true,
-          "IsPrimaryKey": false,
-          "PrimaryKeyOrder": null,
-          "IsIdentity": false,
-          "SkipOnInsert": false,
-          "SkipOnUpdate": false
-        },
-        {
-          "TypeName": "int",
-          "PropertyName": "TodoPriorityId",
-          "ColumnName": "TodoPriorityId",
-          "IsNullable": false,
-          "DataType": "int",
-          "ForceNotNull": false,
-          "IsPrimaryKey": true,
-          "PrimaryKeyOrder": null,
-          "IsIdentity": false,
-          "SkipOnInsert": false,
-          "SkipOnUpdate": false
-        }
-      ],
-      "Count": 2
-    },
-    "Associations": {
-      "Collection": [
-        {
-          "Name": "FK_Todo_TodoPriority_BackReference",
-          "CanBeNull": true,
-          "ThisKeys": "TodoPriorityId",
-          "OtherName": "Todos",
-          "OtherType": "IEnumerable\u003CTodo\u003E",
-          "OtherKeys": "TodoPriorityId"
-        }
-      ],
-      "Count": 1
-    }
-  },
-  {
-    "PropertyName": "TodoStatuses",
-    "TypeName": "TodoStatus",
-    "TableName": "TodoStatus",
-    "SchemaName": null,
-    "Properties": {
-      "Collection": [
-        {
-          "TypeName": "string",
-          "PropertyName": "Name",
-          "ColumnName": "Name",
-          "IsNullable": false,
-          "DataType": "varchar(200)",
-          "ForceNotNull": true,
-          "IsPrimaryKey": false,
-          "PrimaryKeyOrder": null,
-          "IsIdentity": false,
-          "SkipOnInsert": false,
-          "SkipOnUpdate": false
-        },
-        {
-          "TypeName": "int",
-          "PropertyName": "TodoStatusId",
-          "ColumnName": "TodoStatusId",
-          "IsNullable": false,
-          "DataType": "int",
-          "ForceNotNull": false,
-          "IsPrimaryKey": true,
-          "PrimaryKeyOrder": null,
-          "IsIdentity": false,
-          "SkipOnInsert": false,
-          "SkipOnUpdate": false
-        }
-      ],
-      "Count": 2
-    },
-    "Associations": {
-      "Collection": [
-        {
-          "Name": "FK_Todo_TodoStatus_BackReference",
-          "CanBeNull": true,
-          "ThisKeys": "TodoStatusId",
-          "OtherName": "Todos",
-          "OtherType": "IEnumerable\u003CTodo\u003E",
-          "OtherKeys": "TodoStatusId"
-        }
-      ],
-      "Count": 1
-    }
-  },
-  {
     "PropertyName": "Users",
     "TypeName": "User",
     "TableName": "User",
-    "SchemaName": null,
+    "SchemaName": "AccessControl",
     "Properties": {
       "Collection": [
         {
@@ -493,19 +557,6 @@
           "SkipOnUpdate": false
         },
         {
-          "TypeName": "string",
-          "PropertyName": "Roles",
-          "ColumnName": "Roles",
-          "IsNullable": false,
-          "DataType": "nvarchar(max)",
-          "ForceNotNull": true,
-          "IsPrimaryKey": false,
-          "PrimaryKeyOrder": null,
-          "IsIdentity": false,
-          "SkipOnInsert": false,
-          "SkipOnUpdate": false
-        },
-        {
           "TypeName": "int",
           "PropertyName": "UserId",
           "ColumnName": "UserId",
@@ -519,7 +570,7 @@
           "SkipOnUpdate": true
         }
       ],
-      "Count": 7
+      "Count": 6
     },
     "Associations": {
       "Collection": [
@@ -540,15 +591,31 @@
           "OtherKeys": "OwnerUserId"
         },
         {
-          "Name": "FK_Todo_User_BackReference",
+          "Name": "FK_RoleUser_User_BackReference",
           "CanBeNull": true,
           "ThisKeys": "UserId",
-          "OtherName": "Todos",
-          "OtherType": "IEnumerable\u003CTodo\u003E",
+          "OtherName": "RoleUsers",
+          "OtherType": "IEnumerable\u003CRoleUser\u003E",
           "OtherKeys": "UserId"
+        },
+        {
+          "Name": "FK_RoleUser_EditUser_BackReference",
+          "CanBeNull": true,
+          "ThisKeys": "UserId",
+          "OtherName": "RoleUsers1",
+          "OtherType": "IEnumerable\u003CRoleUser\u003E",
+          "OtherKeys": "EditedUserId"
+        },
+        {
+          "Name": "FK_Role_EditUser_BackReference",
+          "CanBeNull": true,
+          "ThisKeys": "UserId",
+          "OtherName": "Roles",
+          "OtherType": "IEnumerable\u003CRole\u003E",
+          "OtherKeys": "EditedUserId"
         }
       ],
-      "Count": 3
+      "Count": 5
     }
   },
   {

@@ -67,7 +67,7 @@ public sealed class EmailService(EmailServiceOptions options)
 		await client.ConnectAsync(_options.Host, _options.Port, cancellationToken: cancellationToken);
 
 		await client.AuthenticateAsync(_options.Username, _options.Password, cancellationToken);
-		_ = await client.SendAsync(message);
+		await client.SendAsync(message);
 
 		await client.DisconnectAsync(quit: true, cancellationToken: cancellationToken);
 	}

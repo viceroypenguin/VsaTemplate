@@ -33,7 +33,7 @@ internal sealed class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Settings>
 			var code = await GenerateScaffold(settings);
 
 			var file = settings.OutputFile;
-			_ = Directory.CreateDirectory(Path.GetDirectoryName(file)!);
+			Directory.CreateDirectory(Path.GetDirectoryName(file)!);
 			await File.WriteAllTextAsync(file, code, cancellationToken);
 
 			return 0;
@@ -215,13 +215,13 @@ internal sealed class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Settings>
 	{
 		Console.WriteLine($"Creating database: {database}");
 
-		_ = await conn.ExecuteAsync($"use master; create database {database};");
+		await conn.ExecuteAsync($"use master; create database {database};");
 	}
 
 	private static async Task LoadMigrationScripts(DataConnection conn, string dbName, IEnumerable<string> sqlFiles)
 	{
 		Console.WriteLine("Running Migration Scripts");
-		_ = await conn.ExecuteAsync($"use {dbName};");
+		await conn.ExecuteAsync($"use {dbName};");
 
 		var sqlBlocksRegex = new Regex(@"^go\r?$", RegexOptions.IgnoreCase | RegexOptions.Multiline, TimeSpan.FromSeconds(1));
 		foreach (var path in sqlFiles.OrderBy(f => Path.GetFileName(f), StringComparer.Ordinal))
@@ -230,7 +230,7 @@ internal sealed class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Settings>
 
 			var text = await File.ReadAllTextAsync(path);
 			foreach (var b in sqlBlocksRegex.Split(text).Where(s => !string.IsNullOrWhiteSpace(s)))
-				_ = await conn.ExecuteAsync(b);
+				await conn.ExecuteAsync(b);
 		}
 	}
 
@@ -238,7 +238,7 @@ internal sealed class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Settings>
 	{
 		Console.WriteLine($"Dropping database: {database}");
 
-		_ = await conn.ExecuteAsync(
+		await conn.ExecuteAsync(
 			$"""
 			use master;
 			if exists (select * from sys.databases where name = '{database}')

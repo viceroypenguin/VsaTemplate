@@ -1,12 +1,14 @@
-using System.Security.Claims;
 using Hangfire.Dashboard;
-using VsaTemplate.Web.Infrastructure.Authorization;
+using VsaTemplate.Web.Features.AccessControl.Services;
 
 namespace VsaTemplate.Web.Infrastructure.Hangfire;
 
-public sealed class AdminAuthorizationFilter : IDashboardAuthorizationFilter
+public sealed class AdminAuthorizationFilter : IDashboardAsyncAuthorizationFilter
 {
-	public bool Authorize(DashboardContext context) =>
-		context.GetHttpContext().User
-			.HasClaim(ClaimTypes.Role, Policies.Admin);
+	public async Task<bool> AuthorizeAsync(DashboardContext context)
+	{
+		var currentUserService = context.GetHttpContext().RequestServices
+			.GetRequiredService<CurrentUserService>();
+		return await currentUserService.GetCurrentUserPermissions().IsAdmin();
+	}
 }

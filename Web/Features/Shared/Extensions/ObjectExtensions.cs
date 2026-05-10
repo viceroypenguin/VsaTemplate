@@ -57,6 +57,18 @@ public static class ObjectExtensions
 	/// <summary>
 	///     Transforms an object using a function.
 	/// </summary>
+	public static async Task<TOut> Transform<TIn, TOut>(this Task<TIn> input, Func<TIn, TOut> func)
+		=> func(await input);
+
+	/// <summary>
+	///     Transforms an object using a function.
+	/// </summary>
+	public static async ValueTask<TOut> Transform<TIn, TOut>(this ValueTask<TIn> input, Func<TIn, TOut> func)
+		=> func(await input);
+
+	/// <summary>
+	///     Transforms an object using a function.
+	/// </summary>
 	public static TIn TransformIf<TIn>(this TIn input, bool condition, Func<TIn, TIn> func)
 		=> condition ? func(input) : input;
 

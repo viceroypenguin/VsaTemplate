@@ -9,7 +9,7 @@ using Refit;
 using Testcontainers.MsSql;
 using VsaTemplate.Web.Client;
 using VsaTemplate.Web.Database;
-using VsaTemplate.Web.Features.Users.Models;
+using VsaTemplate.Web.Features.AccessControl.Models;
 using VsaTemplate.Web.Tests.Fixtures;
 
 [assembly: AssemblyFixture(typeof(ApplicationFactoryFixture))]
@@ -35,8 +35,7 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime, IAsyncDisposable
 		var connectionString = _container.GetConnectionString();
 		_factory = new TestWebApplicationFactory(connectionString);
 
-		// ensure server started
-		_ = _factory.Server;
+		_factory.StartServer();
 
 		await using var context = _factory.Services.GetRequiredService<DbContext>();
 
@@ -47,18 +46,35 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime, IAsyncDisposable
 	private static async Task<UserId> InsertApiKey(DbContext context, string tokenName, IReadOnlyList<string> permissions)
 	{
 		var newUserId = await context.InsertWithInt32IdentityAsync(
-			new Database.Models.User()
+			new Database.Models.AccessControl.User()
 			{
 				Name = "Api Key For: -1",
 				EmailAddress = tokenName,
 				IsActive = true,
-				Roles = JsonSerializer.Serialize(permissions),
 			},
 			token: TestContext.Current.CancellationToken
 		);
 
-		_ = await context.InsertAsync(
-			new Database.Models.ApiKey()
+		var newRoleId = await context.InsertWithInt32IdentityAsync(
+			new Database.Models.AccessControl.Role()
+			{
+				Name = "Administrator",
+				PermissionsJson = JsonSerializer.Serialize(permissions),
+			},
+			token: TestContext.Current.CancellationToken
+		);
+
+		await context.InsertAsync(
+			new Database.Models.AccessControl.RoleUser()
+			{
+				UserId = UserId.From(newUserId),
+				RoleId = RoleId.From(newRoleId),
+			},
+			token: TestContext.Current.CancellationToken
+		);
+
+		await context.InsertAsync(
+			new Database.Models.AccessControl.ApiKey()
 			{
 				ApiKeyId = newUserId,
 				OwnerUserId = UserId.From(-1),
@@ -101,7 +117,7 @@ file sealed class TestWebApplicationFactory(string connectionString) : WebApplic
 {
 	protected override IHost CreateHost(IHostBuilder builder)
 	{
-		_ = builder
+		builder
 			.UseEnvironment("Testing")
 			.ConfigureHostConfiguration(
 				cb => cb.AddInMemoryCollection(

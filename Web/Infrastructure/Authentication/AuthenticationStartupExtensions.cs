@@ -1,10 +1,11 @@
+using System.Globalization;
 using System.Security.Claims;
 using Auth0.AspNetCore.Authentication;
 using CommunityToolkit.Diagnostics;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using VsaTemplate.Web.Features.Users.Models;
-using VsaTemplate.Web.Features.Users.Queries;
+using VsaTemplate.Web.Features.AccessControl.Models;
+using VsaTemplate.Web.Features.AccessControl.Queries;
 
 namespace VsaTemplate.Web.Infrastructure.Authentication;
 
@@ -41,7 +42,7 @@ public static class AuthenticationStartupExtensions
 			Guard.IsNotNull(domain);
 			Guard.IsNotNull(clientId);
 
-			_ = authBuilder
+			authBuilder
 				.AddAuth0WebAppAuthentication(o =>
 				{
 					o.Domain = domain;
@@ -71,7 +72,7 @@ public static class AuthenticationStartupExtensions
 			ThrowHelper.ThrowInvalidOperationException("Completed Auth0 login, but no email address present.");
 
 		var usersService = ctx.HttpContext.RequestServices.GetRequiredService<GetUserId.Handler>();
-		var claims = await usersService.HandleAsync(
+		var userId = await usersService.HandleAsync(
 			new()
 			{
 				Auth0UserId = Auth0UserId.From(auth0Id),
@@ -80,6 +81,12 @@ public static class AuthenticationStartupExtensions
 			CancellationToken.None
 		);
 
-		user.AddIdentity(new ClaimsIdentity(claims));
+		user.AddIdentity(
+			new ClaimsIdentity(
+				[
+					new Claim("vsa-id", string.Create(CultureInfo.InvariantCulture, $"{userId}")),
+				]
+			)
+		);
 	}
 }

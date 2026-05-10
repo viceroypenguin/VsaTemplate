@@ -1,6 +1,6 @@
 using Immediate.Handlers.Shared;
 using Immediate.Validations.Shared;
-using VsaTemplate.Web.Infrastructure.Authorization;
+using VsaTemplate.Web.Features.AccessControl.Authorization;
 using VsaTemplate.Web.Infrastructure.Logging;
 
 [assembly: Behaviors(
