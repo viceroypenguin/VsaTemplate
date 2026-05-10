@@ -74,20 +74,18 @@ public sealed partial class DbGenerator
 
 	private static void RenderContext(
 		SourceProductionContext spc,
-		ImmutableArray<(string PropertyName, string TypeName)> context,
+		ImmutableArray<ContextEntity> entities,
 		string rootNamespace,
 		EquatableReadOnlyList<string?> schemas,
 		Template template
 	)
 	{
-		var tables = context
-			.Select(x => new { x.PropertyName, x.TypeName })
-			.OrderBy(x => x.TypeName, StringComparer.Ordinal);
+		var tablesBySchema = entities.GroupBy(x => x.SchemaName, StringComparer.Ordinal);
 
 		var output = template
 			.Render(new
 			{
-				Tables = tables,
+				TablesBySchema = tablesBySchema,
 				Schemas = schemas.Collection,
 				RootNamespace = rootNamespace,
 			});

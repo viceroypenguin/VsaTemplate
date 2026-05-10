@@ -29,7 +29,7 @@ public static partial class DatabaseStartupExtensions
 				}
 			);
 
-			await db.RoleUsers
+			await db.AccessControl.RoleUsers
 				.Merge().Using([new { UserId = rootUserId, RoleId = RoleId.From(-1) }])
 				.On((dst, src) => dst.UserId == src.UserId && dst.RoleId == src.RoleId)
 				.InsertWhenNotMatched(src => new()

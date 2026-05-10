@@ -20,7 +20,7 @@ public sealed partial class GetUserId(DbContext context)
 		Query query,
 		CancellationToken token)
 	{
-		var merges = await context.Users
+		var merges = await context.AccessControl.Users
 			.Merge().Using([new { query.Auth0UserId, query.EmailAddress, }])
 			.On((dst, src) => dst.EmailAddress == src.EmailAddress)
 			.InsertWhenNotMatched(src =>

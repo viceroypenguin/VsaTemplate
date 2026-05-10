@@ -40,7 +40,7 @@ public sealed partial class GetApiKey(DbContext context)
 		CancellationToken token
 	)
 	{
-		var userId = await context.Users
+		var userId = await context.AccessControl.Users
 			.Where(u => u.EmailAddress == request.ApiKey)
 			.Where(u => u.ApiKey != null)
 			.Select(u => (UserId?)u.UserId)

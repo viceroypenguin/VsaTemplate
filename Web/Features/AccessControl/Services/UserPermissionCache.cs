@@ -46,7 +46,7 @@ public sealed partial class GetUserPermissions(
 		CancellationToken token
 	)
 	{
-		var apiKey = await context.ApiKeys
+		var apiKey = await context.AccessControl.ApiKeys
 			.FirstOrDefaultAsync(u => u.ApiKeyId == query.UserId, token);
 
 		if (apiKey is null)
@@ -54,7 +54,7 @@ public sealed partial class GetUserPermissions(
 			return new()
 			{
 				Permissions = (
-					await context.RoleUsers
+					await context.AccessControl.RoleUsers
 						.Where(u => u.UserId == query.UserId)
 						.Select(u => u.Role)
 						.Select(r => JsonSerializer.Deserialize<List<Permission>>(r.PermissionsJson, default(JsonSerializerOptions))!)

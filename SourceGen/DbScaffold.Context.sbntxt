@@ -12,7 +12,21 @@ namespace {{ root_namespace }}.Database;
 
 public sealed partial class DbContext : DataConnection
 {
-	{{~ for t in tables ~}}
+	{{~ for s in tables_by_schema | array.sort "key" ~}}
+
+	{{~ if s.key ~}}
+	public readonly struct __{{ s.key }}(DbContext context)
+	{
+		{{~ for t in s ~}}
+		public ITable<{{ t.type_name }}> {{ t.property_name }} => context.GetTable<{{ t.type_name }}>();
+		{{~ end ~}}
+	}
+
+	public __{{ s.key }} {{ s.key }} => new(this);
+	{{~ else ~}}
+	{{~ for t in s ~}}
 	public ITable<{{ t.type_name }}> {{ t.property_name }} => this.GetTable<{{ t.type_name }}>();
+	{{~ end ~}}
+	{{~ end ~}}
 	{{~ end ~}}
 }

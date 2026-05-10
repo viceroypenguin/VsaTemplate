@@ -75,7 +75,16 @@ public sealed partial class DbGenerator : IIncrementalGenerator
 
 		var contextTemplate = Utility.GetScribanTemplate("DbScaffold.Context");
 		context.RegisterSourceOutput(
-			scaffold.Select((x, _) => (x.PropertyName, x.TypeName)).Collect().Combine(rootNamespace).Combine(schemas),
+			scaffold
+				.Select((x, _) => new ContextEntity
+				{
+					PropertyName = x.PropertyName,
+					TypeName = x.TypeName,
+					SchemaName = x.SchemaName,
+				})
+				.Collect()
+				.Combine(rootNamespace)
+				.Combine(schemas),
 			(spc, context) => RenderContext(spc, context.Left.Left, context.Left.Right, context.Right, contextTemplate)
 		);
 
@@ -132,4 +141,11 @@ public sealed partial class DbGenerator : IIncrementalGenerator
 			"int",
 			true
 		);
+
+	private sealed record ContextEntity
+	{
+		public required string PropertyName { get; init; }
+		public required string? SchemaName { get; init; }
+		public required string TypeName { get; init; }
+	}
 }
