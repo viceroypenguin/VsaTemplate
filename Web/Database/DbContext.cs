@@ -32,7 +32,7 @@ public sealed partial class DbContext : DataConnection
 			new DataOptions()
 				.UseDataProvider(
 					SqlServerTools.GetDataProvider(
-						SqlServerVersion.v2022,
+						SqlServerVersion.v2025,
 						SqlServerProvider.MicrosoftDataSqlClient
 					)
 				)

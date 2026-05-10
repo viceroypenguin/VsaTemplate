@@ -1,4 +1,5 @@
 using LinqToDB;
+using LinqToDB.Async;
 using VsaTemplate.Web.Features.Shared.Exceptions;
 
 namespace VsaTemplate.Web.Features.Shared.Extensions;

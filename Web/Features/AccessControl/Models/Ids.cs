@@ -17,26 +17,8 @@ public readonly partial struct Auth0UserId : IValidationTarget<Auth0UserId>
 
 [ValueObject]
 [Validate]
-public readonly partial struct UserId : IValidationTarget<UserId>
-{
-	private static void AdditionalValidations(ValidationResult errors, UserId userId)
-	{
-		errors.Add(
-			() => GreaterThanAttribute.ValidateProperty(userId.Value, 0),
-			"Id must be greater than zero."
-		);
-	}
-}
+public readonly partial struct UserId : IValidationTarget<UserId>;
 
 [ValueObject]
 [Validate]
-public readonly partial struct RoleId : IValidationTarget<RoleId>
-{
-	private static void AdditionalValidations(ValidationResult errors, RoleId roleId)
-	{
-		errors.Add(
-			() => GreaterThanAttribute.ValidateProperty(roleId.Value, 0),
-			"Id must be greater than zero."
-		);
-	}
-}
+public readonly partial struct RoleId : IValidationTarget<RoleId>;

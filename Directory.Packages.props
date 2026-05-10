@@ -15,7 +15,7 @@
 	<PackageVersion Include="Immediate.Handlers" Version="3.5.0" />
 	<PackageVersion Include="Immediate.Validations" Version="3.3.0" />
 	<PackageVersion Include="Injectio" Version="5.2.2" />
-	<PackageVersion Include="linq2db" Version="6.0.0-preview.4" />
+	<PackageVersion Include="linq2db" Version="6.2.1" />
 	<PackageVersion Include="MailKit" Version="4.16.0" />
 	<PackageVersion Include="Meziantou.Polyfill" Version="1.0.121" />
 	<PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.7" />

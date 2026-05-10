@@ -3,6 +3,7 @@ using System.Text.Json;
 using Immediate.Cache;
 using Immediate.Handlers.Shared;
 using LinqToDB;
+using LinqToDB.Async;
 using Microsoft.Extensions.Caching.Memory;
 using SuperLinq;
 using VsaTemplate.Web.Database;
@@ -48,7 +49,7 @@ public sealed partial class GetUserPermissions(
 		var apiKey = await context.ApiKeys
 			.FirstOrDefaultAsync(u => u.ApiKeyId == query.UserId, token);
 
-		if (apiKey == null)
+		if (apiKey is null)
 		{
 			return new()
 			{

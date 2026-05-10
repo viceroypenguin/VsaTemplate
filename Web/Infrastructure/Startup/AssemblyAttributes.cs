@@ -10,7 +10,6 @@ using VsaTemplate.Web.Infrastructure.Logging;
 )]
 
 [assembly: VogenDefaults(
-	conversions: Conversions.Default | Conversions.LinqToDbValueConverter,
 	deserializationStrictness: DeserializationStrictness.AllowAnything,
 	openApiSchemaCustomizations: OpenApiSchemaCustomizations.GenerateOpenApiMappingExtensionMethod
 )]
