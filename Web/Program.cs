@@ -41,7 +41,8 @@ try
 
 	builder.Services
 		.ConfigureWebOptions()
-		.AddWebServices();
+		.AddWebServices()
+		.AddBlazorServices();
 
 	var app = builder.Build();
 
@@ -108,7 +109,7 @@ file static class StartupExtensions
 			);
 	}
 
-	public static void AddWebServices(this IServiceCollection services)
+	public static IServiceCollection AddWebServices(this IServiceCollection services)
 	{
 		services
 			// injectio
@@ -126,11 +127,18 @@ file static class StartupExtensions
 			.AddCascadingAuthenticationState()
 			.AddEndpointsApiExplorer()
 			.AddAntiforgery()
-			.AddProblemDetails(ExceptionStartupExtensions.ConfigureProblemDetails)
+			.AddProblemDetails(ExceptionStartupExtensions.ConfigureProblemDetails);
 
-			// blazor
+		return services;
+	}
+
+	public static IServiceCollection AddBlazorServices(this IServiceCollection services)
+	{
+		services
 			.AddRazorComponents()
 			.AddInteractiveServerComponents();
+
+		return services;
 	}
 
 	public static IServiceCollection AddWebOpenApi(this IServiceCollection services)
