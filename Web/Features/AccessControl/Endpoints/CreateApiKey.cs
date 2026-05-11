@@ -51,14 +51,16 @@ public sealed partial class CreateApiKey(
 
 		await using var transaction = await context.BeginTransactionAsync(token);
 
-		var newUserId = await context.InsertWithInt32IdentityAsync(
-			new Database.Models.AccessControl.User()
-			{
-				Name = string.Create(provider: null, $"API Key For: {userId}"),
-				EmailAddress = key,
-				IsActive = true,
-			},
-			token: token
+		var newUserId = UserId.From(
+			await context.InsertWithInt32IdentityAsync(
+				new Database.Models.AccessControl.User()
+				{
+					Name = string.Create(provider: null, $"API Key For: {userId}"),
+					EmailAddress = key,
+					IsActive = true,
+				},
+				token: token
+			)
 		);
 
 		await context.InsertAsync(

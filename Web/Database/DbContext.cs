@@ -5,6 +5,7 @@ using LinqToDB.Data;
 using LinqToDB.DataProvider.SqlServer;
 using LinqToDB.Mapping;
 using Microsoft.Extensions.Options;
+using VsaTemplate.Web.Utilities.Attributes;
 
 namespace VsaTemplate.Web.Database;
 

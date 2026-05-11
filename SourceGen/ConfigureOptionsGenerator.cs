@@ -12,7 +12,7 @@ public sealed class ConfigureOptionsGenerator : IIncrementalGenerator
 	{
 		var classes = context.SyntaxProvider
 			.ForAttributeWithMetadataName(
-				"VsaTemplate.ConfigureOptionsAttribute",
+				"VsaTemplate.Web.Utilities.Attributes.ConfigureOptionsAttribute",
 				predicate: static (sn, ct) => true,
 				transform: static (ctx, ct) =>
 				{

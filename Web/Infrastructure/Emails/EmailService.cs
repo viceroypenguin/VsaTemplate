@@ -2,6 +2,7 @@ using CommunityToolkit.Diagnostics;
 using Immediate.Validations.Shared;
 using MailKit.Net.Smtp;
 using MimeKit;
+using VsaTemplate.Web.Utilities.Attributes;
 
 namespace VsaTemplate.Web.Infrastructure.Emails;
 

@@ -13,7 +13,7 @@ public static class Utility
 			.GetManifestResourceStream(
 				typeof(Utility),
 				$"{templateName}.sbntxt"
-			)!;
+			);
 
 		using var reader = new StreamReader(stream);
 		return Template.Parse(reader.ReadToEnd());
@@ -25,4 +25,10 @@ public static class Utility
 		provider
 			.Where(x => x is not null)
 			.Select((x, _) => x!.Value);
+
+	public static IncrementalValuesProvider<T> WhereNotNull<T>(
+		this IncrementalValuesProvider<T?> provider
+	) where T : class =>
+		provider
+			.Where(x => x is not null)!;
 }

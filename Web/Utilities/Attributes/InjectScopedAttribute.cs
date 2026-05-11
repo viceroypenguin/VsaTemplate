@@ -1,4 +1,4 @@
-﻿namespace VsaTemplate.Web.Infrastructure.Blazor;
+namespace VsaTemplate.Web.Utilities.Attributes;
 
 /// <summary>
 /// Indicates that the associated property should have a value injected from the

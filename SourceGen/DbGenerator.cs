@@ -1,5 +1,4 @@
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace VsaTemplate.SourceGen;
 
@@ -52,9 +51,11 @@ public sealed partial class DbGenerator : IIncrementalGenerator
 			.Collect();
 
 		var map = allTypes
-			.Select((x, _) => x
-				.ToDictionary(x => x.ColumnName, x => (x.TypeName, x.IsEnum))
-				.ToEquatableDictionary()
+			.Select(
+				(x, _) => x
+					.SelectMany(x => x.ColumnNames.Collection.Select(cn => (ColumnName: cn, x.TypeName, x.IsEnum)))
+					.ToDictionary(x => x.ColumnName, x => (x.TypeName, x.IsEnum), StringComparer.Ordinal)
+					.ToEquatableDictionary()
 			);
 
 		var scaffold = context.AdditionalTextsProvider
@@ -76,7 +77,7 @@ public sealed partial class DbGenerator : IIncrementalGenerator
 		var contextTemplate = Utility.GetScribanTemplate("DbScaffold.Context");
 		context.RegisterSourceOutput(
 			scaffold
-				.Select((x, _) => new ContextEntity
+				.Select((x, _) => new ContextProperty
 				{
 					PropertyName = x.PropertyName,
 					TypeName = x.TypeName,
@@ -110,12 +111,31 @@ public sealed partial class DbGenerator : IIncrementalGenerator
 		);
 	}
 
-	public static (string ColumnName, string TypeName, string UnderlyingTypeName, bool IsEnum)? TransformVogenValueObject(
+	private static MappedType? TransformVogenValueObject(
 		GeneratorAttributeSyntaxContext context,
 		CancellationToken token
 	)
 	{
-		var name = ((TypeDeclarationSyntax)context.TargetNode).Identifier.Text;
+		var symbol = context.TargetSymbol;
+		var name = symbol.Name;
+
+		var otherNamesAttribute = symbol.GetAttributes()
+			.FirstOrDefault(a => a is
+			{
+				AttributeClass.Name: "AlternativeColumnNamesAttribute",
+				ConstructorArguments:
+				[
+					{ Kind: TypedConstantKind.Array }
+				],
+			});
+
+		var otherNames = otherNamesAttribute switch
+		{
+			{ ConstructorArguments: [{ Values: { IsDefaultOrEmpty: false } values }] } =>
+				values.Select(v => v.Value).Cast<string>().ToList(),
+
+			_ => [],
+		};
 
 		token.ThrowIfCancellationRequested();
 
@@ -123,26 +143,42 @@ public sealed partial class DbGenerator : IIncrementalGenerator
 		if (model.GetDeclaredSymbol(context.TargetNode, token) is not INamedTypeSymbol valueObject)
 			return null;
 
-		token.ThrowIfCancellationRequested();
-
 		var underlying = context.Attributes[0].AttributeClass is { TypeArguments: [{ } ul] }
 			? ul.ToDisplayString()
 			: "int";
 
-		return (name, valueObject.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat), underlying, false);
+		return new()
+		{
+			ColumnNames = new([name, .. otherNames]),
+			TypeName = valueObject.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+			UnderlyingTypeName = underlying,
+			IsEnum = false,
+		};
 	}
 
-	private static (string ColumnName, string TypeName, string UnderlyingTypeName, bool IsEnum) TransformSyncEnum(
+	private static MappedType TransformSyncEnum(
 		SyncEnum @enum,
 		CancellationToken token
-	) => (
-			@enum.Name + "Id",
-			@enum.TypeName,
-			"int",
-			true
-		);
+	)
+	{
+		return new()
+		{
+			ColumnNames = new([@enum.Name + "Id"]),
+			TypeName = @enum.TypeName,
+			UnderlyingTypeName = "int",
+			IsEnum = true,
+		};
+	}
 
-	private sealed record ContextEntity
+	private sealed record MappedType
+	{
+		public required EquatableReadOnlyList<string> ColumnNames { get; init; }
+		public required string TypeName { get; init; }
+		public required string UnderlyingTypeName { get; init; }
+		public required bool IsEnum { get; init; }
+	}
+
+	private sealed record ContextProperty
 	{
 		public required string PropertyName { get; init; }
 		public required string? SchemaName { get; init; }

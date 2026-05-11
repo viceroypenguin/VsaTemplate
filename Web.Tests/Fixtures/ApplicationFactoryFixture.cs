@@ -39,36 +39,40 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime, IAsyncDisposable
 
 		await using var context = _factory.Services.GetRequiredService<DbContext>();
 
-		AdminTokenUserId = await InsertApiKey(context, AdminToken, ["Admin"]);
+		AdminTokenUserId = await InsertApiKey(context, AdminToken, [Permission.Admin]);
 		UserTokenUserId = await InsertApiKey(context, UserToken, []);
 	}
 
-	private static async Task<UserId> InsertApiKey(DbContext context, string tokenName, IReadOnlyList<string> permissions)
+	private static async Task<UserId> InsertApiKey(DbContext context, string tokenName, IReadOnlyList<Permission> permissions)
 	{
-		var newUserId = await context.InsertWithInt32IdentityAsync(
-			new Database.Models.AccessControl.User()
-			{
-				Name = "Api Key For: -1",
-				EmailAddress = tokenName,
-				IsActive = true,
-			},
-			token: TestContext.Current.CancellationToken
+		var newUserId = UserId.From(
+			await context.InsertWithInt32IdentityAsync(
+				new Database.Models.AccessControl.User()
+				{
+					Name = "Api Key For: -1",
+					EmailAddress = tokenName,
+					IsActive = true,
+				},
+				token: TestContext.Current.CancellationToken
+			)
 		);
 
-		var newRoleId = await context.InsertWithInt32IdentityAsync(
-			new Database.Models.AccessControl.Role()
-			{
-				Name = "Administrator",
-				PermissionsJson = JsonSerializer.Serialize(permissions),
-			},
-			token: TestContext.Current.CancellationToken
+		var newRoleId = RoleId.From(
+			await context.InsertWithInt32IdentityAsync(
+				new Database.Models.AccessControl.Role()
+				{
+					Name = "Administrator",
+					PermissionsJson = JsonSerializer.Serialize(permissions),
+				},
+				token: TestContext.Current.CancellationToken
+			)
 		);
 
 		await context.InsertAsync(
 			new Database.Models.AccessControl.RoleUser()
 			{
-				UserId = UserId.From(newUserId),
-				RoleId = RoleId.From(newRoleId),
+				UserId = newUserId,
+				RoleId = newRoleId,
 			},
 			token: TestContext.Current.CancellationToken
 		);
@@ -78,11 +82,12 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime, IAsyncDisposable
 			{
 				ApiKeyId = newUserId,
 				OwnerUserId = UserId.From(-1),
+				PermissionsJson = JsonSerializer.Serialize(permissions),
 			},
 			token: TestContext.Current.CancellationToken
 		);
 
-		return UserId.From(newUserId);
+		return newUserId;
 	}
 
 	public async ValueTask DisposeAsync()

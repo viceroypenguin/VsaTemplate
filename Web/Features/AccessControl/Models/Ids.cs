@@ -1,4 +1,5 @@
 using Immediate.Validations.Shared;
+using VsaTemplate.Web.Utilities.Attributes;
 
 namespace VsaTemplate.Web.Features.AccessControl.Models;
 
@@ -16,9 +17,8 @@ public readonly partial struct Auth0UserId : IValidationTarget<Auth0UserId>
 }
 
 [ValueObject]
-[Validate]
-public readonly partial struct UserId : IValidationTarget<UserId>;
+[AlternativeColumnNames("ApiKeyId")]
+public readonly partial struct UserId;
 
 [ValueObject]
-[Validate]
-public readonly partial struct RoleId : IValidationTarget<RoleId>;
+public readonly partial struct RoleId;

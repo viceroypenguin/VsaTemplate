@@ -69,12 +69,12 @@ public sealed partial class DbGenerator
 				}
 			);
 
-		spc.AddSource($"DbContext.Entity.{entity.TypeName}.g.cs", SourceText.From(output, Encoding.UTF8));
+		spc.AddSource($"DbContext.Entity.{entity.SchemaName}.{entity.TypeName}.g.cs", SourceText.From(output, Encoding.UTF8));
 	}
 
 	private static void RenderContext(
 		SourceProductionContext spc,
-		ImmutableArray<ContextEntity> entities,
+		ImmutableArray<ContextProperty> entities,
 		string rootNamespace,
 		EquatableReadOnlyList<string?> schemas,
 		Template template
@@ -95,7 +95,7 @@ public sealed partial class DbGenerator
 
 	private static void RenderSchema(
 		SourceProductionContext spc,
-		IEnumerable<(string ColumnName, string TypeName, string UnderlyingTypeName, bool IsEnum)> context,
+		IEnumerable<MappedType> context,
 		string rootNamespace,
 		Template template
 	)
