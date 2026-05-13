@@ -1,6 +1,3 @@
-@using VsaTemplate.Web.Features.AccessControl.Components
-@using VsaTemplate.Web.Features.AccessControl.Models
-@using VsaTemplate.Web.Infrastructure.Startup
 @rendermode InteractiveServer
 
 <aside class="menu">
@@ -8,15 +5,4 @@
     <ul class="menu-list">
         <li><NavLink ActiveClass="is-active" Match="NavLinkMatch.All" href="/">Home</NavLink></li>
     </ul>
-
-    <PermissionAuthorizeView Permission="Permission.Admin">
-        <Authorized>
-            <p class="menu-label">Administration</p>
-            <ul class="menu-list">
-                <li><a href="/hangfire">Hangfire</a></li>
-                <li><a href="/scalar/v1">Scalar</a></li>
-                <li><a>@("Commit: " + ThisAssembly.ShortRevisionId)</a></li>
-            </ul>
-        </Authorized>
-    </PermissionAuthorizeView>
 </aside>

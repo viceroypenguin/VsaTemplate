@@ -1,3 +1,6 @@
+@using VsaTemplate.Web.Features.AccessControl.Components
+@using VsaTemplate.Web.Features.AccessControl.Models
+@using VsaTemplate.Web.Infrastructure.Startup
 @rendermode InteractiveServer
 
 <nav class="navbar">
@@ -15,6 +18,18 @@
                         </a>
 
                         <div class="navbar-dropdown">
+
+                            <PermissionAuthorizeView Permission="Permission.Admin">
+                                <Authorized>
+                                    <a class="navbar-item" href="/hangfire">Hangfire</a>
+                                    <a class="navbar-item" href="/scalar/v1">Scalar</a>
+
+                                    <div class="navbar-item">@("Commit: " + ThisAssembly.ShortRevisionId)</div>
+
+                                    <hr class="navbar-divider">
+                                </Authorized>
+                            </PermissionAuthorizeView>
+
                             <a class="navbar-item" href="/logout">
                                 <span class="icon mr-1">
                                     <i class="fa-solid fa-right-from-bracket"></i>
