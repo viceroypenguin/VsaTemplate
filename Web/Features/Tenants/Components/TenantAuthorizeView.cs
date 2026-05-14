@@ -15,10 +15,7 @@ public sealed class TenantAuthorizeView : AuthorizeViewCore
 	[Inject] public CurrentTenantUserService CurrentTenantUserService { get; set; } = default!;
 
 	protected override async ValueTask<bool> IsAuthorizedAsync() =>
-		TenantId switch
-		{
-			{ } tenantId => await CurrentTenantUserService.GetCurrentUserPermissions(tenantId).HasPermission(TenantPermission),
-
-			_ => false,
-		};
+		TenantId is { } tenantId
+		&& await CurrentTenantUserService.GetCurrentUserPermissions(tenantId) is { } permissions
+		&& permissions.HasPermission(TenantPermission);
 }

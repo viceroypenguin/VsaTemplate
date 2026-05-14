@@ -14,10 +14,11 @@ public sealed partial class AuthorizationBehavior<TRequest, TResponse>(
 {
 	public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
 	{
+		var permissions = await currentUserService.GetLoggedInUserPermissions();
 		var permission = TRequest.Permission;
 
 		if (permission is not Permission.None
-			&& !await currentUserService.GetCurrentUserPermissions().HasPermission(permission))
+			&& !permissions.HasPermission(permission))
 		{
 			var userId = await currentUserService.GetCurrentUserId();
 

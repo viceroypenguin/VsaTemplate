@@ -666,19 +666,6 @@
         },
         {
           "TypeName": "int",
-          "PropertyName": "RoleId",
-          "ColumnName": "RoleId",
-          "IsNullable": false,
-          "DataType": "int",
-          "ForceNotNull": false,
-          "IsPrimaryKey": true,
-          "PrimaryKeyOrder": null,
-          "IsIdentity": true,
-          "SkipOnInsert": true,
-          "SkipOnUpdate": true
-        },
-        {
-          "TypeName": "int",
           "PropertyName": "TenantId",
           "ColumnName": "TenantId",
           "IsNullable": false,
@@ -689,6 +676,19 @@
           "IsIdentity": false,
           "SkipOnInsert": false,
           "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "int",
+          "PropertyName": "TenantRoleId",
+          "ColumnName": "TenantRoleId",
+          "IsNullable": false,
+          "DataType": "int",
+          "ForceNotNull": false,
+          "IsPrimaryKey": true,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": true,
+          "SkipOnInsert": true,
+          "SkipOnUpdate": true
         },
         {
           "TypeName": "global::System.DateTime",
@@ -740,10 +740,10 @@
         {
           "Name": "FK_TenantRoleUser_Role_BackReference",
           "CanBeNull": true,
-          "ThisKeys": "RoleId",
+          "ThisKeys": "TenantRoleId",
           "OtherName": "TenantRoleUsers",
           "OtherType": "IEnumerable\u003CTenantRoleUser\u003E",
-          "OtherKeys": "RoleId"
+          "OtherKeys": "TenantRoleId"
         }
       ],
       "Count": 3
@@ -797,8 +797,8 @@
         },
         {
           "TypeName": "int",
-          "PropertyName": "RoleId",
-          "ColumnName": "RoleId",
+          "PropertyName": "TenantId",
+          "ColumnName": "TenantId",
           "IsNullable": false,
           "DataType": "int",
           "ForceNotNull": false,
@@ -810,8 +810,8 @@
         },
         {
           "TypeName": "int",
-          "PropertyName": "TenantId",
-          "ColumnName": "TenantId",
+          "PropertyName": "TenantRoleId",
+          "ColumnName": "TenantRoleId",
           "IsNullable": false,
           "DataType": "int",
           "ForceNotNull": false,
@@ -877,8 +877,8 @@
         },
         {
           "TypeName": "int",
-          "PropertyName": "RoleId",
-          "ColumnName": "RoleId",
+          "PropertyName": "TenantRoleId",
+          "ColumnName": "TenantRoleId",
           "IsNullable": false,
           "DataType": "int",
           "ForceNotNull": false,
@@ -943,10 +943,10 @@
         {
           "Name": "FK_TenantRoleUser_Role",
           "CanBeNull": false,
-          "ThisKeys": "RoleId",
-          "OtherName": "Role",
+          "ThisKeys": "TenantRoleId",
+          "OtherName": "TenantRole",
           "OtherType": "TenantRole",
-          "OtherKeys": "RoleId"
+          "OtherKeys": "TenantRoleId"
         },
         {
           "Name": "FK_TenantRoleUser_User",
@@ -982,8 +982,8 @@
         },
         {
           "TypeName": "int",
-          "PropertyName": "RoleId",
-          "ColumnName": "RoleId",
+          "PropertyName": "TenantRoleId",
+          "ColumnName": "TenantRoleId",
           "IsNullable": false,
           "DataType": "int",
           "ForceNotNull": false,

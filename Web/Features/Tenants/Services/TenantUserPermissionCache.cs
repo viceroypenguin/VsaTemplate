@@ -57,7 +57,7 @@ public sealed partial class TenantGetUserPermissions(
 				Permissions = (
 					await context.Tenant.TenantRoleUsers
 						.Where(u => u.UserId == query.UserId)
-						.Select(u => u.Role)
+						.Select(u => u.TenantRole)
 						.Where(r => r.TenantId == query.TenantId)
 						.Select(r => JsonSerializer.Deserialize<List<TenantPermission>>(r.PermissionsJson, default(JsonSerializerOptions))!)
 						.ToListAsync(token)

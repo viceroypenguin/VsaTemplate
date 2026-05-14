@@ -20,14 +20,18 @@ public sealed partial class TenantAuthorizationBehavior<TRequest, TResponse>(
 		var tenantId = request.TenantId;
 		var permission = TRequest.TenantPermission;
 
-		if (permission is not TenantPermission.None
-			&& !await currentTenantUserService.GetCurrentUserPermissions(tenantId).HasPermission(permission))
+		if (
+			await currentTenantUserService.GetCurrentUserPermissions(tenantId) is { } permissions
+			&& permissions.HasPermission(permission)
+		)
 		{
-			var userId = await currentUserService.GetCurrentUserId();
-
-			LogUnauthorizedAccess(logger, userId, tenantId, HandlerType.FullName, permission);
-			ThrowUnauthorizedAccess();
+			return await Next(request, cancellationToken);
 		}
+
+		var userId = await currentUserService.GetCurrentUserId();
+
+		LogUnauthorizedAccess(logger, userId, tenantId, HandlerType.FullName, permission);
+		ThrowUnauthorizedAccess();
 
 		return await Next(request, cancellationToken);
 	}

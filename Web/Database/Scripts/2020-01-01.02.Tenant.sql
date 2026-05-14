@@ -8,7 +8,7 @@ create table [Tenant].[Tenant]
 		primary key,
 
 	[Name] varchar(200) not null,
-	IsActive bit not null,
+	[IsActive] bit not null,
 
 	[RecoveryKeysJson] varchar(max) not null
 		constraint [CK_Tenant_RecoveryKeysJson_IsJson]
@@ -17,7 +17,7 @@ create table [Tenant].[Tenant]
 
 create table [Tenant].[TenantRole]
 (
-	RoleId int not null identity(1, 1)
+	TenantRoleId int not null identity(1, 1)
 		constraint [PK_TenantRole]
 		primary key,
 	TenantId int not null
@@ -45,11 +45,11 @@ create table [Tenant].[TenantRoleUser]
 	UserId int not null
 		constraint [FK_TenantRoleUser_User]
 		foreign key references [AccessControl].[User],
-	RoleId int not null
+	TenantRoleId int not null
 		constraint [FK_TenantRoleUser_Role]
 		foreign key references [Tenant].[TenantRole],
 
-	constraint [PK_RoleUser] primary key (UserId, RoleId),
+	constraint [PK_RoleUser] primary key (UserId, TenantRoleId),
 
 	EditedUserId int not null
 		constraint [FK_TenantRoleUser_EditUser]
@@ -62,7 +62,7 @@ create table [Tenant].[TenantRoleUser]
 with (system_versioning = on (history_table = [Tenant].[TenantRoleUserHistory]));
 
 create unique index [UIX_TenantRoleUser_RoleId_UserId]
-on [Tenant].[TenantRoleUser](RoleId, UserId);
+on [Tenant].[TenantRoleUser](TenantRoleId, UserId);
 go
 
 create table [Tenant].[TenantApiKey]

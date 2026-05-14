@@ -63,7 +63,7 @@ public sealed class CurrentUserService(
 	[StackTraceHidden]
 	[DoesNotReturn]
 	private static void ThrowInvalidUserId(string userId) =>
-		throw new InvalidOperationException($"Unknown user id: `{userId}`");
+		throw new UnauthorizedAccessException();
 }
 
 public static class PermissionExtensions

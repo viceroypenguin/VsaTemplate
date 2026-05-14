@@ -5,8 +5,62 @@
 
 <nav class="navbar">
     <div class="container">
-        <div class="navbar-brand">
+        <div class="navbar-brand has-text-weight-extrabold">
             <a class="navbar-item">VSA Template</a>
+        </div>
+
+        <div class="navbar-item has-text-weight-bold">
+            Tenant:
+        </div>
+
+        <div class="navbar-item has-dropdown is-hoverable">
+            @if (_tenants is null)
+            {
+                <a class="navbar-link">
+                    Loading...
+                </a>
+            }
+            else
+            {
+                <a class="navbar-link">
+                    @if (_tenants is [])
+                    {
+                        @:No tenants accessible
+                    }
+                    else if (TenantId is null)
+                    {
+                        @:No tenant selected
+                    }
+                    else if (_tenants.FirstOrDefault(t => t.TenantId == TenantId) is not { } tenant)
+                    {
+                        @:Invalid tenant selected
+                    }
+                    else
+                    {
+                        @:@tenant.Name
+                    }
+                </a>
+
+                <div class="navbar-dropdown">
+                    @foreach (var t in _tenants)
+                    {
+                        if (t.TenantId == TenantId)
+                        {
+                            <a class="navbar-item is-selected" href="/tenants/@t.TenantId/home">@t.Name</a>
+                        }
+                        else
+                        {
+                            <a class="navbar-item" href="/tenants/@t.TenantId/home">@t.Name</a>
+                        }
+                    }
+
+                    @if (_tenants is not [])
+                    {
+                        <hr class="navbar-divider">
+                    }
+                    <a class="navbar-item" href="/tenants/create">Create Tenant</a>
+                </div>
+            }
         </div>
 
         <div class="navbar-end">

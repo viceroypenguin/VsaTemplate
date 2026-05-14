@@ -26,15 +26,17 @@ public sealed partial class DbGenerator
 			.Select(p =>
 			{
 				var name = p.TypeName;
-				var useConverter = false;
 				var forceNotNull = p.ForceNotNull;
-				if (map.TryGetValue(p.ColumnName, out var n)
-					|| (p.ColumnName.EndsWith("Id", StringComparison.Ordinal)
-						&& map.FindValue(p.ColumnName, out n))
+
+				if (
+					map.TryGetValue(p.ColumnName, out var n)
+					|| (
+						p.ColumnName.EndsWith("Id", StringComparison.Ordinal)
+						&& map.FindValue(p.ColumnName, out n)
 					)
+				)
 				{
 					name = n.UnderlyingTypeName;
-					useConverter = !n.IsEnum;
 					forceNotNull = false;
 				}
 
@@ -42,7 +44,6 @@ public sealed partial class DbGenerator
 				{
 					TypeName = name,
 					p.IsNullable,
-					UseConverter = useConverter,
 					p.PropertyName,
 					p.ColumnName,
 					p.DataType,
