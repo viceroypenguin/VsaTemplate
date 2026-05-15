@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using HttpStatusExceptions;
 
@@ -14,10 +15,12 @@ public sealed class NotFoundException(string entityName, string? message = null)
 	public string EntityName { get; } = entityName;
 
 	[DoesNotReturn]
+	[StackTraceHidden]
 	public static void ThrowNotFoundException(string entityName, string? message = null) =>
 		throw new NotFoundException(entityName);
 
 	[DoesNotReturn]
+	[StackTraceHidden]
 	public static T ThrowNotFoundException<T>(string entityName, string? message = null) =>
 		throw new NotFoundException(entityName);
 }

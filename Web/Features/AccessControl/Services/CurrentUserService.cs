@@ -1,8 +1,7 @@
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Authorization;
 using VsaTemplate.Web.Features.AccessControl.Models;
+using VsaTemplate.Web.Features.Shared.Exceptions;
 using VsaTemplate.Web.Features.Shared.Extensions;
 
 namespace VsaTemplate.Web.Features.AccessControl.Services;
@@ -44,7 +43,7 @@ public sealed class CurrentUserService(
 
 		var claim = user?.FindFirstValue("vsa-id") ?? "";
 		if (!UserId.TryParse(claim, provider: null, out var userId))
-			ThrowInvalidUserId(claim);
+			UnauthorizedException.ThrowUnauthorizedException();
 
 		return userId;
 	}
@@ -59,11 +58,6 @@ public sealed class CurrentUserService(
 
 		return authenticationState?.User;
 	}
-
-	[StackTraceHidden]
-	[DoesNotReturn]
-	private static void ThrowInvalidUserId(string userId) =>
-		throw new UnauthorizedAccessException();
 }
 
 public static class PermissionExtensions

@@ -1,8 +1,7 @@
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using Immediate.Handlers.Shared;
 using VsaTemplate.Web.Features.AccessControl.Models;
 using VsaTemplate.Web.Features.AccessControl.Services;
+using VsaTemplate.Web.Features.Shared.Exceptions;
 
 namespace VsaTemplate.Web.Features.AccessControl.Authorization;
 
@@ -23,7 +22,7 @@ public sealed partial class AuthorizationBehavior<TRequest, TResponse>(
 			var userId = await currentUserService.GetCurrentUserId();
 
 			LogUnauthorizedAccess(logger, userId, HandlerType.FullName, permission);
-			ThrowUnauthorizedAccess();
+			UnauthorizedException.ThrowUnauthorizedException();
 		}
 
 		return await Next(request, cancellationToken);
@@ -34,9 +33,4 @@ public sealed partial class AuthorizationBehavior<TRequest, TResponse>(
 		Message = "Unauthorized access: User {UserId}, Handler {HandlerType}, Permission {Permission}"
 	)]
 	private static partial void LogUnauthorizedAccess(ILogger logger, UserId? userId, string? handlerType, Permission permission);
-
-	[StackTraceHidden]
-	[DoesNotReturn]
-	private static void ThrowUnauthorizedAccess() =>
-		throw new UnauthorizedAccessException();
 }

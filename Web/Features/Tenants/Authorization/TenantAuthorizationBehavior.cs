@@ -1,8 +1,7 @@
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using Immediate.Handlers.Shared;
 using VsaTemplate.Web.Features.AccessControl.Models;
 using VsaTemplate.Web.Features.AccessControl.Services;
+using VsaTemplate.Web.Features.Shared.Exceptions;
 using VsaTemplate.Web.Features.Tenants.Models;
 using VsaTemplate.Web.Features.Tenants.Services;
 
@@ -31,9 +30,7 @@ public sealed partial class TenantAuthorizationBehavior<TRequest, TResponse>(
 		var userId = await currentUserService.GetCurrentUserId();
 
 		LogUnauthorizedAccess(logger, userId, tenantId, HandlerType.FullName, permission);
-		ThrowUnauthorizedAccess();
-
-		return await Next(request, cancellationToken);
+		return UnauthorizedException.ThrowUnauthorizedException<TResponse>();
 	}
 
 	[LoggerMessage(
@@ -41,9 +38,4 @@ public sealed partial class TenantAuthorizationBehavior<TRequest, TResponse>(
 		Message = "Unauthorized tenant access: User {UserId}, TenantId {TenantId}, Handler {HandlerType}, Permission {Permission}"
 	)]
 	private static partial void LogUnauthorizedAccess(ILogger logger, UserId? userId, TenantId tenantId, string? handlerType, TenantPermission permission);
-
-	[StackTraceHidden]
-	[DoesNotReturn]
-	private static void ThrowUnauthorizedAccess() =>
-		throw new UnauthorizedAccessException();
 }
