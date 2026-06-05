@@ -20,7 +20,7 @@ public sealed partial class TopBar : ComponentBase
 	private async Task LoadTenants()
 	{
 		_tenants = null;
-		await using var scope = GetTenantsForCurrentUser.GetScope();
-		_tenants = await scope.Service.HandleAsync(new());
+		await using var scope = GetTenantsForCurrentUser.GetScope(out var handler);
+		_tenants = await handler.HandleAsync(new());
 	}
 }
