@@ -1,14 +1,14 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
-using HttpStatusExceptions;
+using VsaTemplate.Web.Infrastructure.Exceptions;
 
 namespace VsaTemplate.Web.Features.Shared.Exceptions;
 
 public sealed class UnauthorizedException(string? message = null)
-	: HttpStatusException(
-		statusCode: (int)HttpStatusCode.Forbidden,
-		string.IsNullOrWhiteSpace(message) ? "Unauthorized" : $"Unauthorized ({message})"
+	: VsaTemplateException(
+		string.IsNullOrWhiteSpace(message) ? "Unauthorized" : $"Unauthorized ({message})",
+		statusCode: (int)HttpStatusCode.Forbidden
 	)
 {
 	[DoesNotReturn]

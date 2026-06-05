@@ -33,7 +33,6 @@
 	<PackageReference Include="Auth0.AspNetCore.Authentication" />
 	<PackageReference Include="CommunityToolkit.Diagnostics" />
 	<PackageReference Include="Hangfire" />
-	<PackageReference Include="HttpStatusExceptions.AspNetCore" />
 	<PackageReference Include="Immediate.Apis" />
 	<PackageReference Include="Immediate.Cache" />
 	<PackageReference Include="Immediate.Handlers" />

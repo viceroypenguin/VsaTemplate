@@ -8,7 +8,6 @@
 	<PackageVersion Include="Auth0.AspNetCore.Authentication" Version="1.7.0" />
 	<PackageVersion Include="CommunityToolkit.Diagnostics" Version="8.4.0" />
 	<PackageVersion Include="Hangfire" Version="1.8.23" />
-	<PackageVersion Include="HttpStatusExceptions.AspNetCore" Version="1.0.3" />
 	<PackageVersion Include="Humanizer" Version="3.0.10" />
 	<PackageVersion Include="Immediate.Apis" Version="4.2.0" />
 	<PackageVersion Include="Immediate.Cache" Version="1.2.0" />

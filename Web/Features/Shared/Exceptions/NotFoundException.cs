@@ -1,15 +1,15 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using HttpStatusExceptions;
+using VsaTemplate.Web.Infrastructure.Exceptions;
 
 namespace VsaTemplate.Web.Features.Shared.Exceptions;
 
 public sealed class NotFoundException(string entityName, string? message = null)
-	: HttpStatusException(
-		statusCode: 404,
+	: VsaTemplateException(
 		string.IsNullOrWhiteSpace(message)
 			? $"Record could not be found (Entity: {entityName})"
-			: $"{message} (Entity: {entityName})"
+			: $"{message} (Entity: {entityName})",
+		statusCode: 404
 	)
 {
 	public string EntityName { get; } = entityName;

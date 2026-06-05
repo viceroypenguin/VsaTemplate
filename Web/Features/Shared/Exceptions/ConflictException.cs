@@ -1,11 +1,11 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using HttpStatusExceptions;
+using VsaTemplate.Web.Infrastructure.Exceptions;
 
 namespace VsaTemplate.Web.Features.Shared.Exceptions;
 
 public sealed class ConflictException(string message)
-	: HttpStatusException(statusCode: 409, message)
+	: VsaTemplateException(message, statusCode: 409)
 {
 	[DoesNotReturn]
 	[StackTraceHidden]
