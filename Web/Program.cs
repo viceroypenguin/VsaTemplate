@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Text.Json.Serialization;
 using Auth0.AspNetCore.Authentication;
 using Hangfire;
+using Immediate.Injections.Shared;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
@@ -38,9 +39,7 @@ try
 		builder.Configuration.GetValue("UseAuth0", defaultValue: true)
 	);
 
-	builder.Services
-		.ConfigureWebOptions()
-		.AddServices();
+	builder.Services.AddWebServices();
 
 	var app = builder.Build();
 
@@ -87,60 +86,64 @@ finally
 	}
 }
 
-file static class StartupExtensions
+internal static class StartupExtensions
 {
-	public static IServiceCollection ConfigureWebOptions(this IServiceCollection services)
+	[RegisterServices]
+	public static void ConfigureWebOptions(IServiceCollection services)
 	{
-		return services
-			.ConfigureAllOptions()
-			.Configure<ApiBehaviorOptions>(
-				o => o.SuppressInferBindingSourcesForParameters = true
-			)
-			.Configure<RouteHandlerOptions>(
-				o => o.ThrowOnBadRequest = true
-			)
-			.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(
-				o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter())
-			)
-			.AddResponseCompression(
-				options => options.EnableForHttps = true
-			);
+		services.ConfigureAllOptions();
+
+		services.Configure<ApiBehaviorOptions>(
+			o => o.SuppressInferBindingSourcesForParameters = true
+		);
+
+		services.Configure<RouteHandlerOptions>(
+			o => o.ThrowOnBadRequest = true
+		);
+
+		services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(
+			o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter())
+		);
+
+		services.AddResponseCompression(
+			options => options.EnableForHttps = true
+		);
 	}
 
-	public static IServiceCollection AddServices(this IServiceCollection services)
+	[RegisterServices]
+	public static void AddImmediatePlatformHooks(IServiceCollection services)
 	{
-		return services
-			// IH
-			.AddWebHandlers()
-			.AddWebBehaviors()
-			// IC
-			.AddWebCaches()
-			// IC
-			.AddWebServices()
+		// IH
+		services.AddWebHandlers();
+		services.AddWebBehaviors();
 
-			// General Infra concerns
-			.AddWebOpenApi()
-			.AddBlazorServices()
-			.AddMemoryCache()
-			.AddHttpContextAccessor()
-			.AddCascadingAuthenticationState()
-			.AddEndpointsApiExplorer()
-			.AddAntiforgery()
-			.AddProblemDetails(ExceptionStartupExtensions.ConfigureProblemDetails);
+		// IC
+		services.AddWebCaches();
 	}
 
-	private static IServiceCollection AddBlazorServices(this IServiceCollection services)
+	[RegisterServices]
+	public static void AddInfrastructureServices(IServiceCollection services)
+	{
+		services.AddMemoryCache();
+		services.AddHttpContextAccessor();
+		services.AddCascadingAuthenticationState();
+		services.AddEndpointsApiExplorer();
+		services.AddAntiforgery();
+		services.AddProblemDetails(ExceptionStartupExtensions.ConfigureProblemDetails);
+	}
+
+	[RegisterServices]
+	public static void AddBlazorServices(this IServiceCollection services)
 	{
 		services
 			.AddRazorComponents()
 			.AddInteractiveServerComponents();
-
-		return services;
 	}
 
-	private static IServiceCollection AddWebOpenApi(this IServiceCollection services)
+	[RegisterServices]
+	public static void AddWebOpenApi(this IServiceCollection services)
 	{
-		return services.AddOpenApi(o =>
+		services.AddOpenApi(o =>
 		{
 			o.CreateSchemaReferenceId = t =>
 				t.Type.IsNested
