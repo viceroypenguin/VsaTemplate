@@ -9,59 +9,64 @@
             <a class="navbar-item">VSA Template</a>
         </div>
 
-        <div class="navbar-item has-text-weight-bold">
-            Tenant:
-        </div>
+        <AuthorizeView>
+            <Authorized>
+                <div class="navbar-item has-text-weight-bold">
+                    Tenant:
+                </div>
 
-        <div class="navbar-item has-dropdown is-hoverable">
-            @if (_tenants is null)
-            {
-                <a class="navbar-link">
-                    Loading...
-                </a>
-            }
-            else
-            {
-                <a class="navbar-link">
-                    @if (_tenants is [])
+                <div class="navbar-item has-dropdown is-hoverable">
+                    @if (_tenants is null)
                     {
-                        @:No tenants accessible
-                    }
-                    else if (TenantId is null)
-                    {
-                        @:No tenant selected
-                    }
-                    else if (_tenants.FirstOrDefault(t => t.TenantId == TenantId) is not { } tenant)
-                    {
-                        @:Invalid tenant selected
+                        <a class="navbar-link">
+                            Loading...
+                        </a>
                     }
                     else
                     {
-                        @:@tenant.Name
-                    }
-                </a>
+                        <a class="navbar-link">
+                            @if (_tenants is [])
+                            {
+                                @:No tenants accessible
+                            }
+                            else if (TenantId is null)
+                            {
+                                @:No tenant selected
+                            }
+                            else if (_tenants.FirstOrDefault(t => t.TenantId == TenantId) is not { } tenant)
+                            {
+                                @:Invalid tenant selected
+                            }
+                            else
+                            {
+                                @:@tenant.Name
+                            }
+                        </a>
 
-                <div class="navbar-dropdown">
-                    @foreach (var t in _tenants)
-                    {
-                        if (t.TenantId == TenantId)
-                        {
-                            <a class="navbar-item is-selected" href="/tenants/@t.TenantId/home">@t.Name</a>
-                        }
-                        else
-                        {
-                            <a class="navbar-item" href="/tenants/@t.TenantId/home">@t.Name</a>
-                        }
-                    }
+                        <div class="navbar-dropdown">
+                            @foreach (var t in _tenants)
+                            {
+                                if (t.TenantId == TenantId)
+                                {
+                                    <a class="navbar-item is-selected" href="/tenants/@t.TenantId/home">@t.Name</a>
+                                }
+                                else
+                                {
+                                    <a class="navbar-item" href="/tenants/@t.TenantId/home">@t.Name</a>
+                                }
+                            }
 
-                    @if (_tenants is not [])
-                    {
-                        <hr class="navbar-divider">
+                            @if (_tenants is not [])
+                            {
+                                <hr class="navbar-divider">
+                            }
+
+                            <a class="navbar-item" href="/tenants/create">Create Tenant</a>
+                        </div>
                     }
-                    <a class="navbar-item" href="/tenants/create">Create Tenant</a>
                 </div>
-            }
-        </div>
+            </Authorized>
+        </AuthorizeView>
 
         <div class="navbar-end">
             <AuthorizeView>
