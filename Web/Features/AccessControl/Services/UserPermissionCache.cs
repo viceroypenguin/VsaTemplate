@@ -1,25 +1,17 @@
 using System.Globalization;
 using System.Text.Json;
-using Immediate.Cache;
+using Immediate.Cache.Shared;
 using Immediate.Handlers.Shared;
 using LinqToDB;
 using LinqToDB.Async;
-using Microsoft.Extensions.Caching.Memory;
 using SuperLinq;
 using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.AccessControl.Models;
 
 namespace VsaTemplate.Web.Features.AccessControl.Services;
 
-[RegisterSingleton]
-public sealed class UserPermissionCache(
-	IMemoryCache memoryCache,
-	Owned<IHandler<GetUserPermissions.Query, GetUserPermissions.Response>> ownedGetUserQueries
-)
-	: ApplicationCacheBase<
-		GetUserPermissions.Query,
-		GetUserPermissions.Response
-	>(memoryCache, ownedGetUserQueries)
+[CacheFor<GetUserPermissions>]
+public sealed partial class UserPermissionCache
 {
 	protected override string TransformKey(GetUserPermissions.Query request) =>
 		string.Create(CultureInfo.InvariantCulture, $"UserPermissionCache-{request.UserId}");

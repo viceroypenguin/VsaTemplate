@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.Options;
 using VsaTemplate.Web.Features.AccessControl.Services;
+using Immediate.Injections.Shared;
 
 namespace VsaTemplate.Web.Infrastructure.Authentication;
 

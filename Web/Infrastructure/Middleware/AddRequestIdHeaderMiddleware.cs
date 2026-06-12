@@ -1,6 +1,8 @@
+using Immediate.Injections.Shared;
+
 namespace VsaTemplate.Web.Infrastructure.Middleware;
 
-[RegisterSingleton(Registration = RegistrationStrategy.Self)]
+[RegisterSingleton]
 public sealed class AddRequestIdHeaderMiddleware : IMiddleware
 {
 	public Task InvokeAsync(HttpContext context, RequestDelegate next)

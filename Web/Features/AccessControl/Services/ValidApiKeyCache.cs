@@ -1,21 +1,14 @@
-using Immediate.Cache;
+using Immediate.Cache.Shared;
 using Immediate.Handlers.Shared;
 using LinqToDB;
 using LinqToDB.Async;
-using Microsoft.Extensions.Caching.Memory;
 using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.AccessControl.Models;
 
 namespace VsaTemplate.Web.Features.AccessControl.Services;
 
-[RegisterSingleton]
-public sealed class ValidApiKeyCache(
-	IMemoryCache memoryCache,
-	Owned<IHandler<GetApiKey.Request, GetApiKey.Response>> ownedIsValidApiKey
-) : ApplicationCacheBase<GetApiKey.Request, GetApiKey.Response>(
-	memoryCache,
-	ownedIsValidApiKey
-)
+[CacheFor<GetApiKey>]
+public sealed partial class ValidApiKeyCache
 {
 	protected override string TransformKey(GetApiKey.Request request) =>
 		$"Valid-ApiKey-{request.ApiKey}";

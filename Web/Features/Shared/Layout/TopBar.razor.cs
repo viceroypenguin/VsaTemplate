@@ -1,4 +1,4 @@
-using Immediate.Cache;
+using Immediate.Cache.Shared;
 using Microsoft.AspNetCore.Components;
 using VsaTemplate.Web.Features.Tenants.Models;
 using VsaTemplate.Web.Features.Tenants.Queries;

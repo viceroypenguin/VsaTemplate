@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Immediate.Cache;
+using Immediate.Cache.Shared;
 using LinqToDB;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;

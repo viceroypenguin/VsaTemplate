@@ -1,4 +1,5 @@
 using CommunityToolkit.Diagnostics;
+using Immediate.Injections.Shared;
 using Immediate.Validations.Shared;
 using LinqToDB;
 using LinqToDB.Data;
@@ -19,7 +20,7 @@ public sealed partial class DbContextOptions : IValidationTarget<DbContextOption
 	public string? ConnectionStringInit { get; init; }
 }
 
-[RegisterTransient(Registration = RegistrationStrategy.Self)]
+[RegisterTransient]
 public sealed partial class DbContext : DataConnection
 {
 	private static readonly MappingSchema s_mappingSchema = BuildMappingSchema();

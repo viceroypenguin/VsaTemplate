@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Immediate.Injections.Shared;
 using Microsoft.AspNetCore.Components.Authorization;
 using VsaTemplate.Web.Features.AccessControl.Models;
 using VsaTemplate.Web.Features.Shared.Exceptions;

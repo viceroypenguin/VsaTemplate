@@ -2,7 +2,6 @@ using System.Diagnostics;
 using System.Text.Json.Serialization;
 using Auth0.AspNetCore.Authentication;
 using Hangfire;
-using Immediate.Cache;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
@@ -41,8 +40,7 @@ try
 
 	builder.Services
 		.ConfigureWebOptions()
-		.AddWebServices()
-		.AddBlazorServices();
+		.AddServices();
 
 	var app = builder.Build();
 
@@ -109,30 +107,29 @@ file static class StartupExtensions
 			);
 	}
 
-	public static IServiceCollection AddWebServices(this IServiceCollection services)
+	public static IServiceCollection AddServices(this IServiceCollection services)
 	{
-		services
-			// injectio
-			.AddWeb()
+		return services
 			// IH
 			.AddWebHandlers()
 			.AddWebBehaviors()
 			// IC
-			.AddSingleton(typeof(Owned<>))
+			.AddWebCaches()
+			// IC
+			.AddWebServices()
 
 			// General Infra concerns
 			.AddWebOpenApi()
+			.AddBlazorServices()
 			.AddMemoryCache()
 			.AddHttpContextAccessor()
 			.AddCascadingAuthenticationState()
 			.AddEndpointsApiExplorer()
 			.AddAntiforgery()
 			.AddProblemDetails(ExceptionStartupExtensions.ConfigureProblemDetails);
-
-		return services;
 	}
 
-	public static IServiceCollection AddBlazorServices(this IServiceCollection services)
+	private static IServiceCollection AddBlazorServices(this IServiceCollection services)
 	{
 		services
 			.AddRazorComponents()
@@ -141,7 +138,7 @@ file static class StartupExtensions
 		return services;
 	}
 
-	public static IServiceCollection AddWebOpenApi(this IServiceCollection services)
+	private static IServiceCollection AddWebOpenApi(this IServiceCollection services)
 	{
 		return services.AddOpenApi(o =>
 		{

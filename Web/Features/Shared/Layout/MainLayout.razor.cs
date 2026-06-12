@@ -33,6 +33,6 @@ public sealed partial class MainLayout : LayoutComponentBase
 
 	public void Dispose() => NavigationManager.LocationChanged -= HandleLocationChanged;
 
-	[GeneratedRegex(@"^/tenant/(?<tenant_id>\d+)(/|$)", RegexOptions.ExplicitCapture)]
+	[GeneratedRegex(@"^/tenant/(?<tenant_id>\d+)(/|$)", RegexOptions.ExplicitCapture, matchTimeoutMilliseconds: 100)]
 	private partial Regex TenantRegex { get; }
 }

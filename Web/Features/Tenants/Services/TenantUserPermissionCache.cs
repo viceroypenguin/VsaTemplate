@@ -1,9 +1,8 @@
 using System.Globalization;
 using System.Text.Json;
-using Immediate.Cache;
+using Immediate.Cache.Shared;
 using Immediate.Handlers.Shared;
 using LinqToDB.Async;
-using Microsoft.Extensions.Caching.Memory;
 using SuperLinq;
 using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.AccessControl.Models;
@@ -11,15 +10,8 @@ using VsaTemplate.Web.Features.Tenants.Models;
 
 namespace VsaTemplate.Web.Features.Tenants.Services;
 
-[RegisterSingleton]
-public sealed class TenantUserPermissionCache(
-	IMemoryCache memoryCache,
-	Owned<IHandler<TenantGetUserPermissions.Query, TenantGetUserPermissions.Response>> ownedGetUserQueries
-)
-	: ApplicationCacheBase<
-		TenantGetUserPermissions.Query,
-		TenantGetUserPermissions.Response
-	>(memoryCache, ownedGetUserQueries)
+[CacheFor<TenantGetUserPermissions>]
+public sealed partial class TenantUserPermissionCache
 {
 	protected override string TransformKey(TenantGetUserPermissions.Query request) =>
 		string.Create(CultureInfo.InvariantCulture, $"TenantUserPermissionCache-{request.UserId}-{request.TenantId}");

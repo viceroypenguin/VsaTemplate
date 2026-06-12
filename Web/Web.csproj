@@ -36,8 +36,8 @@
 	<PackageReference Include="Immediate.Apis" />
 	<PackageReference Include="Immediate.Cache" />
 	<PackageReference Include="Immediate.Handlers" />
+	<PackageReference Include="Immediate.Injections" />
 	<PackageReference Include="Immediate.Validations" />
-	<PackageReference Include="Injectio" PrivateAssets="All" />
 	<PackageReference Include="linq2db" />
 	<PackageReference Include="MailKit" />
 	<PackageReference Include="Microsoft.AspNetCore.OpenApi" />

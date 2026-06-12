@@ -1,4 +1,5 @@
 using CommunityToolkit.Diagnostics;
+using Immediate.Injections.Shared;
 using Immediate.Validations.Shared;
 using MailKit.Net.Smtp;
 using MimeKit;
