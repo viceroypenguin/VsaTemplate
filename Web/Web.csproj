@@ -39,10 +39,10 @@
 	<PackageReference Include="Immediate.Injections" />
 	<PackageReference Include="Immediate.Validations" />
 	<PackageReference Include="linq2db" />
-	<PackageReference Include="MailKit" />
 	<PackageReference Include="Microsoft.AspNetCore.OpenApi" />
 	<PackageReference Include="Microsoft.Data.SqlClient" />
 	<PackageReference Include="Newtonsoft.Json" ExcludeAssets="compile" />
+	<PackageReference Include="Resend" />
 	<PackageReference Include="Scalar.AspNetCore" />
 	<PackageReference Include="SimpleBase" />
 	<PackageReference Include="Serilog.AspNetCore" />

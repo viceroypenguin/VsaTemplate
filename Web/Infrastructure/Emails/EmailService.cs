@@ -1,8 +1,7 @@
 using CommunityToolkit.Diagnostics;
 using Immediate.Injections.Shared;
 using Immediate.Validations.Shared;
-using MailKit.Net.Smtp;
-using MimeKit;
+using Resend;
 using VsaTemplate.Web.Utilities.Attributes;
 
 namespace VsaTemplate.Web.Infrastructure.Emails;
@@ -12,15 +11,7 @@ namespace VsaTemplate.Web.Infrastructure.Emails;
 public sealed partial class EmailServiceOptions : IValidationTarget<EmailServiceOptions>
 {
 	[NotEmpty]
-	public required string Host { get; init; }
-
-	public required int Port { get; init; }
-
-	[NotEmpty]
-	public required string Password { get; init; }
-
-	[NotEmpty]
-	public required string Username { get; init; }
+	public required string ApiToken { get; init; }
 
 	[NotEmpty]
 	public required string FromEmailAddress { get; init; }
@@ -29,48 +20,81 @@ public sealed partial class EmailServiceOptions : IValidationTarget<EmailService
 }
 
 [RegisterScoped]
-public sealed class EmailService(EmailServiceOptions options)
+public sealed class EmailService(
+	ResendClient resendClient,
+	EmailServiceOptions options,
+	IHostEnvironment environment
+)
 {
 	private readonly EmailServiceOptions _options = options;
 
-	public async Task SendAdminEmail(string subject, string body, bool isHtml, CancellationToken cancellationToken = default)
+	public async Task SendAdminEmail(string subject, string body, bool isHtml = false, CancellationToken cancellationToken = default)
 	{
 		Guard.IsNotNull(subject);
 		Guard.IsNotNull(body);
 
-		using var message = new MimeMessage
+		var message = new EmailMessage
 		{
 			Subject = subject,
-			Body = new TextPart(isHtml ? "html" : "plain") { Text = body },
 		};
+
+		message.SetBody(body, isHtml);
 
 		await SendAdminEmail(message, cancellationToken);
 	}
 
-	public Task SendAdminEmail(MimeMessage message, CancellationToken cancellationToken = default)
+	public async Task SendEmail(string to, string subject, string body, bool isHtml = false, CancellationToken cancellationToken = default)
+	{
+		Guard.IsNotNull(subject);
+		Guard.IsNotNull(body);
+
+		var message = new EmailMessage
+		{
+			To = EmailAddress.Parse(to),
+			Subject = subject,
+		};
+
+		message.SetBody(body, isHtml);
+
+		await SendEmail(message, cancellationToken);
+	}
+
+	public Task SendAdminEmail(EmailMessage message, CancellationToken cancellationToken = default)
 	{
 		Guard.IsNotNull(message);
 
-		message.To.Clear();
-		foreach (var email in _options.AdminEmailAddresses)
-			message.To.Add(MailboxAddress.Parse(email));
+		message.SetAdminTo(_options.AdminEmailAddresses);
 
 		return SendEmail(message, cancellationToken);
 	}
 
-	public async Task SendEmail(MimeMessage message, CancellationToken cancellationToken = default)
+	public async Task SendEmail(EmailMessage message, CancellationToken cancellationToken = default)
 	{
 		Guard.IsNotNull(message);
 
-		message.From.Clear();
-		message.From.Add(MailboxAddress.Parse(_options.FromEmailAddress));
+		message.From = EmailAddress.Parse(_options.FromEmailAddress);
 
-		using var client = new SmtpClient();
-		await client.ConnectAsync(_options.Host, _options.Port, cancellationToken: cancellationToken);
+		if (!environment.IsProduction())
+			message.SetAdminTo(_options.AdminEmailAddresses);
 
-		await client.AuthenticateAsync(_options.Username, _options.Password, cancellationToken);
-		await client.SendAsync(message);
+		await resendClient.EmailSendAsync(message, cancellationToken);
+	}
 
-		await client.DisconnectAsync(quit: true, cancellationToken: cancellationToken);
+}
+file static class Extensions
+{
+	public static void SetBody(this EmailMessage message, string body, bool isHtml)
+	{
+		if (isHtml)
+			message.HtmlBody = body;
+		else
+			message.TextBody = body;
+	}
+
+	public static void SetAdminTo(this EmailMessage message, IReadOnlyList<string> adminEmailAddresses)
+	{
+		message.To.Clear();
+		foreach (var email in adminEmailAddresses)
+			message.To.Add(EmailAddress.Parse(email));
 	}
 }

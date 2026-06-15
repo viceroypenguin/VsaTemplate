@@ -8,17 +8,20 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.OpenApi;
+using Resend;
 using Scalar.AspNetCore;
 using Serilog;
 using VsaTemplate.Web;
 using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.Shared.Layout;
 using VsaTemplate.Web.Infrastructure.Authentication;
+using VsaTemplate.Web.Infrastructure.Emails;
 using VsaTemplate.Web.Infrastructure.Exceptions;
 using VsaTemplate.Web.Infrastructure.Hangfire;
 using VsaTemplate.Web.Infrastructure.Logging;
 using VsaTemplate.Web.Infrastructure.Middleware;
 using VsaTemplate.Web.Infrastructure.Startup;
+using Log = Serilog.Log;
 
 Log.Logger = new LoggerConfiguration()
 	.WriteTo.Console(formatProvider: null)
@@ -108,6 +111,17 @@ internal static class StartupExtensions
 		services.AddResponseCompression(
 			options => options.EnableForHttps = true
 		);
+	}
+
+	[RegisterServices]
+	public static void AddEmail(IServiceCollection services)
+	{
+		services
+			.AddOptions<ResendClientOptions>()
+			.Configure<EmailServiceOptions>((o, eso) => o.ApiToken = eso.ApiToken);
+
+		services.AddHttpClient<ResendClient>();
+		services.AddTransient<ResendClient>();
 	}
 
 	[RegisterServices]
