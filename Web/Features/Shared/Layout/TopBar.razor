@@ -4,109 +4,109 @@
 @rendermode InteractiveServer
 
 <nav class="navbar">
-    <div class="container">
-        <div class="navbar-brand has-text-weight-extrabold">
-            <a class="navbar-item">VSA Template</a>
-        </div>
+	<div class="container">
+		<div class="navbar-brand has-text-weight-extrabold">
+			<a class="navbar-item">VSA Template</a>
+		</div>
 
-        <AuthorizeView>
-            <Authorized>
-                <div class="navbar-item has-text-weight-bold">
-                    Tenant:
-                </div>
+		<AuthorizeView>
+			<Authorized>
+				<div class="navbar-item has-text-weight-bold">
+					Tenant:
+				</div>
 
-                <div class="navbar-item has-dropdown is-hoverable">
-                    @if (_tenants is null)
-                    {
-                        <a class="navbar-link">
-                            Loading...
-                        </a>
-                    }
-                    else
-                    {
-                        <a class="navbar-link">
-                            @if (_tenants is [])
-                            {
-                                @:No tenants accessible
-                            }
-                            else if (TenantId is null)
-                            {
-                                @:No tenant selected
-                            }
-                            else if (_tenants.FirstOrDefault(t => t.TenantId == TenantId) is not { } tenant)
-                            {
-                                @:Invalid tenant selected
-                            }
-                            else
-                            {
-                                @:@tenant.Name
-                            }
-                        </a>
+				<div class="navbar-item has-dropdown is-hoverable">
+					@if (_tenants is null)
+					{
+						<a class="navbar-link">
+							Loading...
+						</a>
+					}
+					else
+					{
+						<a class="navbar-link">
+							@if (_tenants is [])
+							{
+								@:No tenants accessible
+							}
+							else if (TenantId is null)
+							{
+								@:No tenant selected
+							}
+							else if (_tenants.FirstOrDefault(t => t.TenantId == TenantId) is not { } tenant)
+							{
+								@:Invalid tenant selected
+							}
+							else
+							{
+								@:@tenant.Name
+							}
+						</a>
 
-                        <div class="navbar-dropdown">
-                            @foreach (var t in _tenants)
-                            {
-                                if (t.TenantId == TenantId)
-                                {
-                                    <a class="navbar-item is-selected" href="/tenants/@t.TenantId/home">@t.Name</a>
-                                }
-                                else
-                                {
-                                    <a class="navbar-item" href="/tenants/@t.TenantId/home">@t.Name</a>
-                                }
-                            }
+						<div class="navbar-dropdown">
+							@foreach (var t in _tenants)
+							{
+								if (t.TenantId == TenantId)
+								{
+									<a class="navbar-item is-selected" href="/tenants/@t.TenantId/home">@t.Name</a>
+								}
+								else
+								{
+									<a class="navbar-item" href="/tenants/@t.TenantId/home">@t.Name</a>
+								}
+							}
 
-                            @if (_tenants is not [])
-                            {
-                                <hr class="navbar-divider">
-                            }
+							@if (_tenants is not [])
+							{
+								<hr class="navbar-divider">
+							}
 
-                            <a class="navbar-item" href="/tenants/create">Create Tenant</a>
-                        </div>
-                    }
-                </div>
-            </Authorized>
-        </AuthorizeView>
+							<a class="navbar-item" href="/tenants/create">Create Tenant</a>
+						</div>
+					}
+				</div>
+			</Authorized>
+		</AuthorizeView>
 
-        <div class="navbar-end">
-            <AuthorizeView>
-                <Authorized>
-                    <div class="navbar-item has-dropdown is-hoverable">
-                        <a class="navbar-link">
-                            @context.User.Identity?.Name
-                        </a>
+		<div class="navbar-end">
+			<AuthorizeView>
+				<Authorized>
+					<div class="navbar-item has-dropdown is-hoverable">
+						<a class="navbar-link">
+							@context.User.Identity?.Name
+						</a>
 
-                        <div class="navbar-dropdown">
+						<div class="navbar-dropdown">
 
-                            <PermissionAuthorizeView Permission="Permission.Admin">
-                                <Authorized>
-                                    <a class="navbar-item" href="/hangfire">Hangfire</a>
-                                    <a class="navbar-item" href="/scalar/v1">Scalar</a>
+							<PermissionAuthorizeView Permission="Permission.Admin">
+								<Authorized>
+									<a class="navbar-item" href="/hangfire">Hangfire</a>
+									<a class="navbar-item" href="/scalar/v1">Scalar</a>
 
-                                    <div class="navbar-item">@("Commit: " + ThisAssembly.ShortRevisionId)</div>
+									<div class="navbar-item">@("Commit: " + ThisAssembly.ShortRevisionId)</div>
 
-                                    <hr class="navbar-divider">
-                                </Authorized>
-                            </PermissionAuthorizeView>
+									<hr class="navbar-divider">
+								</Authorized>
+							</PermissionAuthorizeView>
 
-                            <a class="navbar-item" href="/logout">
-                                <span class="icon mr-1">
-                                    <i class="fa-solid fa-right-from-bracket"></i>
-                                </span>
-                                Logout
-                            </a>
-                        </div>
-                    </div>
-                </Authorized>
-                <NotAuthorized>
-                    <a class="navbar-item" href="/login?redirectUri=/">
-                        <span class="icon mr-1">
-                            <i class="fas fa-sign-in-alt"></i>
-                        </span>
-                        Login
-                    </a>
-                </NotAuthorized>
-            </AuthorizeView>
-        </div>
-    </div>
+							<a class="navbar-item" href="/logout">
+								<span class="icon mr-1">
+									<Blazicon Svg="FontAwesomeSolidIcon.RightFromBracket" />
+								</span>
+								Logout
+							</a>
+						</div>
+					</div>
+				</Authorized>
+				<NotAuthorized>
+					<a class="navbar-item" href="/login?redirectUri=/">
+						<span class="icon mr-1">
+							<Blazicon Svg="FontAwesomeSolidIcon.SignInAlt" />
+						</span>
+						Login
+					</a>
+				</NotAuthorized>
+			</AuthorizeView>
+		</div>
+	</div>
 </nav>

@@ -31,6 +31,7 @@
 
   <ItemGroup>
 	<PackageReference Include="Auth0.AspNetCore.Authentication" />
+	<PackageReference Include="Blazicons.FontAwesome" />
 	<PackageReference Include="CommunityToolkit.Diagnostics" />
 	<PackageReference Include="Hangfire" />
 	<PackageReference Include="Immediate.Apis" />

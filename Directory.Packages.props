@@ -5,7 +5,8 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Auth0.AspNetCore.Authentication" Version="1.7.1" />
-    <PackageVersion Include="CommunityToolkit.Diagnostics" Version="8.4.2" />
+	<PackageVersion Include="Blazicons.FontAwesome" Version="3.0.3" />
+	<PackageVersion Include="CommunityToolkit.Diagnostics" Version="8.4.2" />
     <PackageVersion Include="Hangfire" Version="1.8.23" />
     <PackageVersion Include="Humanizer" Version="3.0.10" />
     <PackageVersion Include="Immediate.Apis" Version="5.1.0" />
