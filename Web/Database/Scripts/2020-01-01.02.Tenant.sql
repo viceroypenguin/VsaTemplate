@@ -1,7 +1,4 @@
-create schema [Tenant];
-go
-
-create table [Tenant].[Tenant]
+create table [Tenant]
 (
 	TenantId int not null identity(1, 1)
 		constraint [PK_Tenant]
@@ -15,41 +12,41 @@ create table [Tenant].[Tenant]
 		check (isjson([RecoveryKeysJson]) = 1),
 );
 
-create table [Tenant].[TenantRole]
+create table [TenantRole]
 (
 	TenantRoleId int not null identity(1, 1)
 		constraint [PK_TenantRole]
 		primary key,
 	TenantId int not null
 		constraint [FK_TenantRole_Tenant]
-		foreign key references [Tenant].[Tenant],
+		foreign key references [Tenant],
 
 	[Name] varchar(200) not null,
 
 	[PermissionsJson] varchar(max) not null
-		constraint [CK_Role_PermissionsJson_IsJson]
+		constraint [CK_TenantRole_PermissionsJson_IsJson]
 		check (isjson([PermissionsJson]) = 1),
 
 	EditedUserId int not null
-		constraint [FK_Role_EditUser]
+		constraint [FK_TenantRole_EditUser]
 		foreign key references [AccessControl].[User],
 
 	ValidFrom datetime2 generated always as row start not null,
 	ValidTo datetime2 generated always as row end not null,
 	period for system_time (ValidFrom, ValidTo),
 )
-with (system_versioning = on (history_table = [Tenant].[TenantRoleHistory]));
+with (system_versioning = on (history_table = [dbo].[TenantRoleHistory]));
 
-create table [Tenant].[TenantRoleUser]
+create table [TenantRoleUser]
 (
 	UserId int not null
 		constraint [FK_TenantRoleUser_User]
 		foreign key references [AccessControl].[User],
 	TenantRoleId int not null
 		constraint [FK_TenantRoleUser_Role]
-		foreign key references [Tenant].[TenantRole],
+		foreign key references [TenantRole],
 
-	constraint [PK_RoleUser] primary key (UserId, TenantRoleId),
+	constraint [PK_TenantRoleUser] primary key (UserId, TenantRoleId),
 
 	EditedUserId int not null
 		constraint [FK_TenantRoleUser_EditUser]
@@ -59,13 +56,13 @@ create table [Tenant].[TenantRoleUser]
 	ValidTo datetime2 generated always as row end not null,
 	period for system_time (ValidFrom, ValidTo),
 )
-with (system_versioning = on (history_table = [Tenant].[TenantRoleUserHistory]));
+with (system_versioning = on (history_table = [dbo].[TenantRoleUserHistory]));
 
 create unique index [UIX_TenantRoleUser_RoleId_UserId]
-on [Tenant].[TenantRoleUser](TenantRoleId, UserId);
+on [TenantRoleUser](TenantRoleId, UserId);
 go
 
-create table [Tenant].[TenantApiKey]
+create table [TenantApiKey]
 (
 	[TenantApiKeyId] int not null
 		constraint [PK_TenantApiKey]
@@ -74,6 +71,6 @@ create table [Tenant].[TenantApiKey]
 		foreign key references [AccessControl].[ApiKey],
 
 	[PermissionsJson] varchar(max) not null
-		constraint [CK_ApiKey_PermissionsJson_IsJson]
+		constraint [CK_TenantApiKey_PermissionsJson_IsJson]
 		check (isjson([PermissionsJson]) = 1),
 );
