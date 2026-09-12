@@ -1,23 +1,10 @@
-using CommunityToolkit.Diagnostics;
+using System.Diagnostics;
 using Immediate.Injections.Shared;
 using Immediate.Validations.Shared;
+using MailKit.Net.Smtp;
 using Resend;
-using VsaTemplate.Web.Utilities.Attributes;
 
 namespace VsaTemplate.Web.Infrastructure.Emails;
-
-[ConfigureOptions]
-[Validate]
-public sealed partial class EmailServiceOptions : IValidationTarget<EmailServiceOptions>
-{
-	[NotEmpty]
-	public required string ApiToken { get; init; }
-
-	[NotEmpty]
-	public required string FromEmailAddress { get; init; }
-
-	public required IReadOnlyList<string> AdminEmailAddresses { get; init; }
-}
 
 [RegisterScoped]
 public sealed class EmailService(
@@ -28,73 +15,85 @@ public sealed class EmailService(
 {
 	private readonly EmailServiceOptions _options = options;
 
-	public async Task SendAdminEmail(string subject, string body, bool isHtml = false, CancellationToken cancellationToken = default)
+	public async Task SendAdminEmail(EmailMessage message, CancellationToken cancellationToken = default)
 	{
-		Guard.IsNotNull(subject);
-		Guard.IsNotNull(body);
+		ArgumentNullException.ThrowIfNull(message);
 
-		var message = new EmailMessage
-		{
-			Subject = subject,
-		};
-
-		message.SetBody(body, isHtml);
-
-		await SendAdminEmail(message, cancellationToken);
-	}
-
-	public async Task SendEmail(string to, string subject, string body, bool isHtml = false, CancellationToken cancellationToken = default)
-	{
-		Guard.IsNotNull(subject);
-		Guard.IsNotNull(body);
-
-		var message = new EmailMessage
-		{
-			To = EmailAddress.Parse(to),
-			Subject = subject,
-		};
-
-		message.SetBody(body, isHtml);
-
-		await SendEmail(message, cancellationToken);
-	}
-
-	public Task SendAdminEmail(EmailMessage message, CancellationToken cancellationToken = default)
-	{
-		Guard.IsNotNull(message);
-
-		message.SetAdminTo(_options.AdminEmailAddresses);
-
-		return SendEmail(message, cancellationToken);
+		await SendEmail(message with { To = _options.AdminEmailAddresses }, cancellationToken);
 	}
 
 	public async Task SendEmail(EmailMessage message, CancellationToken cancellationToken = default)
 	{
-		Guard.IsNotNull(message);
-
-		message.From = EmailAddress.Parse(_options.FromEmailAddress);
+		ArgumentNullException.ThrowIfNull(message);
+		ValidationException.ThrowIfInvalid(message);
 
 		if (!environment.IsProduction())
-			message.SetAdminTo(_options.AdminEmailAddresses);
+			message = message with { To = _options.AdminEmailAddresses };
 
-		await resendClient.EmailSendAsync(message, cancellationToken);
+		switch (_options.ServerType)
+		{
+			case EmailServerType.Smtp:
+			{
+				using var client = new SmtpClient();
+
+				await client.ConnectAsync(
+					_options.SmtpServer ?? throw new UnreachableException("Should have been caught before this."),
+					_options.SmtpPort ?? throw new UnreachableException("Should have been caught before this."),
+					useSsl: false,
+					cancellationToken
+				);
+
+				using var mimeMessage = new MimeKit.MimeMessage()
+				{
+					From = { MimeKit.MailboxAddress.Parse(_options.FromEmailAddress) },
+					To = { message.To },
+					Subject = message.Subject,
+					Body = new MimeKit.TextPart("plain") { Text = message.Body },
+				};
+
+				await client.SendAsync(mimeMessage, cancellationToken);
+				await client.DisconnectAsync(quit: true, cancellationToken);
+
+				return;
+			}
+
+			case EmailServerType.Resend:
+			{
+				await resendClient.EmailSendAsync(
+					new()
+					{
+						From = _options.FromEmailAddress,
+						To = { message.To },
+						Subject = message.Subject,
+						TextBody = message.Body,
+					},
+					cancellationToken
+				);
+
+				return;
+			}
+
+			case EmailServerType.None:
+				throw new UnreachableException("Should have been caught before this.");
+
+			case EmailServerType.Disabled:
+			default:
+				return;
+		}
 	}
-
 }
+
 file static class Extensions
 {
-	public static void SetBody(this EmailMessage message, string body, bool isHtml)
+	public static void Add(this List<EmailAddress> addresses, IReadOnlyList<string> moreAddresses)
 	{
-		if (isHtml)
-			message.HtmlBody = body;
-		else
-			message.TextBody = body;
+		foreach (var a in moreAddresses)
+			addresses.Add(a);
 	}
 
-	public static void SetAdminTo(this EmailMessage message, IReadOnlyList<string> adminEmailAddresses)
+	public static void Add(this MimeKit.InternetAddressList addresses, IReadOnlyList<string> moreAddresses)
 	{
-		message.To.Clear();
-		foreach (var email in adminEmailAddresses)
-			message.To.Add(EmailAddress.Parse(email));
+		foreach (var a in moreAddresses)
+			addresses.Add(MimeKit.MailboxAddress.Parse(a));
 	}
 }

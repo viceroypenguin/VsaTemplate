@@ -1,4 +1,3 @@
-using CommunityToolkit.Diagnostics;
 using Immediate.Injections.Shared;
 using Immediate.Validations.Shared;
 using LinqToDB;
@@ -23,10 +22,10 @@ public sealed partial class DbContextOptions : IValidationTarget<DbContextOption
 [RegisterTransient]
 public sealed partial class DbContext : DataConnection
 {
-	private static readonly MappingSchema s_mappingSchema = BuildMappingSchema();
+	private static new readonly MappingSchema MappingSchema = BuildMappingSchema();
 
-	private static bool s_dbInitialized;
-	private static bool s_loaded;
+	private static bool IsInitialized;
+	private static bool IsLoaded;
 	private readonly ILogger<DbContext> _logger;
 
 	public DbContext(IOptions<DbContextOptions> options, ILogger<DbContext> logger)
@@ -39,24 +38,21 @@ public sealed partial class DbContext : DataConnection
 					)
 				)
 				.UseConnectionString(GetConnectionString(options))
-				.UseMappingSchema(s_mappingSchema)
+				.UseMappingSchema(MappingSchema)
 		)
 	{
 		_logger = logger;
 
-		if (s_loaded && !s_dbInitialized)
+		if (IsLoaded && !IsInitialized)
 			throw new InvalidOperationException("Database must be initialized during startup.");
 
-		s_loaded = true;
+		IsLoaded = true;
 	}
 
 	private static string GetConnectionString(IOptions<DbContextOptions> options)
 	{
-		Guard.IsNotNull(options);
-		Guard.IsNotNullOrWhiteSpace(options.Value.ConnectionString);
-
 		var conn = options.Value.ConnectionString;
-		if (!s_dbInitialized && !string.IsNullOrWhiteSpace(options.Value.ConnectionStringInit))
+		if (!IsInitialized && !string.IsNullOrWhiteSpace(options.Value.ConnectionStringInit))
 			conn = options.Value.ConnectionStringInit;
 
 		return conn;

@@ -5,8 +5,6 @@ using Serilog.Exceptions;
 using Serilog.Exceptions.Core;
 using Serilog.Exceptions.MsSqlServer.Destructurers;
 using Serilog.Exceptions.Refit.Destructurers;
-using VsaTemplate.Web.Infrastructure.Hangfire;
-using VsaTemplate.Web.Infrastructure.Startup;
 using VsaTemplate.Web.Features.Shared.Extensions;
 
 namespace VsaTemplate.Web.Infrastructure.Logging;
@@ -25,7 +23,6 @@ public static class LoggingStartupExtensions
 				.Enrich.WithThreadId()
 				.Enrich.WithProperty("ExecutionId", Guid.NewGuid())
 				.Enrich.WithProperty("Commit", ThisAssembly.RevisionId)
-				.Enrich.With<HangfireJobIdEnricher>()
 				.Enrich.WithExceptionDetails(
 					new DestructuringOptionsBuilder()
 						.WithDefaultDestructurers()

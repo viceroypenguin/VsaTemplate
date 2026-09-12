@@ -1,7 +1,6 @@
 using System.Globalization;
 using System.Security.Claims;
 using Auth0.AspNetCore.Authentication;
-using CommunityToolkit.Diagnostics;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using VsaTemplate.Web.Features.AccessControl.Models;
@@ -39,8 +38,8 @@ public static class AuthenticationStartupExtensions
 
 		if (useAuth0)
 		{
-			Guard.IsNotNull(domain);
-			Guard.IsNotNull(clientId);
+			ArgumentNullException.ThrowIfNull(domain);
+			ArgumentNullException.ThrowIfNull(clientId);
 
 			authBuilder
 				.AddAuth0WebAppAuthentication(o =>
@@ -59,17 +58,16 @@ public static class AuthenticationStartupExtensions
 
 	private static async Task ProcessTicket(TicketReceivedContext ctx)
 	{
-		var user = ctx.Principal;
-		if (user is null)
-			ThrowHelper.ThrowInvalidOperationException("Got a ticket, but no valid user attached.");
+		var user = ctx.Principal
+			?? throw new InvalidOperationException("Got a ticket, but no valid user attached.");
 
 		var auth0Id = user.Claims.FirstOrDefault(c => c.Type is ClaimTypes.NameIdentifier)?.Value;
 		if (string.IsNullOrWhiteSpace(auth0Id))
-			ThrowHelper.ThrowInvalidOperationException("Completed Auth0 login, but no Auth0 Id present.");
+			throw new InvalidOperationException("Completed Auth0 login, but no Auth0 Id present.");
 
 		var emailAddress = user.Claims.FirstOrDefault(c => c.Type is ClaimTypes.Email)?.Value;
 		if (string.IsNullOrWhiteSpace(emailAddress))
-			ThrowHelper.ThrowInvalidOperationException("Completed Auth0 login, but no email address present.");
+			throw new InvalidOperationException("Completed Auth0 login, but no email address present.");
 
 		var usersService = ctx.HttpContext.RequestServices.GetRequiredService<GetUserId.Handler>();
 		var userId = await usersService.HandleAsync(

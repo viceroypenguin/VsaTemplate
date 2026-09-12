@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace VsaTemplate.SourceGen;
 
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
@@ -13,8 +15,8 @@ public readonly struct EquatableDictionary<TValue>(
 	Dictionary<string, TValue>? dictionary
 ) : IEquatable<EquatableDictionary<TValue>>
 {
-	private readonly Dictionary<string, TValue> _dictionary = dictionary ?? [];
-	private readonly int _hashCode = BuildHashCode(dictionary ?? []);
+	private readonly Dictionary<string, TValue> _dictionary = dictionary ?? [with(StringComparer.Ordinal)];
+	private readonly int _hashCode = BuildHashCode(dictionary ?? [with(StringComparer.Ordinal)]);
 
 	private static int BuildHashCode(Dictionary<string, TValue> dictionary)
 	{
@@ -22,7 +24,7 @@ public readonly struct EquatableDictionary<TValue>(
 
 		foreach (var kvp in dictionary.OrderBy(kvp => kvp.Key, StringComparer.Ordinal))
 		{
-			hashCode.Add(kvp.Key);
+			hashCode.Add(kvp.Key, StringComparer.Ordinal);
 			hashCode.Add(kvp.Value);
 		}
 
@@ -40,18 +42,22 @@ public readonly struct EquatableDictionary<TValue>(
 					)
 				);
 
-	public override bool Equals(object obj) =>
+	public override bool Equals(object? obj) =>
 		obj is EquatableDictionary<TValue> dict && Equals(dict);
 
 	public override int GetHashCode() => _hashCode;
 
-	public static bool operator ==(EquatableDictionary<TValue> left, EquatableDictionary<TValue> right) =>
-		left.Equals(right);
+	public static bool operator ==(EquatableDictionary<TValue> left, EquatableDictionary<TValue> right)
+	{
+		return left.Equals(right);
+	}
 
-	public static bool operator !=(EquatableDictionary<TValue> left, EquatableDictionary<TValue> right) =>
-		!(left == right);
+	public static bool operator !=(EquatableDictionary<TValue> left, EquatableDictionary<TValue> right)
+	{
+		return !(left == right);
+	}
 
-	public bool TryGetValue(string key, out TValue value) =>
+	public bool TryGetValue(string key, [MaybeNullWhen(false)] out TValue value) =>
 		_dictionary.TryGetValue(key, out value);
 
 	public bool FindValue(string key, out TValue value)

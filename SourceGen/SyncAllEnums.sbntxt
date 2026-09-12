@@ -6,7 +6,7 @@ namespace {{ root_namespace }}.Database;
 
 public sealed partial class DbContext : DataConnection
 {
-	private void SyncAllEnums()
+	partial void SyncAllEnums()
 	{
 		{{~ for n in names ~}}
 		Sync{{ n }}();

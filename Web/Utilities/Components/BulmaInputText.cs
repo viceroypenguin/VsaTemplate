@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.CompilerServices;
@@ -63,6 +64,7 @@ public sealed partial class BulmaInputText<TValue, TComponent> : BlazorComponent
 		StateHasChanged();
 	}
 
+	[SuppressMessage("Usage", "MA0115:Unknown component parameter", Justification = "False positive")]
 	protected override void BuildRenderTree(RenderTreeBuilder builder)
 	{
 		var state = GetState();

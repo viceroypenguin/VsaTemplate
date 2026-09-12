@@ -2,13 +2,11 @@
 
   <PropertyGroup>
 	<RootNamespace>VsaTemplate.Analyzers</RootNamespace>
-	<TargetFramework>netstandard2.0</TargetFramework>
 	<IsRoslynComponent>true</IsRoslynComponent>
 	<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
   </PropertyGroup>
 
   <ItemGroup>
-	<PackageReference Include="Meziantou.Polyfill" PrivateAssets="All" />
 	<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
 	<PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
   </ItemGroup>

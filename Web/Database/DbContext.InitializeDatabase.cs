@@ -1,111 +1,38 @@
-using System.Reflection;
-using System.Text.RegularExpressions;
 using LinqToDB;
 using LinqToDB.Data;
 
 namespace VsaTemplate.Web.Database;
 
-public partial class DbContext : DataConnection
+public partial class DbContext : DataConnection, IVersionedDbContext
 {
 	public void InitializeDatabase()
 	{
-		LogInitializingDb();
+		this.Initialize(_logger);
 
-		CommandTimeout = 600;
-
-		EnsureVersionHistoryExists();
-		RunChangeScripts();
 		SyncAllEnums();
-
-		s_dbInitialized = true;
-		LogDbInitialized();
+		IsInitialized = true;
 	}
 
-	#region Main Functions
-	private void EnsureVersionHistoryExists() =>
-		// script does validation; always run script
-		ExecuteScript("00.VersionHistory.sql");
+	partial void SyncAllEnums();
 
-	private void RunChangeScripts()
+	public IReadOnlyList<string> GetExecutedScripts() =>
+		VersionHistories
+			.Select(vh => vh.SqlFile)
+			.ToList();
+
+	public void RecordExecutedScript(
+		string sqlName,
+		DateTimeOffset startTimestamp,
+		DateTimeOffset endTimestamp
+	)
 	{
-		var scripts = GetEmbeddedScripts();
-		var executedScripts = VersionHistories
-			.Select(s => s.SqlFile)
-			.ToList();
-
-		var scriptsToRun = scripts
-			.Except(executedScripts, StringComparer.OrdinalIgnoreCase)
-			.Order(StringComparer.OrdinalIgnoreCase)
-			.ToList();
-
-		foreach (var s in scriptsToRun)
-		{
-			var startTime = DateTimeOffset.Now;
-			using (var ts = BeginTransaction())
+		this.Insert(
+			new Models.VersionHistory
 			{
-				ExecuteScript(s);
-				ts.Commit();
+				SqlFile = sqlName,
+				ExecutionStart = startTimestamp,
+				ExecutionEnd = endTimestamp,
 			}
-
-			var endTime = DateTimeOffset.Now;
-
-			this.Insert(
-				new Models.VersionHistory()
-				{
-					SqlFile = s,
-					ExecutionStart = startTime,
-					ExecutionEnd = endTime,
-				});
-		}
+		);
 	}
-	#endregion
-
-	#region Execute Script
-	[GeneratedRegex("^go\\r?$", RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.Compiled, "en-US")]
-	private static partial Regex SqlBlockRegex();
-
-	private void ExecuteScript(string scriptName)
-	{
-		try
-		{
-			var script = EmbeddedResource.GetContent(scriptName);
-			foreach (var b in SqlBlockRegex().Split(script).Where(s => !string.IsNullOrWhiteSpace(s)))
-				this.Execute(b);
-
-			LogExecutedScript(scriptName);
-		}
-		catch (Exception ex)
-		{
-			LogUnableToRunScript(ex, scriptName);
-			throw;
-		}
-	}
-	#endregion
-
-	#region Embedded Scripts
-	private const string ResourcePrefix = "VsaTemplate.Web.Database.Scripts.";
-	private static List<string> GetEmbeddedScripts() =>
-		Assembly.GetExecutingAssembly()
-			.GetManifestResourceNames()
-			.Where(s => Path.GetExtension(s).Equals(".sql", StringComparison.OrdinalIgnoreCase))
-			.Select(s => s.Replace(ResourcePrefix, "", StringComparison.OrdinalIgnoreCase))
-			.ToList();
-
-	#endregion
-
-	#region Logging
-
-	[LoggerMessage(Level = LogLevel.Error, Message = "Unable to run script '{ScriptName}'.")]
-	private partial void LogUnableToRunScript(Exception ex, string scriptName);
-
-	[LoggerMessage(Level = LogLevel.Information, Message = "Initializing VsaTemplate DB")]
-	private partial void LogInitializingDb();
-
-	[LoggerMessage(Level = LogLevel.Information, Message = "Executed script '{ScriptName}'.")]
-	private partial void LogExecutedScript(string scriptName);
-
-	[LoggerMessage(Level = LogLevel.Information, Message = "VsaTemplate DB Initialized")]
-	private partial void LogDbInitialized();
-
-	#endregion
 }

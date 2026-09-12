@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Scriban;
@@ -14,6 +15,8 @@ public static class Utility
 				typeof(Utility),
 				$"{templateName}.sbntxt"
 			);
+
+		Debug.Assert(stream is { });
 
 		using var reader = new StreamReader(stream);
 		return Template.Parse(reader.ReadToEnd());

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Immediate.Handlers.Shared;
 using LinqToDB;
 using LinqToDB.Async;
@@ -19,6 +20,7 @@ public sealed partial class GetTenantsForUser(
 		public required UserId UserId { get; init; }
 	}
 
+	[SuppressMessage("Naming", "CA1724")]
 	public sealed record Tenant
 	{
 		public required TenantId TenantId { get; init; }

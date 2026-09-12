@@ -24,10 +24,10 @@ public sealed partial class CreateApiKey(
 	{
 		public required IReadOnlyList<Permission> Permissions { get; init; }
 
-		[LessThan(nameof(s_maxLifetime), Message = "Api Key cannot be have a lifetime longer than one year.")]
+		[LessThan(nameof(MaxLifetime), Message = "Api Key cannot be have a lifetime longer than one year.")]
 		public required TimeSpan Lifetime { get; init; }
 
-		private static readonly TimeSpan s_maxLifetime = TimeSpan.FromDays(366);
+		private static readonly TimeSpan MaxLifetime = TimeSpan.FromDays(366);
 	}
 
 	public sealed record Response

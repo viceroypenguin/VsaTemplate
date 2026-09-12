@@ -22,7 +22,5 @@
 
 	<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
 	<EmbedUntrackedSources>true</EmbedUntrackedSources>
-	<CollectCoverage>true</CollectCoverage>
-	<CoverletOutputFormat>opencover</CoverletOutputFormat>
   </PropertyGroup>
 </Project>

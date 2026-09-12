@@ -32,17 +32,15 @@
   <ItemGroup>
 	<PackageReference Include="Auth0.AspNetCore.Authentication" />
 	<PackageReference Include="Blazicons.FontAwesome" />
-	<PackageReference Include="CommunityToolkit.Diagnostics" />
-	<PackageReference Include="Hangfire" />
 	<PackageReference Include="Immediate.Apis" />
 	<PackageReference Include="Immediate.Cache" />
 	<PackageReference Include="Immediate.Handlers" />
 	<PackageReference Include="Immediate.Injections" />
 	<PackageReference Include="Immediate.Validations" />
 	<PackageReference Include="linq2db" />
+	<PackageReference Include="Mailkit" />
 	<PackageReference Include="Microsoft.AspNetCore.OpenApi" />
 	<PackageReference Include="Microsoft.Data.SqlClient" />
-	<PackageReference Include="Newtonsoft.Json" ExcludeAssets="compile" />
 	<PackageReference Include="Resend" />
 	<PackageReference Include="Scalar.AspNetCore" />
 	<PackageReference Include="SimpleBase" />

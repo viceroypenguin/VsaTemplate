@@ -28,8 +28,7 @@ dotnet_naming_style.pascal_case_style.capitalization = pascal_case
 
 dotnet_naming_style.camel_case_style.capitalization = camel_case
 
-dotnet_naming_style.static_field_style.capitalization = camel_case
-dotnet_naming_style.static_field_style.required_prefix = s_
+dotnet_naming_style.static_field_style.capitalization = pascal_case
 
 dotnet_naming_style.instance_field_style.capitalization = camel_case
 dotnet_naming_style.instance_field_style.required_prefix = _
@@ -331,8 +330,6 @@ dotnet_diagnostic.CA1868.severity = warning             # CA1868: Unnecessary ca
 dotnet_diagnostic.CA2014.severity = error               # CA2014: Do not use stackalloc in loops
 dotnet_diagnostic.CA2016.severity = error               # CA2016: Forward the CancellationToken parameter to methods that take one
 
-dotnet_diagnostic.RS2008.severity = none                # RS2008: Enable analyzer release tracking
-
 dotnet_diagnostic.MA0004.severity = none                # MA0004: Use Task.ConfigureAwait
 dotnet_diagnostic.MA0006.severity = suggestion          # MA0006: Use String.Equals instead of equality operator
 dotnet_diagnostic.MA0010.severity = none                # MA0010: Mark attributes with AttributeUsageAttribute (duplicated by CA1018)
@@ -377,6 +374,11 @@ MA0053.public_class_should_be_sealed = true
 MA0053.exceptions_should_be_sealed = true
 
 dotnet_diagnostic.IHR0019.enable_when_handler_has_no_dependencies = true
+
+[{SourceGen,Analyzers}/*.cs]
+
+dotnet_diagnostic.RS1041.severity = none                # RS1041: Compiler extensions should be implemented in assemblies targeting netstandard2.0
+dotnet_diagnostic.RS2008.severity = none                # RS2008: Enable analyzer release tracking
 
 [Scaffold/*.cs]
 dotnet_diagnostic.CA1031.severity = none                # CA1031: Do not catch general exception types

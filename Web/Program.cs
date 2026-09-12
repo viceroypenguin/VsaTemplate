@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 using Auth0.AspNetCore.Authentication;
-using Hangfire;
 using Immediate.Injections.Shared;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -17,7 +16,6 @@ using VsaTemplate.Web.Features.Shared.Layout;
 using VsaTemplate.Web.Infrastructure.Authentication;
 using VsaTemplate.Web.Infrastructure.Emails;
 using VsaTemplate.Web.Infrastructure.Exceptions;
-using VsaTemplate.Web.Infrastructure.Hangfire;
 using VsaTemplate.Web.Infrastructure.Logging;
 using VsaTemplate.Web.Infrastructure.Middleware;
 using VsaTemplate.Web.Infrastructure.Startup;
@@ -34,7 +32,6 @@ try
 	builder.Configuration.AddJsonFile("secrets.json", optional: true);
 
 	builder.ConfigureSerilog();
-	builder.AddHangfire();
 
 	builder.Services.AddWebAuthentication(
 		builder.Configuration["Auth0:Domain"],
@@ -56,8 +53,6 @@ try
 	app.UseRouting();
 	app.UseAuthorization();
 
-	app.UseHangfire();
-
 	app.UseAntiforgery();
 	app.UseLogging();
 
@@ -67,9 +62,8 @@ try
 	app.MapAccountServices();
 
 	app
-		.MapGroup("")
-		.RequireAuthorization()
-		.MapWebEndpoints();
+		.MapWebEndpoints()
+		.RequireAuthorization();
 
 	app.MapRazorComponents<App>()
 		.AddInteractiveServerRenderMode();
@@ -118,7 +112,7 @@ internal static class StartupExtensions
 	{
 		services
 			.AddOptions<ResendClientOptions>()
-			.Configure<EmailServiceOptions>((o, eso) => o.ApiToken = eso.ApiToken);
+			.Configure<EmailServiceOptions>((o, eso) => o.ApiToken = eso.ResendApiToken ?? string.Empty);
 
 		services.AddHttpClient<ResendClient>();
 		services.AddTransient<ResendClient>();
@@ -129,7 +123,6 @@ internal static class StartupExtensions
 	{
 		// IH
 		services.AddWebHandlers();
-		services.AddWebBehaviors();
 
 		// IC
 		services.AddWebCaches();
@@ -164,7 +157,7 @@ internal static class StartupExtensions
 					? $"{t.Type.DeclaringType!.Name}+{t.Type.Name}"
 					: OpenApiOptions.CreateDefaultSchemaReferenceId(t);
 
-			o.MapVogenTypesInWeb();
+			o.MapVogenTypesInVsaTemplate_Web();
 
 			o.AddDocumentTransformer(
 				(document, context, cancellationToken) =>
