@@ -47,7 +47,7 @@ public sealed partial class TenantGetUserPermissions(
 			return new()
 			{
 				Permissions = (
-					await context.Tenant.TenantRoleUsers
+					await context.TenantRoleUsers
 						.Where(u => u.UserId == query.UserId)
 						.Select(u => u.TenantRole)
 						.Where(r => r.TenantId == query.TenantId)
