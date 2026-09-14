@@ -113,6 +113,60 @@
     }
   },
   {
+    "PropertyName": "DataProtectionKeys",
+    "TypeName": "DataProtectionKey",
+    "TableName": "DataProtectionKey",
+    "SchemaName": "DataProtectionKeys",
+    "Properties": {
+      "Collection": [
+        {
+          "TypeName": "int",
+          "PropertyName": "DataProtectionKeyId",
+          "ColumnName": "DataProtectionKeyId",
+          "IsNullable": false,
+          "DataType": "int",
+          "ForceNotNull": false,
+          "IsPrimaryKey": true,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": true,
+          "SkipOnInsert": true,
+          "SkipOnUpdate": true
+        },
+        {
+          "TypeName": "string",
+          "PropertyName": "FriendlyName",
+          "ColumnName": "FriendlyName",
+          "IsNullable": true,
+          "DataType": "varchar(200)",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "string",
+          "PropertyName": "Xml",
+          "ColumnName": "Xml",
+          "IsNullable": true,
+          "DataType": "varchar(max)",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        }
+      ],
+      "Count": 3
+    },
+    "Associations": {
+      "Collection": [],
+      "Count": 0
+    }
+  },
+  {
     "PropertyName": "Organizations",
     "TypeName": "Organization",
     "TableName": "Organization",

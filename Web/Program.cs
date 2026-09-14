@@ -4,8 +4,10 @@ using Auth0.AspNetCore.Authentication;
 using Immediate.Injections.Shared;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OpenApi;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using Resend;
 using Scalar.AspNetCore;
@@ -137,6 +139,18 @@ internal static class StartupExtensions
 		services.AddEndpointsApiExplorer();
 		services.AddAntiforgery();
 		services.AddProblemDetails(ExceptionStartupExtensions.ConfigureProblemDetails);
+	}
+
+	[RegisterServices]
+	public static void AddAddDataProtection(IServiceCollection services)
+	{
+		services.AddDataProtection();
+
+		services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(
+			sp => new ConfigureOptions<KeyManagementOptions>(
+				options => options.XmlRepository = sp.GetRequiredService<LinqToDBXmlRepository>()
+			)
+		);
 	}
 
 	[RegisterServices]
