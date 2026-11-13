@@ -26,8 +26,9 @@ internal sealed class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Settings>
 		public required string[] Files { get; init; }
 	}
 
-	protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
+	public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
 	{
+#pragma warning disable CA1031 // Do not catch general exception types
 		try
 		{
 			var code = await GenerateScaffold(settings);
@@ -40,9 +41,10 @@ internal sealed class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Settings>
 		}
 		catch (Exception ex)
 		{
-			await Console.Error.WriteLineAsync(ex.Message);
+			await Console.Error.WriteLineAsync(ex.Message, cancellationToken);
 			return 1;
 		}
+#pragma warning restore CA1031 // Do not catch general exception types
 	}
 
 	private static async Task<string> GenerateScaffold(Settings args)
@@ -83,7 +85,7 @@ internal sealed class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Settings>
 							DataType = c.ColumnType ?? throw new InvalidOperationException("Unknown column type"),
 							ForceNotNull = c.SystemType!.IsClass && !c.IsNullable,
 							IsPrimaryKey = c.IsPrimaryKey,
-							PrimaryKeyOrder = c.IsPrimaryKey && t.Columns.Any(c => c.PrimaryKeyOrder > 1) ? c.PrimaryKeyOrder : null,
+							PrimaryKeyOrder = c.IsPrimaryKey && t.Columns.Exists(c => c.PrimaryKeyOrder > 1) ? c.PrimaryKeyOrder : null,
 							IsIdentity = c.IsIdentity,
 							SkipOnInsert = c.SkipOnInsert,
 							SkipOnUpdate = c.SkipOnUpdate,
@@ -96,8 +98,8 @@ internal sealed class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Settings>
 						{
 							Name = fk.KeyName,
 							CanBeNull = fk.CanBeNull,
-							ThisKeys = string.Join(",", fk.ThisColumns.Select(c => c.MemberName)),
-							OtherKeys = string.Join(",", fk.OtherColumns.Select(c => c.MemberName)),
+							ThisKeys = string.Join(',', fk.ThisColumns.Select(c => c.MemberName)),
+							OtherKeys = string.Join(',', fk.OtherColumns.Select(c => c.MemberName)),
 							OtherName = GetAssociationName(fk),
 
 							OtherType =
@@ -112,7 +114,7 @@ internal sealed class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Settings>
 							g
 								.Index()
 								.Select(x => x.Index > 0
-									? x.Item with { OtherName = x.Item.OtherName + x.Index }
+									? x.Item with { OtherName = string.Create(provider: null, $"{x.Item.OtherName}{x.Index}") }
 									: x.Item
 								)
 						)
@@ -135,7 +137,7 @@ internal sealed class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Settings>
 
 				if (!fk.KeyName.EndsWith("BackReference", StringComparison.OrdinalIgnoreCase)
 					&& fk.ThisColumns is [{ } tCol]
-					&& tCol.MemberName[..^2] != fk.ThisTable!.TypeName)
+					&& !string.Equals(tCol.MemberName[..^2], fk.ThisTable!.TypeName, StringComparison.Ordinal))
 				{
 					return tCol.MemberName[..^2];
 				}
@@ -174,7 +176,8 @@ internal sealed class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Settings>
 			DataType.VarChar
 			or DataType.Text
 			or DataType.NVarChar
-			or DataType.NText => "string",
+			or DataType.NText
+			or DataType.Json => "string",
 
 			DataType.Binary
 			or DataType.VarBinary

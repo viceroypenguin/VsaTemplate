@@ -296,6 +296,9 @@ dotnet_diagnostic.CS9179.severity = error               # CS9179: Primary constr
 dotnet_diagnostic.SYSLIB1045.severity = error           # SYSLIB1045: Use GeneratedRegexAttribute to generate the regular expression implementation at compile time.
 
 # Miscellaneous analyzers
+dotnet_diagnostic.BL0012.severity = none                # BL0012: Unnecessary StateHasChanged call
+dotnet_diagnostic.BL0013.severity = none                # BL0013: AuthenticationStateProvider.GetAuthenticationStateAsync used without subscribing to AuthenticationStateChanged
+
 dotnet_diagnostic.CA1032.severity = none                # CA1032: Implement standard exception constructors
 dotnet_diagnostic.CA1034.severity = none                # CA1034: Nested types should not be visible
 dotnet_diagnostic.CA1040.severity = none                # CA1040: Avoid empty interfaces
@@ -370,10 +373,14 @@ dotnet_diagnostic.IHR0019.severity = warning            # IHR0019: Static handle
 # Configurations
 dotnet_code_quality.ca1711.allowed_suffixes = Permission
 
+dotnet_code_quality.dispose_ownership_transfer_at_constructor = true
+
 MA0053.public_class_should_be_sealed = true
 MA0053.exceptions_should_be_sealed = true
 
 dotnet_diagnostic.IHR0019.enable_when_handler_has_no_dependencies = true
+
+dotnet_diagnostic.RS1041.severity = none                # RS1041: Compiler extensions should be implemented in assemblies targeting netstandard2.0
 
 [{SourceGen,Analyzers}/*.cs]
 

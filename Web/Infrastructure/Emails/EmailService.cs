@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Immediate.Injections.Shared;
 using Immediate.Validations.Shared;
+using MailKit;
 using MailKit.Net.Smtp;
 using Resend;
 

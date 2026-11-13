@@ -11,8 +11,8 @@ public static partial class DatabaseInitializer
 		new Initializer<TContext>(context, logger).Initialize();
 
 	#region Execute Script
-	[GeneratedRegex("^go\\r?$", RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.Compiled, "en-US")]
-	private static partial Regex SqlBlockRegex();
+	[GeneratedRegex("^go\\r?$", RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.Compiled, matchTimeoutMilliseconds: 2_000)]
+	private static partial Regex SqlBlockRegex { get; }
 	#endregion
 
 	private sealed class Initializer<TContext>(

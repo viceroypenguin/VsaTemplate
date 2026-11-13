@@ -24,22 +24,30 @@
 
     private bool _created;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            await JSRuntime.InvokeVoidAsync("window.localTime.updateTag", divElement);
-            _created = true;
-        }
-    }
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (!firstRender)
+			return;
 
-    protected override async Task OnParametersSetAsync()
-    {
-        if (_created)
-        {
-            await JSRuntime.InvokeVoidAsync("window.localTime.updateTag", divElement);
-        }
-    }
+		try
+		{
+			await JSRuntime.InvokeVoidAsync("window.localTime.updateTag", divElement);
+			_created = true;
+		}
+		catch (Exception) { }
+	}
+
+	protected override async Task OnParametersSetAsync()
+	{
+		if (!_created)
+			return;
+
+		try
+		{
+			await JSRuntime.InvokeVoidAsync("window.localTime.updateTag", divElement);
+		}
+		catch (Exception) { }
+	}
 
     [JSInvokable]
     public static Task<string> DateFormat(string tagDate, int offsetMinutes, string? formatValue)
