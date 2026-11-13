@@ -6,9 +6,9 @@ namespace VsaTemplate.Web.Database;
 
 public static partial class DatabaseInitializer
 {
-	public static void Initialize<TContext>(this TContext context, ILogger logger)
-		where TContext : DataConnection, IVersionedDbContext =>
-		new Initializer<TContext>(context, logger).Initialize();
+	public static void Initialize<TContext>(this TContext context, ILogger logger, TimeProvider timeProvider)
+	 where TContext : DataConnection, IVersionedDbContext =>
+	 new Initializer<TContext>(context, logger, timeProvider).Initialize();
 
 	#region Execute Script
 	[GeneratedRegex("^go\\r?$", RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.Compiled, matchTimeoutMilliseconds: 2_000)]
@@ -17,7 +17,8 @@ public static partial class DatabaseInitializer
 
 	private sealed class Initializer<TContext>(
 		TContext context,
-		ILogger logger
+		ILogger logger,
+		TimeProvider timeProvider
 	) where TContext : DataConnection, IVersionedDbContext
 	{
 		private static readonly Assembly Assembly = typeof(TContext).Assembly;
@@ -50,7 +51,7 @@ public static partial class DatabaseInitializer
 
 			foreach (var s in scriptsToRun)
 			{
-				var startTime = DateTimeOffset.Now;
+				var startTime = timeProvider.GetUtcNow();
 
 				using (var ts = context.BeginTransaction())
 				{
@@ -58,7 +59,7 @@ public static partial class DatabaseInitializer
 					ts.Commit();
 				}
 
-				var endTime = DateTimeOffset.Now;
+				var endTime = timeProvider.GetUtcNow();
 
 				context.RecordExecutedScript(
 					sqlName: s,
@@ -73,7 +74,7 @@ public static partial class DatabaseInitializer
 			try
 			{
 				var script = Assembly.GetContent(scriptName);
-				foreach (var b in SqlBlockRegex().Split(script).Where(s => !string.IsNullOrWhiteSpace(s)))
+				foreach (var b in SqlBlockRegex.Split(script).Where(s => !string.IsNullOrWhiteSpace(s)))
 					context.Execute(b);
 
 				LogExecutedScript(logger, scriptName);

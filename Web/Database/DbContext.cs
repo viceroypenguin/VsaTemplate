@@ -5,11 +5,10 @@ using LinqToDB.Data;
 using LinqToDB.DataProvider.SqlServer;
 using LinqToDB.Mapping;
 using Microsoft.Extensions.Options;
-using VsaTemplate.Web.Utilities.Attributes;
 
 namespace VsaTemplate.Web.Database;
 
-[ConfigureOptions]
+[RegisterOptions(nameof(DbContextOptions), ValidateOnStart = true)]
 [Validate]
 public sealed partial class DbContextOptions : IValidationTarget<DbContextOptions>
 {
@@ -17,46 +16,56 @@ public sealed partial class DbContextOptions : IValidationTarget<DbContextOption
 	public required string ConnectionString { get; init; }
 
 	public string? ConnectionStringInit { get; init; }
+
+	public string? UserSourceDatabase { get; init; }
 }
 
 [RegisterTransient]
-public sealed partial class DbContext : DataConnection
+public sealed partial class DbContext(
+	IOptions<DbContextOptions> options,
+	ILogger<DbContext> logger,
+	TimeProvider timeProvider,
+	DatabaseInitializationState initialization
+) : DataConnection(
+	new DataOptions()
+		.UseDataProvider(
+			SqlServerTools.GetDataProvider(
+				SqlServerVersion.v2025,
+				SqlServerProvider.MicrosoftDataSqlClient
+			)
+		)
+		.UseConnectionString(GetConnectionString(options.Value, initialization))
+		.UseMappingSchema(MappingSchema)
+)
 {
 	private static new readonly MappingSchema MappingSchema = BuildMappingSchema();
+	private readonly DbContextOptions _options = options.Value;
 
-	private static bool IsInitialized;
-	private static bool IsLoaded;
-	private readonly ILogger<DbContext> _logger;
-
-	public DbContext(IOptions<DbContextOptions> options, ILogger<DbContext> logger)
-		: base(
-			new DataOptions()
-				.UseDataProvider(
-					SqlServerTools.GetDataProvider(
-						SqlServerVersion.v2025,
-						SqlServerProvider.MicrosoftDataSqlClient
-					)
-				)
-				.UseConnectionString(GetConnectionString(options))
-				.UseMappingSchema(MappingSchema)
-		)
+	private static string GetConnectionString(DbContextOptions options, DatabaseInitializationState initialization)
 	{
-		_logger = logger;
-
-		if (IsLoaded && !IsInitialized)
-			throw new InvalidOperationException("Database must be initialized during startup.");
-
-		IsLoaded = true;
-	}
-
-	private static string GetConnectionString(IOptions<DbContextOptions> options)
-	{
-		var conn = options.Value.ConnectionString;
-		if (!IsInitialized && !string.IsNullOrWhiteSpace(options.Value.ConnectionStringInit))
-			conn = options.Value.ConnectionStringInit;
+		var conn = options.ConnectionString;
+		if (!initialization.IsInitialized && !string.IsNullOrWhiteSpace(options.ConnectionStringInit))
+			conn = options.ConnectionStringInit;
 
 		return conn;
 	}
 
 	private static partial MappingSchema BuildMappingSchema();
+
+	public ITable<Models.AccessControl.User>? SourceUsers =>
+		_options.UserSourceDatabase switch
+		{
+			null => null,
+
+			{ } db => this
+				.GetTable<Models.AccessControl.User>()
+				.SchemaName(name: null)
+				.DatabaseName(db),
+		};
+}
+
+[RegisterSingleton]
+public sealed class DatabaseInitializationState
+{
+	public bool IsInitialized { get; set; }
 }

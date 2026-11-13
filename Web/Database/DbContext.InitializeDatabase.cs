@@ -7,10 +7,10 @@ public partial class DbContext : DataConnection, IVersionedDbContext
 {
 	public void InitializeDatabase()
 	{
-		this.Initialize(_logger);
+		this.Initialize(logger, timeProvider);
 
 		SyncAllEnums();
-		IsInitialized = true;
+		initialization.IsInitialized = true;
 	}
 
 	partial void SyncAllEnums();

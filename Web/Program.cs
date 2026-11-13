@@ -20,7 +20,6 @@ using VsaTemplate.Web.Infrastructure.Emails;
 using VsaTemplate.Web.Infrastructure.Exceptions;
 using VsaTemplate.Web.Infrastructure.Logging;
 using VsaTemplate.Web.Infrastructure.Middleware;
-using VsaTemplate.Web.Infrastructure.Startup;
 using Log = Serilog.Log;
 
 Log.Logger = new LoggerConfiguration()
@@ -90,8 +89,6 @@ internal static class StartupExtensions
 	[RegisterServices]
 	public static void ConfigureWebOptions(IServiceCollection services)
 	{
-		services.ConfigureAllOptions();
-
 		services.Configure<ApiBehaviorOptions>(
 			o => o.SuppressInferBindingSourcesForParameters = true
 		);
