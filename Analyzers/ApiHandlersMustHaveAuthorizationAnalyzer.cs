@@ -1,8 +1,8 @@
-using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis;
 using System.Collections.Immutable;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace VsaTemplate.Analyzers;
 
@@ -44,7 +44,8 @@ public sealed class ApiHandlersMustHaveAuthorizationAnalyzer : DiagnosticAnalyze
 			return;
 		}
 
-		if (!node.Modifiers.Any(SyntaxKind.StaticKeyword))
+		if (!node.Modifiers
+			.Any(SyntaxKind.StaticKeyword))
 			return;
 
 		var handlerSymbol = context.SemanticModel
@@ -69,19 +70,23 @@ public sealed class ApiHandlersMustHaveAuthorizationAnalyzer : DiagnosticAnalyze
 
 		token.ThrowIfCancellationRequested();
 
-		var requestParameter = node.ParameterList.Parameters.FirstOrDefault();
+		var requestParameter = node.ParameterList.Parameters
+			.FirstOrDefault();
+
 		if (requestParameter is null)
 			return;
 
 		var requestType = (ITypeSymbol?)context.SemanticModel
 			.GetSymbolInfo(requestParameter.Type!, token)
 			.Symbol;
+
 		if (requestType is null)
 			return;
 
 		token.ThrowIfCancellationRequested();
 
-		if (requestType.Interfaces.Any(s => s.IsIAuthorizedRequest()))
+		if (requestType.Interfaces
+			.Any(s => s.IsIAuthorizedRequest()))
 			return;
 
 		var declaration = (TypeDeclarationSyntax?)requestType
@@ -101,5 +106,6 @@ public sealed class ApiHandlersMustHaveAuthorizationAnalyzer : DiagnosticAnalyze
 				requestType.Name
 			)
 		);
+
 	}
 }

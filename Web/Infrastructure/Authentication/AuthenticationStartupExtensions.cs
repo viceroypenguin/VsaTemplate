@@ -17,9 +17,11 @@ public static class AuthenticationStartupExtensions
 		bool useAuth0
 	)
 	{
+
 		var authBuilder = services
 			.AddAuthentication(o =>
 			{
+
 				if (useAuth0)
 				{
 					o.DefaultAuthenticateScheme = ApiKeyAuthenticationHandler.AuthenticationScheme;
@@ -30,6 +32,7 @@ public static class AuthenticationStartupExtensions
 				{
 					o.DefaultScheme = ApiKeyAuthenticationHandler.AuthenticationScheme;
 				}
+
 			})
 			.AddScheme<ApiKeyAuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(
 				ApiKeyAuthenticationHandler.AuthenticationScheme,
@@ -52,44 +55,60 @@ public static class AuthenticationStartupExtensions
 					{
 						OnTicketReceived = ProcessTicket,
 					};
+
 				});
 
 			services.Configure<CookieAuthenticationOptions>(CookieAuthenticationDefaults.AuthenticationScheme, o =>
 			{
+
 				o.Events.OnRedirectToLogin = ctx =>
 				{
+
 					if (ctx.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
 						ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
 					else
 						ctx.Response.Redirect(ctx.RedirectUri);
+
 					return Task.CompletedTask;
 				};
+
 				o.Events.OnRedirectToAccessDenied = ctx =>
 				{
+
 					if (ctx.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
 						ctx.Response.StatusCode = StatusCodes.Status403Forbidden;
 					else
 						ctx.Response.Redirect(ctx.RedirectUri);
+
 					return Task.CompletedTask;
 				};
+
 			});
+
 		}
+
 	}
 
 	private static async Task ProcessTicket(TicketReceivedContext ctx)
 	{
+
 		var user = ctx.Principal
 			?? throw new InvalidOperationException("Got a ticket, but no valid user attached.");
 
-		var auth0Id = user.Claims.FirstOrDefault(c => c.Type is ClaimTypes.NameIdentifier)?.Value;
+		var auth0Id = user.Claims
+			.FirstOrDefault(c => c.Type is ClaimTypes.NameIdentifier)?.Value;
+
 		if (string.IsNullOrWhiteSpace(auth0Id))
 			throw new InvalidOperationException("Completed Auth0 login, but no Auth0 Id present.");
 
-		var emailAddress = user.Claims.FirstOrDefault(c => c.Type is ClaimTypes.Email)?.Value;
+		var emailAddress = user.Claims
+			.FirstOrDefault(c => c.Type is ClaimTypes.Email)?.Value;
+
 		if (string.IsNullOrWhiteSpace(emailAddress))
 			throw new InvalidOperationException("Completed Auth0 login, but no email address present.");
 
 		var usersService = ctx.HttpContext.RequestServices.GetRequiredService<GetUserId.Handler>();
+
 		var userId = await usersService.HandleAsync(
 			new()
 			{
@@ -106,5 +125,6 @@ public static class AuthenticationStartupExtensions
 				]
 			)
 		);
+
 	}
 }

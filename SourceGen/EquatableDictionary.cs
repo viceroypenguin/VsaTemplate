@@ -22,7 +22,8 @@ public readonly struct EquatableDictionary<TValue>(
 	{
 		var hashCode = new HashCode();
 
-		foreach (var kvp in dictionary.OrderBy(kvp => kvp.Key, StringComparer.Ordinal))
+		foreach (var kvp in dictionary
+			.OrderBy(kvp => kvp.Key, StringComparer.Ordinal))
 		{
 			hashCode.Add(kvp.Key, StringComparer.Ordinal);
 			hashCode.Add(kvp.Value);
@@ -62,13 +63,16 @@ public readonly struct EquatableDictionary<TValue>(
 
 	public bool FindValue(string key, out TValue value)
 	{
+
 		foreach (var kvp in _dictionary)
 		{
+
 			if (key.EndsWith(kvp.Key, StringComparison.Ordinal))
 			{
 				value = kvp.Value;
 				return true;
 			}
+
 		}
 
 		value = default!;

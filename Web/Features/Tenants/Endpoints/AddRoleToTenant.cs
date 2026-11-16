@@ -42,8 +42,10 @@ public sealed partial class AddRoleToTenant(
 	{
 		var name = TenantManagement.ValidateName(request.RequestBody.Name);
 		var permissions = TenantManagement.ValidatePermissions(request.RequestBody.Permissions);
+
 		TenantManagement.EnsureCanGrant(
 			await currentTenantUserService.GetLoggedInUserPermissions(request.TenantId), permissions);
+
 		var userId = await currentUserService.GetLoggedInUserId();
 
 		var roleId = TenantRoleId.From(await context.InsertWithInt32IdentityAsync(
@@ -54,6 +56,7 @@ public sealed partial class AddRoleToTenant(
 				PermissionsJson = JsonSerializer.Serialize(permissions),
 				EditedUserId = userId,
 			}, token: token));
+
 		return new() { RoleId = roleId };
 	}
 }

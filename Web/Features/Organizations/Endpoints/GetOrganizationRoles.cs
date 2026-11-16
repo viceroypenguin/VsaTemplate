@@ -7,6 +7,8 @@ using VsaTemplate.Web.Features.AccessControl.Authorization;
 using VsaTemplate.Web.Features.Organizations.Authorization;
 using VsaTemplate.Web.Features.Organizations.Models;
 
+using VsaTemplate.Web.Features.Organizations.Services;
+
 namespace VsaTemplate.Web.Features.Organizations.Endpoints;
 
 [Handler]
@@ -28,19 +30,24 @@ public sealed partial class GetOrganizationRoles(DbContext context)
 
 	private async ValueTask<Response> HandleAsync([AsParameters] Query query, CancellationToken token)
 	{
+
 		var roles = await context.OrganizationRoles
 			.Where(r => r.OrganizationId == query.OrganizationId)
 			.OrderBy(r => r.Name)
 			.ThenBy(r => r.OrganizationRoleId)
 			.ToListAsync(token);
+
 		return new()
 		{
-			Roles = roles.Select(r => new OrganizationRoleDetails
-			{
-				RoleId = r.OrganizationRoleId,
-				Name = r.Name,
-				Permissions = OrganizationManagement.ReadPermissions(r.PermissionsJson),
-			}).ToList(),
+			Roles = roles
+				.Select(r => new OrganizationRoleDetails
+				{
+					RoleId = r.OrganizationRoleId,
+					Name = r.Name,
+					Permissions = OrganizationManagement.ReadPermissions(r.PermissionsJson),
+				})
+				.ToList(),
 		};
+
 	}
 }

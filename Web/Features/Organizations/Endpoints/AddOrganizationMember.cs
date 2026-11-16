@@ -11,10 +11,10 @@ using VsaTemplate.Web.Features.AccessControl.Authorization;
 using VsaTemplate.Web.Features.AccessControl.Models;
 using VsaTemplate.Web.Features.AccessControl.Services;
 using VsaTemplate.Web.Features.Organizations.Authorization;
+using VsaTemplate.Web.Features.Organizations.Exceptions;
 using VsaTemplate.Web.Features.Organizations.Models;
 using VsaTemplate.Web.Features.Organizations.Services;
 using VsaTemplate.Web.Features.Shared.Exceptions;
-using VsaTemplate.Web.Infrastructure.Exceptions;
 
 namespace VsaTemplate.Web.Features.Organizations.Endpoints;
 
@@ -56,30 +56,44 @@ public sealed partial class AddOrganizationMember(
 	private async ValueTask<Response> HandleAsync([AsParameters] Request request, CancellationToken token)
 	{
 		var email = request.Body.EmailAddress.Trim();
+
 		if (!MailAddress.TryCreate(email, out var address) || !string.Equals(address.Address, email, StringComparison.OrdinalIgnoreCase))
 			throw new InvalidMemberInputException("A valid email address is required.");
+
 		await using var transaction = await context.BeginTransactionAsync(IsolationLevel.Serializable, token);
 		var role = await OrganizationManagement.GetRole(context, request.OrganizationId, request.Body.RoleId, token);
+
 		await OrganizationManagement.DemandDelegablePermissions(currentOrganizationUserService, request.OrganizationId,
 			OrganizationManagement.ReadPermissions(role.PermissionsJson));
-		var user = await context.AccessControl.Users.FirstOrDefaultAsync(u => u.EmailAddress == email && u.IsActive && u.ApiKey == null, token)
-			?? throw new NotFoundException("Tenant member", "Add this email address to the parent tenant first.");
-		await OrganizationManagement.EnsureTenantMember(context, request.OrganizationId, user.UserId, token);
-		await context.OrganizationRoleUsers.Merge().Using([
+
+		var user = await context.AccessControl.Users
+			.FirstOrDefaultAsync(u => u.EmailAddress == email, token);
+
+		if (user is { IsActive: false }
+			|| (user is not null && await context.AccessControl.ApiKeys
+				.AnyAsync(k => k.ApiKeyId == user.UserId, token)))
+			throw new ConflictException("This email address is unavailable for membership.");
+
+		var userId = user?.UserId ?? UserId.From(await context.InsertWithInt32IdentityAsync(
+			new Database.Models.AccessControl.User { EmailAddress = email, IsActive = true },
+			token: token
+		));
+
+		await context.OrganizationRoleUsers
+			.Merge().Using([
 			new Database.Models.OrganizationRoleUser
 			{
 				OrganizationRoleId = request.Body.RoleId,
-				UserId = user.UserId,
+				UserId = userId,
 				EditedUserId = await currentUserService.GetLoggedInUserId(),
 			},
 		])
 			.OnTargetKey()
 			.InsertWhenNotMatched()
 			.MergeAsync(token);
+
 		await transaction.CommitAsync(token);
 		await permissionCacheInvalidator.InvalidateOrganization(request.OrganizationId, CancellationToken.None);
-		return new() { UserId = user.UserId };
+		return new() { UserId = userId };
 	}
 }
-
-file sealed class InvalidMemberInputException(string message) : VsaTemplateException(message, 400);

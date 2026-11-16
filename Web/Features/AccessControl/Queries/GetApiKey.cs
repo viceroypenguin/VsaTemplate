@@ -1,12 +1,12 @@
 using Immediate.Handlers.Shared;
+using LinqToDB.Async;
+using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.AccessControl.Models;
-using VsaTemplate.Web.Features.AccessControl.Services;
-using VsaTemplate.Web.Features.Shared.Extensions;
 
 namespace VsaTemplate.Web.Features.AccessControl.Queries;
 
 [Handler]
-public sealed partial class GetApiKey(ValidApiKeyCache validApiKeyCache)
+public sealed partial class GetApiKey(DbContext context, TimeProvider timeProvider)
 {
 	public sealed record Request
 	{
@@ -19,11 +19,26 @@ public sealed partial class GetApiKey(ValidApiKeyCache validApiKeyCache)
 		public required UserId? UserId { get; init; }
 	}
 
-	private async ValueTask<Response> HandleAsync(Request request) =>
-		await validApiKeyCache.GetValue(new() { ApiKey = request.ApiKey }, cancellationToken: default)
-			.Transform(r => new Response()
-			{
-				IsValid = r.IsValid,
-				UserId = r.UserId,
-			});
+	private async ValueTask<Response> HandleAsync(
+		Request request,
+		CancellationToken token
+	)
+	{
+		var now = timeProvider.GetUtcNow();
+
+		var userId = await context.AccessControl.Users
+			.Where(u => u.EmailAddress == request.ApiKey)
+			.Where(u => u.IsActive && u.ApiKey != null)
+			.Where(u => u.ApiKey!.ExpirationDateTime > now
+				&& u.ApiKey.OwnerUser.IsActive && u.ApiKey.OwnerUser.ApiKey == null)
+			.Select(u => (UserId?)u.UserId)
+			.FirstOrDefaultAsync(token);
+
+		return new()
+		{
+			IsValid = userId != null,
+			UserId = userId,
+		};
+
+	}
 }

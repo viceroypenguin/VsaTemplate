@@ -55,6 +55,7 @@ public sealed partial class AddOrganizationRole(
 		var name = OrganizationManagement.ValidateName(request.Body.Name);
 		var permissions = OrganizationManagement.ValidatePermissions(request.Body.Permissions);
 		await OrganizationManagement.DemandDelegablePermissions(currentOrganizationUserService, request.OrganizationId, permissions);
+
 		var roleId = (OrganizationRoleId)await context.InsertWithInt32IdentityAsync(
 			new Database.Models.OrganizationRole
 			{
@@ -63,6 +64,7 @@ public sealed partial class AddOrganizationRole(
 				PermissionsJson = JsonSerializer.Serialize(permissions),
 				EditedUserId = await currentUserService.GetLoggedInUserId(),
 			}, token: token);
+
 		await permissionCacheInvalidator.InvalidateOrganization(request.OrganizationId, CancellationToken.None);
 		return new() { RoleId = roleId };
 	}

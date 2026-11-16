@@ -47,15 +47,19 @@ public sealed partial class SaveOrganizationRole(
 		var oldPermissions = OrganizationManagement.ReadPermissions(role.PermissionsJson);
 		await OrganizationManagement.DemandDelegablePermissions(currentOrganizationUserService, request.OrganizationId, oldPermissions);
 		await OrganizationManagement.DemandDelegablePermissions(currentOrganizationUserService, request.OrganizationId, permissions);
+
 		if (oldPermissions.Contains(OrganizationPermission.Admin) && !permissions.Contains(OrganizationPermission.Admin))
 			await OrganizationManagement.EnsureAdministratorRemains(context, request.OrganizationId, removingUserId: null, request.RoleId, token);
+
 		var userId = await currentUserService.GetLoggedInUserId();
+
 		await context.OrganizationRoles
 			.Where(r => r.OrganizationId == request.OrganizationId && r.OrganizationRoleId == request.RoleId)
 			.Set(r => r.Name, name)
 			.Set(r => r.PermissionsJson, JsonSerializer.Serialize(permissions))
 			.Set(r => r.EditedUserId, userId)
 			.UpdateAsync(token);
+
 		await transaction.CommitAsync(token);
 		await permissionCacheInvalidator.InvalidateOrganization(request.OrganizationId, CancellationToken.None);
 	}

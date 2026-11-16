@@ -8,6 +8,7 @@ public static class ExceptionStartupExtensions
 	public static void ConfigureProblemDetails(ProblemDetailsOptions options) =>
 		options.CustomizeProblemDetails = c =>
 		{
+
 			if (c.Exception is null)
 				return;
 
@@ -19,7 +20,9 @@ public static class ExceptionStartupExtensions
 						.GroupBy(x => x.PropertyName, StringComparer.OrdinalIgnoreCase)
 						.ToDictionary(
 							x => x.Key,
-							x => x.Select(x => x.ErrorMessage).ToArray(),
+							x => x
+								.Select(x => x.ErrorMessage)
+								.ToArray(),
 							StringComparer.OrdinalIgnoreCase
 						)
 				)
@@ -46,10 +49,13 @@ public static class ExceptionStartupExtensions
 				},
 			};
 
-			c.HttpContext.Response.Headers.Append("RequestId", c.HttpContext.TraceIdentifier);
+			c.HttpContext.Response.Headers
+				.Append("RequestId", c.HttpContext.TraceIdentifier);
+
 			c.HttpContext.Response.StatusCode =
 				c.ProblemDetails.Status
 				?? StatusCodes.Status500InternalServerError;
+
 		};
 
 }

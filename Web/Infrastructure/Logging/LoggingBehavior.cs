@@ -1,6 +1,6 @@
 using System.Diagnostics;
 using Immediate.Handlers.Shared;
-using VsaTemplate.Web.Features.AccessControl.Services;
+using VsaTemplate.Web.Features.AccessControl.Queries;
 
 namespace VsaTemplate.Web.Infrastructure.Logging;
 
@@ -14,12 +14,14 @@ public sealed partial class LoggingBehavior<TRequest, TResponse>(
 
 	public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
 	{
+
 		var properties = new Dictionary<string, object?>(StringComparer.Ordinal)
 		{
 			["@RequestData"] = request is GetApiKey.Request ? "[API key redacted]" : request,
 		};
 
 		var httpContext = _httpContextAccessor.HttpContext;
+
 		if (httpContext is not null)
 		{
 			properties["User"] = httpContext.User?.Identity?.Name;
@@ -35,6 +37,7 @@ public sealed partial class LoggingBehavior<TRequest, TResponse>(
 		{
 			var sw = Stopwatch.StartNew();
 			var response = await Next(request, cancellationToken);
+
 			using (var scope = _logger.BeginScope(properties))
 				LogSuccess(HandlerType, sw.Elapsed.TotalMilliseconds);
 
@@ -42,11 +45,13 @@ public sealed partial class LoggingBehavior<TRequest, TResponse>(
 		}
 		catch (Exception ex)
 		{
+
 			using (var scope = _logger.BeginScope(properties))
 				LogException(HandlerType, ex);
 
 			throw;
 		}
+
 	}
 
 	[LoggerMessage(

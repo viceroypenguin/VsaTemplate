@@ -1,4 +1,5 @@
 using Immediate.Handlers.Shared;
+using VsaTemplate.Web.Features.AccessControl.Extensions;
 using VsaTemplate.Web.Features.AccessControl.Models;
 using VsaTemplate.Web.Features.AccessControl.Services;
 using VsaTemplate.Web.Features.Shared.Exceptions;
@@ -16,8 +17,8 @@ public sealed partial class AuthorizationBehavior<TRequest, TResponse>(
 		var permissions = await currentUserService.GetLoggedInUserPermissions();
 		var permission = TRequest.Permission;
 
-		if (permission is not Permission.None
-			&& !permissions.HasPermission(permission))
+		if (permissions.Count == 0
+			|| (permission is not Permission.None && !permissions.HasPermission(permission)))
 		{
 			var userId = await currentUserService.GetCurrentUserId();
 

@@ -82,8 +82,10 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 		using var client = fixture.CreateApiKeyClient(key);
 		var session = await GetAsync(client, "/api/session");
 		Assert.True(session.GetProperty("isAuthenticated").GetBoolean());
+
 		await AssertStatusAsync(client, HttpMethod.Post, "/api/users/apikey/create", HttpStatusCode.Forbidden,
 			new { permissions = ReadOnlyPermissions, lifetime = "01:00:00" });
+
 	}
 
 	[Fact]
@@ -92,7 +94,10 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 		using var owner = await fixture.CreateClientAsync(await fixture.CreateUserAsync(isAdministrator: true));
 		var result = await PostAsync(owner, "/api/users/apikey/create", new { permissions = ReadOnlyPermissions, lifetime = "01:00:00" });
 		var permissions = await fixture.ReadApiKeyPermissionsAsync(result.GetProperty("apiKey").GetString()!);
-		Assert.Equal(Permission.None, Assert.Single(permissions));
+
+		Assert.Equal(Permission.None, Assert
+			.Single(permissions));
+
 	}
 
 	[Fact]
@@ -127,13 +132,25 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 		using var outsider = await fixture.CreateClientAsync(await fixture.CreateUserAsync());
 		var created = await PostAsync(owner, "/api/tenants/create", new { name = "  Acme  " });
 		var tenantId = created.GetProperty("tenantId").GetInt32();
-		var keys = created.GetProperty("recoveryKeys").EnumerateArray().Select(k => k.GetString()).ToArray();
+
+		var keys = created.GetProperty("recoveryKeys").EnumerateArray()
+			.Select(k => k.GetString())
+			.ToArray();
+
 		Assert.Equal(12, keys.Length);
-		Assert.Equal(12, keys.Distinct(StringComparer.Ordinal).Count());
-		Assert.All(keys, key => Assert.False(string.IsNullOrWhiteSpace(key)));
+
+		Assert.Equal(12, keys
+			.Distinct(StringComparer.Ordinal)
+			.Count());
+
+		Assert
+			.All(keys, key => Assert.False(string.IsNullOrWhiteSpace(key)));
 
 		var listed = await GetAsync(owner, "/api/tenants");
-		var tenant = Assert.Single(listed.GetProperty("tenants").EnumerateArray());
+
+		var tenant = Assert
+			.Single(listed.GetProperty("tenants").EnumerateArray());
+
 		Assert.Equal(tenantId, tenant.GetProperty("tenantId").GetInt32());
 		Assert.Equal("Acme", tenant.GetProperty("name").GetString());
 		Assert.Contains("Admin", Strings(tenant.GetProperty("permissions")), StringComparer.Ordinal);
@@ -166,11 +183,19 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 		using var owner = await fixture.CreateClientAsync(await fixture.CreateUserAsync());
 		var tenantId = await CreateTenantAsync(owner);
 		await PutAsync(owner, $"/api/tenants/{tenantId}", new { name = "Renamed", isActive = false });
-		var inactive = Assert.Single((await GetAsync(owner, "/api/tenants")).GetProperty("tenants").EnumerateArray());
+
+		var inactive = Assert
+			.Single((await GetAsync(owner, "/api/tenants")).GetProperty("tenants").EnumerateArray());
+
 		Assert.Equal("Renamed", inactive.GetProperty("name").GetString());
 		Assert.False(inactive.GetProperty("isActive").GetBoolean());
+		await AssertStatusAsync(owner, HttpMethod.Get, $"/api/tenants/{tenantId}", HttpStatusCode.Forbidden);
+		await AssertStatusAsync(owner, HttpMethod.Get, $"/api/tenants/{tenantId}/roles", HttpStatusCode.Forbidden);
 		await PutAsync(owner, $"/api/tenants/{tenantId}", new { name = "Renamed", isActive = true });
-		var active = Assert.Single((await GetAsync(owner, "/api/tenants")).GetProperty("tenants").EnumerateArray());
+
+		var active = Assert
+			.Single((await GetAsync(owner, "/api/tenants")).GetProperty("tenants").EnumerateArray());
+
 		Assert.True(active.GetProperty("isActive").GetBoolean());
 	}
 
@@ -243,7 +268,10 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 		var tenantId = await CreateTenantAsync(owner);
 		var organizationId = await CreateOrganizationAsync(owner, tenantId);
 		var organizations = await GetAsync(owner, $"/api/tenants/{tenantId}/organizations");
-		var organization = Assert.Single(organizations.GetProperty("organizations").EnumerateArray());
+
+		var organization = Assert
+			.Single(organizations.GetProperty("organizations").EnumerateArray());
+
 		Assert.Equal(organizationId, organization.GetProperty("organizationId").GetInt32());
 		Assert.Equal(tenantId, organization.GetProperty("tenantId").GetInt32());
 		Assert.Contains("Admin", Strings(organization.GetProperty("permissions")), StringComparer.Ordinal);
@@ -263,11 +291,17 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 		var tenantId = await CreateTenantAsync(owner);
 		var organizationId = await CreateOrganizationAsync(owner, tenantId);
 		await PutAsync(owner, $"/api/organizations/{organizationId}", new { name = "Renamed", isActive = false });
-		var inactive = Assert.Single((await GetAsync(owner, $"/api/tenants/{tenantId}/organizations")).GetProperty("organizations").EnumerateArray());
+
+		var inactive = Assert
+			.Single((await GetAsync(owner, $"/api/tenants/{tenantId}/organizations")).GetProperty("organizations").EnumerateArray());
+
 		Assert.Equal("Renamed", inactive.GetProperty("name").GetString());
 		Assert.False(inactive.GetProperty("isActive").GetBoolean());
 		await PutAsync(owner, $"/api/organizations/{organizationId}", new { name = "Renamed", isActive = true });
-		var active = Assert.Single((await GetAsync(owner, $"/api/tenants/{tenantId}/organizations")).GetProperty("organizations").EnumerateArray());
+
+		var active = Assert
+			.Single((await GetAsync(owner, $"/api/tenants/{tenantId}/organizations")).GetProperty("organizations").EnumerateArray());
+
 		Assert.True(active.GetProperty("isActive").GetBoolean());
 	}
 
@@ -286,14 +320,23 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 	}
 
 	[Fact]
-	public async Task OrganizationMembersMustAlreadyBelongToTheirParentTenant()
+	public async Task OrganizationMembersCanAccessTheirOrganizationWithoutTenantMembership()
 	{
 		using var owner = await fixture.CreateClientAsync(await fixture.CreateUserAsync());
 		var tenantId = await CreateTenantAsync(owner);
 		var organizationId = await CreateOrganizationAsync(owner, tenantId);
 		var roleId = await GetOnlyRoleIdAsync(owner, $"/api/organizations/{organizationId}/roles");
 		var outsiderId = await fixture.CreateUserAsync();
-		await AssertStatusAsync(owner, HttpMethod.Put, $"/api/organizations/{organizationId}/roles/{roleId}/users/{outsiderId.Value}", HttpStatusCode.NotFound);
+		await PutAsync(owner, $"/api/organizations/{organizationId}/roles/{roleId}/users/{outsiderId.Value}");
+		using var member = await fixture.CreateClientAsync(outsiderId);
+		await GetAsync(member, $"/api/organizations/{organizationId}");
+		await GetAsync(member, $"/api/organizations/{organizationId}/roles");
+		await AssertStatusAsync(member, HttpMethod.Get, $"/api/tenants/{tenantId}", HttpStatusCode.Forbidden);
+		Assert.Empty((await GetAsync(member, "/api/tenants")).GetProperty("tenants").EnumerateArray());
+		Assert.Contains((await GetAsync(member, "/api/organizations")).GetProperty("organizations").EnumerateArray(), o => o.GetProperty("organizationId").GetInt32() == organizationId);
+		await PutAsync(owner, $"/api/tenants/{tenantId}", new { name = "Inactive tenant", isActive = false });
+		await GetAsync(member, $"/api/organizations/{organizationId}/roles");
+		Assert.Contains((await GetAsync(member, "/api/organizations")).GetProperty("organizations").EnumerateArray(), o => o.GetProperty("organizationId").GetInt32() == organizationId);
 	}
 
 	[Fact]
@@ -337,7 +380,7 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 	}
 
 	[Fact]
-	public async Task RemovingATenantMemberAlsoRevokesOrganizationAccess()
+	public async Task RemovingATenantMemberPreservesIndependentOrganizationAccess()
 	{
 		using var owner = await fixture.CreateClientAsync(await fixture.CreateUserAsync());
 		var memberId = await fixture.CreateUserAsync();
@@ -350,8 +393,47 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 		await PutAsync(owner, $"/api/organizations/{organizationId}/roles/{organizationRole.GetProperty("roleId").GetInt32()}/users/{memberId.Value}");
 		await GetAsync(member, $"/api/organizations/{organizationId}/roles");
 		await DeleteAsync(owner, $"/api/tenants/{tenantId}/users/{memberId.Value}");
-		await AssertStatusAsync(member, HttpMethod.Get, $"/api/organizations/{organizationId}/roles", HttpStatusCode.Forbidden);
+		await GetAsync(member, $"/api/organizations/{organizationId}/roles");
+		Assert.Contains((await GetAsync(member, "/api/organizations")).GetProperty("organizations").EnumerateArray(), o => o.GetProperty("organizationId").GetInt32() == organizationId);
+		Assert.Empty((await GetAsync(member, "/api/tenants")).GetProperty("tenants").EnumerateArray());
+	}
+
+	[Fact]
+	public async Task ReadOnlyTenantMembershipUsesTheDefaultPermissionAndInactiveScopesDenyAccess()
+	{
+		using var owner = await fixture.CreateClientAsync(await fixture.CreateUserAsync());
+		var tenantId = await CreateTenantAsync(owner);
+		var memberId = await fixture.CreateUserAsync();
+		using var member = await fixture.CreateClientAsync(memberId);
+		var role = await PutAsync(owner, $"/api/tenants/{tenantId}/roles", new { name = "Readers", permissions = ReadOnlyPermissions });
+		await PutAsync(owner, $"/api/tenants/{tenantId}/roles/{role.GetProperty("roleId").GetInt32()}/users/{memberId.Value}");
+		var tenant = await GetAsync(member, $"/api/tenants/{tenantId}");
+		Assert.Equal(tenantId, tenant.GetProperty("tenantId").GetInt32());
+		await AssertStatusAsync(member, HttpMethod.Get, $"/api/tenants/{tenantId}/roles", HttpStatusCode.Forbidden);
+		await PutAsync(owner, $"/api/tenants/{tenantId}", new { name = "Inactive", isActive = false });
+		await AssertStatusAsync(member, HttpMethod.Get, $"/api/tenants/{tenantId}", HttpStatusCode.Forbidden);
+		Assert.Empty((await GetAsync(member, "/api/tenants")).GetProperty("tenants").EnumerateArray());
+		await PutAsync(owner, $"/api/tenants/{tenantId}", new { name = "Restored", isActive = true });
+		await GetAsync(member, $"/api/tenants/{tenantId}");
+	}
+
+	[Fact]
+	public async Task OrganizationEmailMembershipDoesNotRequireAnExistingTenantUser()
+	{
+		using var owner = await fixture.CreateClientAsync(await fixture.CreateUserAsync());
+		var tenantId = await CreateTenantAsync(owner);
+		var organizationId = await CreateOrganizationAsync(owner, tenantId);
+		var role = await PostAsync(owner, $"/api/organizations/{organizationId}/roles/create", new { name = "Readers", permissions = ReadOnlyPermissions });
+		var added = await PutAsync(owner, $"/api/organizations/{organizationId}/users", new { emailAddress = $"{Guid.NewGuid():N}@example.test", roleId = role.GetProperty("roleId").GetInt32() });
+		using var member = await fixture.CreateClientAsync(UserId.From(added.GetProperty("userId").GetInt32()));
+		await GetAsync(member, $"/api/organizations/{organizationId}");
+		Assert.Empty((await GetAsync(member, "/api/tenants")).GetProperty("tenants").EnumerateArray());
+		Assert.Contains((await GetAsync(member, "/api/organizations")).GetProperty("organizations").EnumerateArray(), o => o.GetProperty("organizationId").GetInt32() == organizationId);
+		await PutAsync(owner, $"/api/organizations/{organizationId}", new { name = "Inactive", isActive = false });
+		await AssertStatusAsync(member, HttpMethod.Get, $"/api/organizations/{organizationId}", HttpStatusCode.Forbidden);
 		Assert.Empty((await GetAsync(member, "/api/organizations")).GetProperty("organizations").EnumerateArray());
+		await PutAsync(owner, $"/api/organizations/{organizationId}", new { name = "Restored", isActive = true });
+		await GetAsync(member, $"/api/organizations/{organizationId}");
 	}
 
 	private static async Task<int> CreateTenantAsync(HttpClient client) =>
@@ -361,9 +443,11 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 		(await PutAsync(client, $"/api/tenants/{tenantId}/organizations", new { name = "Test organization" })).GetProperty("organizationId").GetInt32();
 
 	private static async Task<int> GetOnlyRoleIdAsync(HttpClient client, string path) =>
-		Assert.Single((await GetAsync(client, path)).GetProperty("roles").EnumerateArray()).GetProperty("roleId").GetInt32();
+		Assert
+			.Single((await GetAsync(client, path)).GetProperty("roles").EnumerateArray()).GetProperty("roleId").GetInt32();
 
-	private static IEnumerable<string?> Strings(JsonElement array) => array.EnumerateArray().Select(e => e.GetString());
+	private static IEnumerable<string?> Strings(JsonElement array) => array.EnumerateArray()
+		.Select(e => e.GetString());
 
 	private static async Task<JsonElement> GetAsync(HttpClient client, string path) =>
 		await SendAsync(client, HttpMethod.Get, path);
@@ -380,13 +464,17 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 	private static async Task<JsonElement> SendAsync(HttpClient client, HttpMethod method, string path, object? body = null)
 	{
 		using var request = new HttpRequestMessage(method, path);
+
 		if (body is not null)
 			request.Content = JsonContent.Create(body);
+
 		using var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
 		var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 		Assert.True(response.IsSuccessStatusCode, $"{method} {path} returned {(int)response.StatusCode}: {content}");
+
 		if (content.Length == 0)
 			return default;
+
 		using var document = JsonDocument.Parse(content);
 		return document.RootElement.Clone();
 	}
@@ -394,8 +482,10 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 	private static async Task AssertStatusAsync(HttpClient client, HttpMethod method, string path, HttpStatusCode status, object? body = null)
 	{
 		using var request = new HttpRequestMessage(method, path);
+
 		if (body is not null)
 			request.Content = JsonContent.Create(body);
+
 		using var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
 		Assert.Equal(status, response.StatusCode);
 	}

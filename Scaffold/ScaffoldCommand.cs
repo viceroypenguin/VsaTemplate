@@ -29,6 +29,7 @@ internal sealed class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Settings>
 	public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
 	{
 #pragma warning disable CA1031 // Do not catch general exception types
+
 		try
 		{
 			var code = await GenerateScaffold(settings);
@@ -44,6 +45,7 @@ internal sealed class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Settings>
 			await Console.Error.WriteLineAsync(ex.Message, cancellationToken);
 			return 1;
 		}
+
 #pragma warning restore CA1031 // Do not catch general exception types
 	}
 
@@ -54,11 +56,13 @@ internal sealed class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Settings>
 
 		await using var conn = GetSqlServerConnection(cn, "master");
 		await CreateDatabase(conn, dbName);
+
 		try
 		{
 			await LoadMigrationScripts(conn, dbName, args.Files);
 
 			var provider = conn.DataProvider.GetSchemaProvider();
+
 			var schema = provider.GetSchema(
 				conn,
 				new()
@@ -98,8 +102,12 @@ internal sealed class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Settings>
 						{
 							Name = fk.KeyName,
 							CanBeNull = fk.CanBeNull,
-							ThisKeys = string.Join(',', fk.ThisColumns.Select(c => c.MemberName)),
-							OtherKeys = string.Join(',', fk.OtherColumns.Select(c => c.MemberName)),
+							ThisKeys = string
+								.Join(',', fk.ThisColumns
+	.Select(c => c.MemberName)),
+							OtherKeys = string
+								.Join(',', fk.OtherColumns
+	.Select(c => c.MemberName)),
 							OtherName = GetAssociationName(fk),
 
 							OtherType =
@@ -126,6 +134,7 @@ internal sealed class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Settings>
 
 			static string GetAssociationName(ForeignKeySchema fk)
 			{
+
 				if (fk.AssociationType is AssociationType.OneToMany)
 					return Pluralize(fk.OtherTable.TypeName);
 
@@ -153,16 +162,20 @@ internal sealed class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Settings>
 		{
 			await DropDatabase(conn, dbName);
 		}
+
 	}
 
 	private static string Pluralize(string typeName) =>
-		string.Concat(
+		string
+			.Concat(
 			typeName
 				.Segment(char.IsUpper)
 				.TagFirstLast((str, _, isLast) =>
 					isLast
-						? string.Concat(str).Pluralize()
-						: string.Concat(str)
+						? string
+							.Concat(str).Pluralize()
+						: string
+							.Concat(str)
 				)
 		);
 
@@ -227,14 +240,20 @@ internal sealed class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Settings>
 		await conn.ExecuteAsync($"use {dbName};");
 
 		var sqlBlocksRegex = new Regex(@"^go\r?$", RegexOptions.IgnoreCase | RegexOptions.Multiline, TimeSpan.FromSeconds(1));
-		foreach (var path in sqlFiles.OrderBy(f => Path.GetFileName(f), StringComparer.Ordinal))
+
+		foreach (var path in sqlFiles
+			.OrderBy(f => Path.GetFileName(f), StringComparer.Ordinal))
 		{
 			Console.WriteLine($"Executing Script: {Path.GetFileName(path)}");
 
 			var text = await File.ReadAllTextAsync(path);
-			foreach (var b in sqlBlocksRegex.Split(text).Where(s => !string.IsNullOrWhiteSpace(s)))
+
+			foreach (var b in sqlBlocksRegex.Split(text)
+				.Where(s => !string.IsNullOrWhiteSpace(s)))
 				await conn.ExecuteAsync(b);
+
 		}
+
 	}
 
 	private static async Task DropDatabase(DataConnection conn, string database)
@@ -251,10 +270,12 @@ internal sealed class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Settings>
 			end
 			"""
 		);
+
 	}
 
 	private static DataConnection GetSqlServerConnection(string connectionString, string database)
 	{
+
 		var builder = new SqlConnectionStringBuilder(connectionString)
 		{
 			InitialCatalog = database,
@@ -264,6 +285,7 @@ internal sealed class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Settings>
 			builder.ToString(),
 			SqlServerVersion.v2022,
 			SqlServerProvider.MicrosoftDataSqlClient);
+
 	}
 
 }

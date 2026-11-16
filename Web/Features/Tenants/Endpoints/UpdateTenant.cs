@@ -6,18 +6,22 @@ using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.AccessControl.Authorization;
 using VsaTemplate.Web.Features.AccessControl.Services;
 using VsaTemplate.Web.Features.Shared.Exceptions;
-using VsaTemplate.Web.Features.Tenants.Authorization;
 using VsaTemplate.Web.Features.Tenants.Models;
+using VsaTemplate.Web.Features.Tenants.Services;
 
 namespace VsaTemplate.Web.Features.Tenants.Endpoints;
 
 [Handler]
 [MapPut("/api/tenants/{tenantId}")]
-public sealed partial class UpdateTenant(DbContext context, PermissionCacheInvalidator cacheInvalidator)
+public sealed partial class UpdateTenant(
+	DbContext context,
+	CurrentUserService currentUserService,
+	TenantAdministrationCache administration,
+	PermissionCacheInvalidator cacheInvalidator
+)
 {
-	public sealed record Request : IAuthorizedRequest, ITenantRequest
+	public sealed record Request : IAuthorizedRequest
 	{
-		public static TenantPermission TenantPermission => TenantPermission.Admin;
 		[FromRoute] public required TenantId TenantId { get; init; }
 		[FromBody] public required RequestBody Body { get; init; }
 	}
@@ -30,13 +34,30 @@ public sealed partial class UpdateTenant(DbContext context, PermissionCacheInval
 
 	private async ValueTask HandleAsync([AsParameters] Request request, CancellationToken token)
 	{
+
+		var permissions = await administration.GetValue(
+			new()
+			{
+				UserId = await currentUserService.GetLoggedInUserId(),
+				TenantId = request.TenantId,
+			},
+			token
+		);
+
+		if (!permissions.Permissions.Contains(TenantPermission.Admin))
+			UnauthorizedException.ThrowUnauthorizedException();
+
 		var name = TenantManagement.ValidateName(request.Body.Name);
-		var count = await context.Tenants.Where(t => t.TenantId == request.TenantId)
+
+		var count = await context.Tenants
+			.Where(t => t.TenantId == request.TenantId)
 			.Set(t => t.Name, name)
 			.Set(t => t.IsActive, request.Body.IsActive)
 			.UpdateAsync(token);
+
 		if (count == 0)
 			throw new NotFoundException(nameof(Database.Models.Tenant));
+
 		await cacheInvalidator.InvalidateTenant(request.TenantId, CancellationToken.None);
 	}
 }

@@ -8,6 +8,7 @@ using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.AccessControl.Authorization;
 using VsaTemplate.Web.Features.AccessControl.Services;
 using VsaTemplate.Web.Features.Organizations.Models;
+using VsaTemplate.Web.Features.Organizations.Services;
 using VsaTemplate.Web.Features.Tenants.Authorization;
 using VsaTemplate.Web.Features.Tenants.Models;
 
@@ -51,6 +52,7 @@ public sealed partial class CreateOrganization(
 		var userId = await currentUserService.GetLoggedInUserId();
 		var memberUserId = await currentUserService.GetMembershipUserId();
 		await using var transaction = await context.BeginTransactionAsync(token);
+
 		var organizationId = (OrganizationId)await context.InsertWithInt32IdentityAsync(
 			new Database.Models.Organization
 			{
@@ -58,6 +60,7 @@ public sealed partial class CreateOrganization(
 				Name = OrganizationManagement.ValidateName(request.Body.Name),
 				IsActive = true,
 			}, token: token);
+
 		var roleId = (OrganizationRoleId)await context.InsertWithInt32IdentityAsync(
 			new Database.Models.OrganizationRole
 			{
@@ -66,12 +69,14 @@ public sealed partial class CreateOrganization(
 				PermissionsJson = JsonSerializer.Serialize(new[] { OrganizationPermission.Admin }),
 				EditedUserId = userId,
 			}, token: token);
+
 		await context.InsertAsync(new Database.Models.OrganizationRoleUser
 		{
 			OrganizationRoleId = roleId,
 			UserId = memberUserId,
 			EditedUserId = userId,
 		}, token: token);
+
 		await transaction.CommitAsync(token);
 		await permissionCacheInvalidator.InvalidateOrganization(organizationId, CancellationToken.None);
 		return new() { OrganizationId = organizationId };

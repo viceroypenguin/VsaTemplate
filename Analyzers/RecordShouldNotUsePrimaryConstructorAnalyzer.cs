@@ -44,5 +44,6 @@ public sealed class RecordShouldNotUsePrimaryConstructorAnalyzer : DiagnosticAna
 				node.Identifier.Text
 			)
 		);
+
 	}
 }

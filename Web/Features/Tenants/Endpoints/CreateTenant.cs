@@ -8,6 +8,7 @@ using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.AccessControl.Authorization;
 using VsaTemplate.Web.Features.AccessControl.Services;
 using VsaTemplate.Web.Features.Tenants.Models;
+using VsaTemplate.Web.Features.Tenants.Services;
 
 namespace VsaTemplate.Web.Features.Tenants.Endpoints;
 
@@ -83,10 +84,12 @@ public sealed partial class CreateTenant(
 			TenantId = tenantId,
 			RecoveryKeys = recoveryKeys,
 		};
+
 	}
 
 	private static List<string> BuildRecoveryKeys()
 	{
+
 		return Enumerable.Range(0, 12)
 			.Select(_ =>
 				Base58.Bitcoin.Encode(
@@ -94,5 +97,6 @@ public sealed partial class CreateTenant(
 				)
 			)
 			.ToList();
+
 	}
 }

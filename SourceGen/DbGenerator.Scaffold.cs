@@ -22,6 +22,7 @@ public sealed partial class DbGenerator
 		Template template
 	)
 	{
+
 		var properties = entity.Properties.Collection
 			.Select(p =>
 			{
@@ -54,6 +55,7 @@ public sealed partial class DbGenerator
 					p.SkipOnInsert,
 					p.SkipOnUpdate,
 				};
+
 			});
 
 		var output = template
@@ -81,7 +83,9 @@ public sealed partial class DbGenerator
 		Template template
 	)
 	{
-		var tablesBySchema = entities.GroupBy(x => x.SchemaName, StringComparer.Ordinal);
+
+		var tablesBySchema = entities
+			.GroupBy(x => x.SchemaName, StringComparer.Ordinal);
 
 		var output = template
 			.Render(new
@@ -101,6 +105,7 @@ public sealed partial class DbGenerator
 		Template template
 	)
 	{
+
 		var types = context
 			.Where(x => !x.IsEnum)
 			.Select(x => new

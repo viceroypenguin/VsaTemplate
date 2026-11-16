@@ -43,6 +43,7 @@ public static class LoggingStartupExtensions
 	public static IApplicationBuilder UseLogging(this IApplicationBuilder app) =>
 		app.UseSerilogRequestLogging(o =>
 		{
+
 			o.GetLevel = static (httpContext, _, _) =>
 				httpContext.Response.StatusCode >= 500 ? LogEventLevel.Error :
 				httpContext.Request.Path.StartsWithSegments(new("/api"), StringComparison.OrdinalIgnoreCase) ? LogEventLevel.Verbose :
@@ -50,13 +51,19 @@ public static class LoggingStartupExtensions
 
 			o.EnrichDiagnosticContext = static (diagnosticContext, httpContext) =>
 			{
+
 				if (httpContext.User?.Identity?.Name is { } name)
-					diagnosticContext.Set("User", name);
+					diagnosticContext
+						.Set("User", name);
 
 				if (httpContext.Connection.RemoteIpAddress is { } ipAddress)
-					diagnosticContext.Set("RemoteIP", ipAddress);
+					diagnosticContext
+						.Set("RemoteIP", ipAddress);
 
-				diagnosticContext.Set("ConnectingIP", httpContext.Request.Headers["CF-Connecting-IP"]);
+				diagnosticContext
+					.Set("ConnectingIP", httpContext.Request.Headers["CF-Connecting-IP"]);
+
 			};
+
 		});
 }

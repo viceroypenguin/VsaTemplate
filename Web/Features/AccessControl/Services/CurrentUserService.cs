@@ -28,19 +28,19 @@ public sealed class CurrentUserService(
 		await userPermissionCache.GetValue(new() { UserId = await GetLoggedInUserId() })
 			.Transform(r => r.Permissions);
 
-	public async ValueTask<UserId?> GetCurrentUserId()
+	public ValueTask<UserId?> GetCurrentUserId()
 	{
 		var user = httpContextAccessor.HttpContext?.User;
+
 		if (user?.Identity?.IsAuthenticated != true)
-			return null;
+			return ValueTask.FromResult<UserId?>(null);
 
 		var claim = user?.FindFirstValue("vsa-id") ?? "";
-		if (!UserId.TryParse(claim, provider: null, out var userId))
-			return null;
 
-		return await context.AccessControl.Users.AnyAsync(u => u.UserId == userId && u.IsActive)
-			? userId
-			: null;
+		if (!UserId.TryParse(claim, provider: null, out var userId))
+			return ValueTask.FromResult<UserId?>(null);
+
+		return ValueTask.FromResult<UserId?>(userId);
 	}
 
 	public async ValueTask<UserId> GetLoggedInUserId() =>
@@ -51,28 +51,17 @@ public sealed class CurrentUserService(
 	public async ValueTask<UserId> GetMembershipUserId()
 	{
 		var actorId = await GetLoggedInUserId();
-		var apiKey = await context.AccessControl.ApiKeys.FirstOrDefaultAsync(k => k.ApiKeyId == actorId);
+
+		var apiKey = await context.AccessControl.ApiKeys
+			.FirstOrDefaultAsync(k => k.ApiKeyId == actorId);
+
 		if (apiKey is null)
 			return actorId;
-		if (!await context.AccessControl.Users.AnyAsync(u => u.UserId == apiKey.OwnerUserId && u.IsActive && u.ApiKey == null))
+
+		if (!await context.AccessControl.Users
+			.AnyAsync(u => u.UserId == apiKey.OwnerUserId && u.IsActive && u.ApiKey == null))
 			UnauthorizedException.ThrowUnauthorizedException("The API key owner is unavailable.");
+
 		return apiKey.OwnerUserId;
 	}
-}
-
-public static class PermissionExtensions
-{
-	public static bool IsAdmin(this IReadOnlyList<Permission> permissions) =>
-		permissions.Contains(Permission.Admin);
-
-	public static async ValueTask<bool> IsAdmin(this ValueTask<IReadOnlyList<Permission>> permissions) =>
-		await permissions.Transform((IReadOnlyList<Permission> p) => IsAdmin(p));
-
-	public static bool HasPermission(this IReadOnlyList<Permission> permissions, Permission permission) =>
-		permissions.IsAdmin() || permissions.Contains(permission);
-
-	public static async ValueTask<bool> HasPermission(
-		this ValueTask<IReadOnlyList<Permission>> permissions,
-		Permission permission
-	) => await permissions.Transform((IReadOnlyList<Permission> p) => HasPermission(p, permission));
 }

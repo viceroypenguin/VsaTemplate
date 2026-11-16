@@ -8,6 +8,7 @@ public static class OptionsExtensions
 	public static void AddRequiredOptions<T>(this IServiceCollection services, string section)
 		where T : class, IValidationTarget<T>
 	{
+
 		services
 			.AddOptionsWithValidateOnStart<T>()
 			.Validate(

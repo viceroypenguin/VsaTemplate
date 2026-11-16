@@ -3,8 +3,8 @@ using Immediate.Injections.Shared;
 using Immediate.Validations.Shared;
 using MailKit;
 using MailKit.Net.Smtp;
-using Resend;
 using Microsoft.Extensions.Options;
+using Resend;
 
 namespace VsaTemplate.Web.Infrastructure.Emails;
 
@@ -61,6 +61,7 @@ public sealed class EmailService(
 
 			case EmailServerType.Resend:
 			{
+
 				await resendClient.EmailSendAsync(
 					new()
 					{
@@ -82,6 +83,7 @@ public sealed class EmailService(
 			default:
 				return;
 		}
+
 	}
 }
 
@@ -89,13 +91,17 @@ file static class Extensions
 {
 	public static void Add(this List<EmailAddress> addresses, IReadOnlyList<string> moreAddresses)
 	{
+
 		foreach (var a in moreAddresses)
 			addresses.Add(a);
+
 	}
 
 	public static void Add(this MimeKit.InternetAddressList addresses, IReadOnlyList<string> moreAddresses)
 	{
+
 		foreach (var a in moreAddresses)
 			addresses.Add(MimeKit.MailboxAddress.Parse(a));
+
 	}
 }

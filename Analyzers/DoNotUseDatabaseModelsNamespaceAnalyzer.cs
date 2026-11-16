@@ -33,6 +33,7 @@ public sealed class DoNotUseDatabaseModelsNamespaceAnalyzer : DiagnosticAnalyzer
 	private static void AnalyzeSyntaxNode(SyntaxNodeAnalysisContext context)
 	{
 		var node = (UsingDirectiveSyntax)context.Node;
+
 		if (node.Name is not QualifiedNameSyntax
 			{
 				Left: QualifiedNameSyntax
@@ -57,5 +58,6 @@ public sealed class DoNotUseDatabaseModelsNamespaceAnalyzer : DiagnosticAnalyzer
 				proj
 			)
 		);
+
 	}
 }

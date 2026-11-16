@@ -44,6 +44,7 @@ public sealed partial class DbContext(
 	private static string GetConnectionString(DbContextOptions options, DatabaseInitializationState initialization)
 	{
 		var conn = options.ConnectionString;
+
 		if (!initialization.IsInitialized && !string.IsNullOrWhiteSpace(options.ConnectionStringInit))
 			conn = options.ConnectionStringInit;
 

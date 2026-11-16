@@ -41,6 +41,7 @@ public sealed partial class GetUsersByTenant(DbContext context)
 
 	private async ValueTask<Response> HandleAsync([AsParameters] Query query, CancellationToken token)
 	{
+
 		var memberships = await context.TenantRoleUsers
 			.Where(u => u.TenantRole.TenantId == query.TenantId && u.User.ApiKey == null)
 			.Select(u => new
@@ -50,19 +51,26 @@ public sealed partial class GetUsersByTenant(DbContext context)
 				u.User.EmailAddress,
 				RoleId = u.TenantRoleId,
 				RoleName = u.TenantRole.Name,
-			}).ToListAsync(token);
+			})
+			.ToListAsync(token);
+
 		return new()
 		{
-			Users = memberships.GroupBy(u => (u.UserId, u.Name, u.EmailAddress))
+			Users = memberships
+				.GroupBy(u => (u.UserId, u.Name, u.EmailAddress))
 				.Select(g => new User
 				{
 					UserId = g.Key.UserId,
 					Name = g.Key.Name,
 					EmailAddress = g.Key.EmailAddress,
-					Roles = g.Select(u => new Role { RoleId = u.RoleId, Name = u.RoleName })
-						.OrderBy(r => r.Name, StringComparer.OrdinalIgnoreCase).ToList(),
+					Roles = g
+						.Select(u => new Role { RoleId = u.RoleId, Name = u.RoleName })
+						.OrderBy(r => r.Name, StringComparer.OrdinalIgnoreCase)
+						.ToList(),
 				})
-				.OrderBy(u => u.EmailAddress, StringComparer.OrdinalIgnoreCase).ToList(),
+				.OrderBy(u => u.EmailAddress, StringComparer.OrdinalIgnoreCase)
+				.ToList(),
 		};
+
 	}
 }

@@ -1,10 +1,10 @@
 using System.Security.Claims;
 using System.Text.Encodings.Web;
+using Immediate.Injections.Shared;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.Options;
-using VsaTemplate.Web.Features.AccessControl.Services;
-using Immediate.Injections.Shared;
+using VsaTemplate.Web.Features.AccessControl.Queries;
 
 namespace VsaTemplate.Web.Infrastructure.Authentication;
 
@@ -31,6 +31,7 @@ public sealed class ApiKeyAuthenticationHandler(
 	protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
 	{
 		var result = await AuthenticateApiKey();
+
 		if (result.Succeeded)
 			return result;
 
@@ -49,6 +50,7 @@ public sealed class ApiKeyAuthenticationHandler(
 
 		// Check account state and expiration on each request. A cached Boolean
 		// otherwise keeps disabled or expired keys authenticated.
+
 		if (await getApiKey.HandleAsync(new() { ApiKey = key }, Context.RequestAborted) is not
 			{
 				IsValid: true,
@@ -72,5 +74,6 @@ public sealed class ApiKeyAuthenticationHandler(
 				AuthenticationScheme
 			)
 		);
+
 	}
 }

@@ -26,6 +26,7 @@ public partial class DbContext : DataConnection, IVersionedDbContext
 		DateTimeOffset endTimestamp
 	)
 	{
+
 		this.Insert(
 			new Models.VersionHistory
 			{
@@ -34,5 +35,6 @@ public partial class DbContext : DataConnection, IVersionedDbContext
 				ExecutionEnd = endTimestamp,
 			}
 		);
+
 	}
 }

@@ -11,7 +11,8 @@ namespace VsaTemplate.Web.Features.Tenants.Queries;
 public sealed partial class GetTenantsForCurrentUser(
 	CurrentUserService currentUserService,
 	DbContext context,
-	CurrentTenantUserService currentTenantUserService
+	CurrentTenantUserService currentTenantUserService,
+	TenantAdministrationCache administration
 )
 {
 	public sealed record Query;
@@ -31,8 +32,10 @@ public sealed partial class GetTenantsForCurrentUser(
 
 	private async ValueTask<Response> HandleAsync(Query _, CancellationToken token)
 	{
+
 		if (await currentUserService.GetCurrentUserId() is null)
 			return new() { Tenants = [] };
+
 		var userId = await currentUserService.GetMembershipUserId();
 
 		var roles = await context.TenantRoleUsers
@@ -46,11 +49,21 @@ public sealed partial class GetTenantsForCurrentUser(
 			.ToListAsync(token);
 
 		var tenants = new List<Tenant>();
-		foreach (var group in roles.GroupBy(r => (r.TenantId, r.Name, r.IsActive)))
+
+		foreach (var group in roles
+			.GroupBy(r => (r.TenantId, r.Name, r.IsActive)))
 		{
-			var permissions = await currentTenantUserService.GetLoggedInUserPermissions(group.Key.TenantId);
+
+			var permissions = group.Key.IsActive
+				? await currentTenantUserService.GetLoggedInUserPermissions(group.Key.TenantId)
+				: (await administration.GetValue(
+					new() { UserId = await currentUserService.GetLoggedInUserId(), TenantId = group.Key.TenantId },
+					token
+				)).Permissions;
+
 			if (permissions.Count == 0)
 				continue;
+
 			tenants.Add(new()
 			{
 				TenantId = group.Key.TenantId,
@@ -58,11 +71,15 @@ public sealed partial class GetTenantsForCurrentUser(
 				IsActive = group.Key.IsActive,
 				Permissions = permissions,
 			});
+
 		}
 
 		return new()
 		{
-			Tenants = tenants.OrderBy(t => t.Name, StringComparer.OrdinalIgnoreCase).ToList(),
+			Tenants = tenants
+				.OrderBy(t => t.Name, StringComparer.OrdinalIgnoreCase)
+				.ToList(),
 		};
+
 	}
 }

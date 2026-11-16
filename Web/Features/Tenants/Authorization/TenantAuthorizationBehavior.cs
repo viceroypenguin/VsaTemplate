@@ -1,9 +1,8 @@
 using Immediate.Handlers.Shared;
-using LinqToDB.Async;
-using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.AccessControl.Models;
 using VsaTemplate.Web.Features.AccessControl.Services;
 using VsaTemplate.Web.Features.Shared.Exceptions;
+using VsaTemplate.Web.Features.Tenants.Extensions;
 using VsaTemplate.Web.Features.Tenants.Models;
 using VsaTemplate.Web.Features.Tenants.Services;
 
@@ -12,7 +11,6 @@ namespace VsaTemplate.Web.Features.Tenants.Authorization;
 public sealed partial class TenantAuthorizationBehavior<TRequest, TResponse>(
 	CurrentUserService currentUserService,
 	CurrentTenantUserService currentTenantUserService,
-	DbContext context,
 	ILogger<TenantAuthorizationBehavior<TRequest, TResponse>> logger
 ) : Behavior<TRequest, TResponse>
 	where TRequest : ITenantRequest
@@ -25,10 +23,6 @@ public sealed partial class TenantAuthorizationBehavior<TRequest, TResponse>(
 		if (
 			await currentTenantUserService.GetCurrentUserPermissions(tenantId) is { } permissions
 			&& permissions.HasPermission(permission)
-			&& await context.Tenants.AnyAsync(
-				t => t.TenantId == tenantId && (t.IsActive || permission == TenantPermission.Admin),
-				cancellationToken
-			)
 		)
 		{
 			return await Next(request, cancellationToken);

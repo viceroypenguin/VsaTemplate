@@ -15,12 +15,14 @@ public static partial class DatabaseStartupExtensions
 		db.InitializeDatabase();
 
 		var rootUser = sp.GetRequiredService<IConfiguration>()["OVERRIDEROOTUSER"];
+
 		if (!string.IsNullOrWhiteSpace(rootUser))
 		{
 			var logger = sp.GetRequiredService<ILoggerFactory>().CreateLogger("OverrideRootUser");
 			ReportRootUserSetup(logger, rootUser);
 
 			var getUserId = sp.GetRequiredService<GetUserId.Handler>();
+
 			var rootUserId = await getUserId.HandleAsync(
 				new()
 				{
@@ -39,6 +41,7 @@ public static partial class DatabaseStartupExtensions
 					EditedUserId = UserId.From(-1),
 				})
 				.MergeAsync();
+
 		}
 
 		return app;

@@ -1,9 +1,9 @@
 using Immediate.Handlers.Shared;
 using Immediate.Validations.Shared;
 using VsaTemplate.Web.Features.AccessControl.Authorization;
-using VsaTemplate.Web.Infrastructure.Logging;
-using VsaTemplate.Web.Features.Tenants.Authorization;
 using VsaTemplate.Web.Features.Organizations.Authorization;
+using VsaTemplate.Web.Features.Tenants.Authorization;
+using VsaTemplate.Web.Infrastructure.Logging;
 
 [assembly: Behaviors(
 	typeof(LoggingBehavior<,>),

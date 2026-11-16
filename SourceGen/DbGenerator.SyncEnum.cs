@@ -35,12 +35,15 @@ public sealed partial class DbGenerator
 		token.ThrowIfCancellationRequested();
 
 		var list = new List<(string name, int? value)>(@enum.Members.Count);
+
 		foreach (var member in @enum.Members)
 		{
+
 			if (member.EqualsValue is not { Value: { } ev })
 				continue;
 
 			var value = int.Parse(ev.ToString(), CultureInfo.InvariantCulture);
+
 			if (value == 0)
 				continue;
 
@@ -71,6 +74,7 @@ public sealed partial class DbGenerator
 			TypeName = symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
 			Values = new(list),
 		};
+
 	}
 
 	private static void RenderEnum(
@@ -81,6 +85,7 @@ public sealed partial class DbGenerator
 		Template perEnumTemplate
 	)
 	{
+
 		var type = map.TryGetValue(node.Table + "Id", out var value)
 			? value.UnderlyingType
 			: "int";
@@ -106,6 +111,7 @@ public sealed partial class DbGenerator
 		Template allEnumsTemplate
 	)
 	{
+
 		var output = allEnumsTemplate
 			.Render(new
 			{

@@ -38,20 +38,34 @@ public sealed partial class RemoveUserFromOrganization(
 	private async ValueTask HandleAsync([AsParameters] Request request, CancellationToken token)
 	{
 		await using var transaction = await context.BeginTransactionAsync(IsolationLevel.Serializable, token);
+
 		var roles = await context.OrganizationRoleUsers
 			.Where(u => u.UserId == request.UserId && u.OrganizationRole.OrganizationId == request.OrganizationId)
 			.Select(u => u.OrganizationRole)
 			.ToListAsync(token);
+
 		if (roles.Count == 0)
 			NotFoundException.ThrowNotFoundException("Organization member");
+
 		await OrganizationManagement.DemandDelegablePermissions(currentOrganizationUserService, request.OrganizationId,
-			roles.SelectMany(r => OrganizationManagement.ReadPermissions(r.PermissionsJson)).Distinct().ToArray());
+			roles
+				.SelectMany(r => OrganizationManagement.ReadPermissions(r.PermissionsJson))
+				.Distinct()
+				.ToArray());
+
 		await OrganizationManagement.EnsureAdministratorRemains(context, request.OrganizationId, request.UserId, changingRoleId: null, token);
 		var userId = await currentUserService.GetLoggedInUserId();
+
 		var memberships = context.OrganizationRoleUsers
 			.Where(u => u.UserId == request.UserId && u.OrganizationRole.OrganizationId == request.OrganizationId);
-		await memberships.Set(u => u.EditedUserId, userId).UpdateAsync(token);
-		await memberships.DeleteAsync(token);
+
+		await memberships
+			.Set(u => u.EditedUserId, userId)
+			.UpdateAsync(token);
+
+		await memberships
+			.DeleteAsync(token);
+
 		await transaction.CommitAsync(token);
 		await permissionCacheInvalidator.InvalidateOrganization(request.OrganizationId, CancellationToken.None);
 		await permissionCacheInvalidator.InvalidateUser(request.UserId, CancellationToken.None);

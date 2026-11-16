@@ -9,6 +9,7 @@ public static class Utility
 {
 	public static Template GetScribanTemplate(string templateName)
 	{
+
 		using var stream = Assembly
 			.GetExecutingAssembly()
 			.GetManifestResourceStream(

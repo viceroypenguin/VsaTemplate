@@ -40,10 +40,14 @@ public sealed partial class AddUserToOrganization(
 	{
 		await using var transaction = await context.BeginTransactionAsync(IsolationLevel.Serializable, token);
 		var role = await OrganizationManagement.GetRole(context, request.OrganizationId, request.RoleId, token);
+
 		await OrganizationManagement.DemandDelegablePermissions(currentOrganizationUserService, request.OrganizationId,
 			OrganizationManagement.ReadPermissions(role.PermissionsJson));
-		await OrganizationManagement.EnsureTenantMember(context, request.OrganizationId, request.UserId, token);
-		await context.OrganizationRoleUsers.Merge().Using([
+
+		await OrganizationManagement.EnsureActiveUser(context, request.UserId, token);
+
+		await context.OrganizationRoleUsers
+			.Merge().Using([
 			new Database.Models.OrganizationRoleUser
 			{
 				OrganizationRoleId = request.RoleId,
@@ -54,6 +58,7 @@ public sealed partial class AddUserToOrganization(
 			.OnTargetKey()
 			.InsertWhenNotMatched()
 			.MergeAsync(token);
+
 		await transaction.CommitAsync(token);
 		await permissionCacheInvalidator.InvalidateOrganization(request.OrganizationId, CancellationToken.None);
 	}

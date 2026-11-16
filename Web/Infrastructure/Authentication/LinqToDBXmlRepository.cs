@@ -26,7 +26,9 @@ public sealed class LinqToDBXmlRepository(
 				.Where(xml => xml != null)
 				.Select(xml => XElement.Parse(xml!))
 				.ToListAsync();
+
 		}
+
 	}
 
 	public void StoreElement(XElement element, string friendlyName)
@@ -44,6 +46,8 @@ public sealed class LinqToDBXmlRepository(
 					Xml = element.ToString(SaveOptions.DisableFormatting),
 				}
 			);
+
 		}
+
 	}
 }

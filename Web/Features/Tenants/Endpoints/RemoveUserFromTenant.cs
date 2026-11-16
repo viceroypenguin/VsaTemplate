@@ -8,7 +8,6 @@ using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.AccessControl.Authorization;
 using VsaTemplate.Web.Features.AccessControl.Models;
 using VsaTemplate.Web.Features.AccessControl.Services;
-using VsaTemplate.Web.Features.Organizations.Endpoints;
 using VsaTemplate.Web.Features.Tenants.Authorization;
 using VsaTemplate.Web.Features.Tenants.Models;
 using VsaTemplate.Web.Features.Tenants.Services;
@@ -36,31 +35,35 @@ public sealed partial class RemoveUserFromTenant(
 		var actorId = await currentUserService.GetLoggedInUserId();
 		var actorPermissions = await currentTenantUserService.GetLoggedInUserPermissions(request.TenantId);
 		await using var transaction = await context.BeginTransactionAsync(IsolationLevel.Serializable, token);
+
 		var permissionsJson = await context.TenantRoleUsers
 			.Where(u => u.UserId == request.UserId && u.TenantRole.TenantId == request.TenantId)
-			.Select(u => u.TenantRole.PermissionsJson).ToListAsync(token);
+			.Select(u => u.TenantRole.PermissionsJson)
+			.ToListAsync(token);
+
 		if (permissionsJson.Count == 0)
 			return;
-		var permissions = permissionsJson.SelectMany(TenantManagement.ReadPermissions).Distinct().ToList();
+
+		var permissions = permissionsJson
+			.SelectMany(TenantManagement.ReadPermissions)
+			.Distinct()
+			.ToList();
+
 		TenantManagement.EnsureCanGrant(actorPermissions, permissions);
+
 		if (permissions.Contains(TenantPermission.Admin))
 			await TenantManagement.EnsureAdministratorRemains(context, request.TenantId, excludedRoleId: null, request.UserId, token);
 
-		var organizationIds = await context.OrganizationRoleUsers
-			.Where(u => u.UserId == request.UserId && u.OrganizationRole.Organization.TenantId == request.TenantId)
-			.Select(u => u.OrganizationRole.OrganizationId).Distinct().ToListAsync(token);
-		foreach (var organizationId in organizationIds)
-			await OrganizationManagement.EnsureAdministratorRemains(context, organizationId, request.UserId, changingRoleId: null, token);
-
-		var organizationMemberships = context.OrganizationRoleUsers
-			.Where(u => u.UserId == request.UserId && u.OrganizationRole.Organization.TenantId == request.TenantId);
-		await organizationMemberships.Set(u => u.EditedUserId, actorId).UpdateAsync(token);
-		await organizationMemberships.DeleteAsync(token);
-
 		var memberships = context.TenantRoleUsers
 			.Where(u => u.UserId == request.UserId && u.TenantRole.TenantId == request.TenantId);
-		await memberships.Set(u => u.EditedUserId, actorId).UpdateAsync(token);
-		await memberships.DeleteAsync(token);
+
+		await memberships
+			.Set(u => u.EditedUserId, actorId)
+			.UpdateAsync(token);
+
+		await memberships
+			.DeleteAsync(token);
+
 		await transaction.CommitAsync(token);
 		await cacheInvalidator.InvalidateUser(request.UserId, CancellationToken.None);
 		await cacheInvalidator.InvalidateTenant(request.TenantId, CancellationToken.None);

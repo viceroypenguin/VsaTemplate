@@ -47,11 +47,14 @@ public sealed partial class SaveTenantRole(
 		var userId = await currentUserService.GetLoggedInUserId();
 
 		await using var transaction = await context.BeginTransactionAsync(IsolationLevel.Serializable, token);
+
 		var role = await context.TenantRoles
 			.FirstOrDefaultAsync(r => r.TenantId == request.TenantId && r.TenantRoleId == request.RoleId, token)
 			?? throw new NotFoundException(nameof(Database.Models.TenantRole));
+
 		var oldPermissions = TenantManagement.ReadPermissions(role.PermissionsJson);
 		TenantManagement.EnsureCanGrant(actorPermissions, oldPermissions);
+
 		if (oldPermissions.Contains(TenantPermission.Admin) && !permissions.Contains(TenantPermission.Admin))
 			await TenantManagement.EnsureAdministratorRemains(context, request.TenantId, request.RoleId, excludedUserId: null, token);
 
@@ -61,6 +64,7 @@ public sealed partial class SaveTenantRole(
 			.Set(r => r.PermissionsJson, JsonSerializer.Serialize(permissions))
 			.Set(r => r.EditedUserId, userId)
 			.UpdateAsync(token);
+
 		await transaction.CommitAsync(token);
 		await cacheInvalidator.InvalidateTenant(request.TenantId, CancellationToken.None);
 	}
