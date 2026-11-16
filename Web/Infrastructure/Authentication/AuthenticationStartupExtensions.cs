@@ -53,6 +53,26 @@ public static class AuthenticationStartupExtensions
 						OnTicketReceived = ProcessTicket,
 					};
 				});
+
+			services.Configure<CookieAuthenticationOptions>(CookieAuthenticationDefaults.AuthenticationScheme, o =>
+			{
+				o.Events.OnRedirectToLogin = ctx =>
+				{
+					if (ctx.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
+						ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
+					else
+						ctx.Response.Redirect(ctx.RedirectUri);
+					return Task.CompletedTask;
+				};
+				o.Events.OnRedirectToAccessDenied = ctx =>
+				{
+					if (ctx.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
+						ctx.Response.StatusCode = StatusCodes.Status403Forbidden;
+					else
+						ctx.Response.Redirect(ctx.RedirectUri);
+					return Task.CompletedTask;
+				};
+			});
 		}
 	}
 

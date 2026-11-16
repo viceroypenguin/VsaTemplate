@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Immediate.Handlers.Shared;
+using VsaTemplate.Web.Features.AccessControl.Services;
 
 namespace VsaTemplate.Web.Infrastructure.Logging;
 
@@ -15,7 +16,7 @@ public sealed partial class LoggingBehavior<TRequest, TResponse>(
 	{
 		var properties = new Dictionary<string, object?>(StringComparer.Ordinal)
 		{
-			["@RequestData"] = request,
+			["@RequestData"] = request is GetApiKey.Request ? "[API key redacted]" : request,
 		};
 
 		var httpContext = _httpContextAccessor.HttpContext;

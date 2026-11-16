@@ -4,17 +4,18 @@ using Immediate.Validations.Shared;
 using MailKit;
 using MailKit.Net.Smtp;
 using Resend;
+using Microsoft.Extensions.Options;
 
 namespace VsaTemplate.Web.Infrastructure.Emails;
 
 [RegisterScoped]
 public sealed class EmailService(
 	ResendClient resendClient,
-	EmailServiceOptions options,
+	IOptions<EmailServiceOptions> options,
 	IHostEnvironment environment
 )
 {
-	private readonly EmailServiceOptions _options = options;
+	private readonly EmailServiceOptions _options = options.Value;
 
 	public async Task SendAdminEmail(EmailMessage message, CancellationToken cancellationToken = default)
 	{

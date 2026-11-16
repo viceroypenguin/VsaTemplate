@@ -8,36 +8,36 @@ using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.AccessControl.Authorization;
 using VsaTemplate.Web.Features.AccessControl.Services;
 using VsaTemplate.Web.Features.Organizations.Models;
-using VsaTemplate.Web.Features.Organizations.Services;
 using VsaTemplate.Web.Features.Tenants.Authorization;
 using VsaTemplate.Web.Features.Tenants.Models;
 
-namespace VsaTemplate.Web.Features.VsaTemplate.Endpoints;
+namespace VsaTemplate.Web.Features.Organizations.Endpoints;
 
 [Handler]
-[MapPut("api/tenants/{tenantId}/organizations")]
+[MapPut("/api/tenants/{tenantId}/organizations")]
 public sealed partial class CreateOrganization(
 	CurrentUserService currentUserService,
 	DbContext context,
-	GetOrganizationsByUserCache getOrganizationsByUserCache
+	PermissionCacheInvalidator permissionCacheInvalidator
 )
 {
 	[Validate]
 	public sealed partial record Request : IAuthorizedRequest, ITenantRequest, IValidationTarget<Request>
 	{
-		public TenantPermission TenantPermission => TenantPermission.OrganizationManagement;
+		public static TenantPermission TenantPermission => TenantPermission.OrganizationManagement;
 
 		[FromRoute]
 		public required TenantId TenantId { get; init; }
 
 		[FromBody]
-		public required RequestBody RequestBody { get; init; }
+		public required RequestBody Body { get; init; }
 	}
 
 	[Validate]
 	public sealed partial record RequestBody : IValidationTarget<RequestBody>
 	{
 		[NotEmpty]
+		[MaxLength(200)]
 		public required string Name { get; init; }
 	}
 
@@ -46,53 +46,34 @@ public sealed partial class CreateOrganization(
 		public required OrganizationId OrganizationId { get; init; }
 	}
 
-	private async ValueTask<Response> HandleAsync(
-		Request request,
-		CancellationToken token
-	)
+	private async ValueTask<Response> HandleAsync([AsParameters] Request request, CancellationToken token)
 	{
-		var userId = await currentUserService.GetCurrentUserId();
-
-		var organizationId = (OrganizationId)await context
-			.InsertWithInt32IdentityAsync(
-				new Database.Models.VsaTemplate.Organization
-				{
-					AccountId = request.AccountId,
-					Name = request.Name,
-					IsActive = true,
-					EditedUserId = userId,
-				},
-				token: token
-			);
-
-		var organizationRoleId = (OrganizationRoleId)await context
-			.InsertWithInt32IdentityAsync(
-				new Database.Models.VsaTemplate.OrganizationRole
-				{
-					OrganizationId = organizationId,
-					Name = "Admin",
-					PermissionsJson = JsonSerializer.Serialize(new[] { OrganizationPermission.Admin }),
-					EditedUserId = userId,
-				},
-				token: token
-			);
-
-		await context
-			.InsertAsync(
-				new Database.Models.VsaTemplate.OrganizationRoleUser
-				{
-					OrganizationRoleId = organizationRoleId,
-					UserId = userId,
-					EditedUserId = userId,
-				},
-				token: token
-			);
-
-		await getOrganizationsByUserCache.InvalidateForSelf();
-
-		return new()
+		var userId = await currentUserService.GetLoggedInUserId();
+		var memberUserId = await currentUserService.GetMembershipUserId();
+		await using var transaction = await context.BeginTransactionAsync(token);
+		var organizationId = (OrganizationId)await context.InsertWithInt32IdentityAsync(
+			new Database.Models.Organization
+			{
+				TenantId = request.TenantId,
+				Name = OrganizationManagement.ValidateName(request.Body.Name),
+				IsActive = true,
+			}, token: token);
+		var roleId = (OrganizationRoleId)await context.InsertWithInt32IdentityAsync(
+			new Database.Models.OrganizationRole
+			{
+				OrganizationId = organizationId,
+				Name = "Admin",
+				PermissionsJson = JsonSerializer.Serialize(new[] { OrganizationPermission.Admin }),
+				EditedUserId = userId,
+			}, token: token);
+		await context.InsertAsync(new Database.Models.OrganizationRoleUser
 		{
-			OrganizationId = organizationId,
-		};
+			OrganizationRoleId = roleId,
+			UserId = memberUserId,
+			EditedUserId = userId,
+		}, token: token);
+		await transaction.CommitAsync(token);
+		await permissionCacheInvalidator.InvalidateOrganization(organizationId, CancellationToken.None);
+		return new() { OrganizationId = organizationId };
 	}
 }

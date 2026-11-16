@@ -5,6 +5,9 @@
 # Build results
 bin/
 obj/
+node_modules/
+Web/ClientApp/dist/
+Web/wwwroot/
 
 # Visual Studio cache/options directory
 .vs/
@@ -22,3 +25,4 @@ obj/
 # Secure files
 secrets.json
 Secrets.Targets
+Secrets.targets

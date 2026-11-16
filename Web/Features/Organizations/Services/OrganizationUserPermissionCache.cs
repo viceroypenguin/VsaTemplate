@@ -40,7 +40,13 @@ public sealed partial class OrganizationGetUserPermissions(
 	)
 	{
 		var apiKey = await context.AccessControl.ApiKeys
-			.FirstOrDefaultAsync(u => u.ApiKeyId == query.UserId, token);
+			.Where(u => u.ApiKeyId == query.UserId)
+			.Select(u => new
+			{
+				u.OwnerUserId,
+				PermissionsJson = u.OrganizationApiKey == null ? null : u.OrganizationApiKey.PermissionsJson,
+			})
+			.FirstOrDefaultAsync(token);
 
 		if (apiKey is null)
 		{
@@ -55,7 +61,6 @@ public sealed partial class OrganizationGetUserPermissions(
 						.ToListAsync(token)
 				)
 					.SelectMany(SuperEnumerable.Identity)
-					.DefaultIfEmpty(OrganizationPermission.None)
 					.Distinct()
 					.ToList(),
 			};
@@ -68,9 +73,12 @@ public sealed partial class OrganizationGetUserPermissions(
 
 		return new()
 		{
-			Permissions = JsonSerializer.Deserialize<List<OrganizationPermission>>(apiKey.PermissionsJson, default(JsonSerializerOptions))!
-				.Intersect(parentPermissions.Permissions)
-				.ToList(),
+			Permissions = apiKey.PermissionsJson is null || parentPermissions.Permissions.Count == 0
+				? []
+				: JsonSerializer.Deserialize<List<OrganizationPermission>>(apiKey.PermissionsJson, default(JsonSerializerOptions))!
+					.Where(p => p == OrganizationPermission.None || parentPermissions.Permissions.Contains(OrganizationPermission.Admin) || parentPermissions.Permissions.Contains(p))
+					.Distinct()
+					.ToList(),
 		};
 	}
 }

@@ -1,7 +1,5 @@
 using Immediate.Apis.Shared;
 using Immediate.Handlers.Shared;
-using LinqToDB;
-using LinqToDB.Async;
 using VsaTemplate.Web.Features.AccessControl.Authorization;
 using VsaTemplate.Web.Features.Shared.Extensions;
 using VsaTemplate.Web.Features.Tenants.Models;
@@ -26,6 +24,7 @@ public sealed partial class GetTenants(
 	{
 		public required TenantId TenantId { get; init; }
 		public required string Name { get; init; }
+		public required bool IsActive { get; init; }
 		public required IReadOnlyList<TenantPermission> Permissions { get; init; }
 	}
 
@@ -40,6 +39,7 @@ public sealed partial class GetTenants(
 				{
 					TenantId = t.TenantId,
 					Name = t.Name,
+					IsActive = t.IsActive,
 					Permissions = t.Permissions,
 				})
 				.ToList()

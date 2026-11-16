@@ -4,6 +4,7 @@ using Auth0.AspNetCore.Authentication;
 using Immediate.Injections.Shared;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OpenApi;
@@ -14,7 +15,9 @@ using Scalar.AspNetCore;
 using Serilog;
 using VsaTemplate.Web;
 using VsaTemplate.Web.Database;
-using VsaTemplate.Web.Features.Shared.Layout;
+using VsaTemplate.Web.Features.AccessControl.Services;
+using VsaTemplate.Web.Features.AccessControl.Models;
+using LinqToDB.Async;
 using VsaTemplate.Web.Infrastructure.Authentication;
 using VsaTemplate.Web.Infrastructure.Emails;
 using VsaTemplate.Web.Infrastructure.Exceptions;
@@ -52,9 +55,31 @@ try
 
 	app.UseExceptionHandler();
 	app.UseRouting();
+	app.UseAuthentication();
 	app.UseAuthorization();
 
 	app.UseAntiforgery();
+	app.Use(async (context, next) =>
+	{
+		if (context.User.Identity?.IsAuthenticated == true
+			&& !context.User.Identities.Any(i => i.AuthenticationType == ApiKeyAuthenticationHandler.AuthenticationScheme)
+			&& !HttpMethods.IsGet(context.Request.Method)
+			&& !HttpMethods.IsHead(context.Request.Method)
+			&& !HttpMethods.IsOptions(context.Request.Method))
+		{
+			try
+			{
+				await context.RequestServices.GetRequiredService<IAntiforgery>().ValidateRequestAsync(context);
+			}
+			catch (AntiforgeryValidationException)
+			{
+				await Results.Problem(statusCode: StatusCodes.Status400BadRequest, detail: "The request verification token is missing or invalid. Refresh the page and try again.").ExecuteAsync(context);
+				return;
+			}
+		}
+
+		await next(context);
+	});
 	app.UseLogging();
 
 	app.MapOpenApi().CacheOutput();
@@ -66,8 +91,9 @@ try
 		.MapWebEndpoints()
 		.RequireAuthorization();
 
-	app.MapRazorComponents<App>()
-		.AddInteractiveServerRenderMode();
+	// API typos must retain an HTTP 404 instead of returning the SPA shell.
+	app.Map("/api/{**path}", () => Results.NotFound());
+	app.MapFallbackToFile("index.html");
 
 	await app.RunAsync();
 }
@@ -111,7 +137,7 @@ internal static class StartupExtensions
 	{
 		services
 			.AddOptions<ResendClientOptions>()
-			.Configure<EmailServiceOptions>((o, eso) => o.ApiToken = eso.ResendApiToken ?? string.Empty);
+			.Configure<IOptions<EmailServiceOptions>>((o, eso) => o.ApiToken = eso.Value.ResendApiToken ?? string.Empty);
 
 		services.AddHttpClient<ResendClient>();
 		services.AddTransient<ResendClient>();
@@ -132,9 +158,10 @@ internal static class StartupExtensions
 	{
 		services.AddMemoryCache();
 		services.AddHttpContextAccessor();
-		services.AddCascadingAuthenticationState();
+		services.AddAuthorization();
 		services.AddEndpointsApiExplorer();
-		services.AddAntiforgery();
+		services.AddAntiforgery(o => o.HeaderName = "X-CSRF-TOKEN");
+		services.AddSingleton(TimeProvider.System);
 		services.AddProblemDetails(ExceptionStartupExtensions.ConfigureProblemDetails);
 	}
 
@@ -148,14 +175,6 @@ internal static class StartupExtensions
 				options => options.XmlRepository = sp.GetRequiredService<LinqToDBXmlRepository>()
 			)
 		);
-	}
-
-	[RegisterServices]
-	public static void AddBlazorServices(this IServiceCollection services)
-	{
-		services
-			.AddRazorComponents()
-			.AddInteractiveServerComponents();
 	}
 
 	[RegisterServices]
@@ -218,21 +237,38 @@ internal static class StartupExtensions
 
 	public static IEndpointRouteBuilder MapAccountServices(this IEndpointRouteBuilder app)
 	{
+		app.MapGet("/api/session", async (HttpContext context, CurrentUserService currentUser, DbContext db, IAntiforgery antiforgery) =>
+		{
+			context.Response.Headers.CacheControl = "no-store";
+			var userId = await currentUser.GetCurrentUserId();
+			var user = userId is { } id
+				? await db.AccessControl.Users.Where(u => u.UserId == id)
+					.Select(u => new SessionUser { UserId = u.UserId, Name = u.ApiKey == null ? u.Name : "API key", EmailAddress = u.ApiKey == null ? u.EmailAddress : "" })
+					.FirstOrDefaultAsync(context.RequestAborted)
+				: null;
+			return Results.Ok(new
+			{
+				IsAuthenticated = user is not null,
+				User = user,
+				RequestToken = user is null ? null : antiforgery.GetAndStoreTokens(context).RequestToken,
+			});
+		}).AllowAnonymous();
+
 		app
 			.MapGet("/Login", async (HttpContext context, string returnUrl = "/") =>
 			{
 				var authenticationProperties = new LoginAuthenticationPropertiesBuilder()
-					.WithRedirectUri(returnUrl)
+					.WithRedirectUri(LocalReturnUrl(returnUrl))
 					.Build();
 
 				await context.ChallengeAsync(Auth0Constants.AuthenticationScheme, authenticationProperties);
 			});
 
 		app
-			.MapGet("/Logout", async (HttpContext context, string returnUrl = "/") =>
+			.MapPost("/Logout", async context =>
 			{
 				var authenticationProperties = new LogoutAuthenticationPropertiesBuilder()
-					.WithRedirectUri(returnUrl)
+					.WithRedirectUri("/")
 					.Build();
 
 				await context.SignOutAsync(Auth0Constants.AuthenticationScheme, authenticationProperties);
@@ -242,4 +278,15 @@ internal static class StartupExtensions
 
 		return app;
 	}
+
+	private static string LocalReturnUrl(string returnUrl) =>
+		returnUrl.StartsWith('/', StringComparison.Ordinal) && !returnUrl.StartsWith("//", StringComparison.Ordinal)
+			&& !returnUrl.Contains('\\', StringComparison.Ordinal) ? returnUrl : "/";
+}
+
+internal sealed record SessionUser
+{
+	public required UserId UserId { get; init; }
+	public required string? Name { get; init; }
+	public required string EmailAddress { get; init; }
 }

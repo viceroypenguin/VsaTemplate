@@ -1,6 +1,5 @@
 using Immediate.Cache.Shared;
 using Immediate.Handlers.Shared;
-using LinqToDB;
 using LinqToDB.Async;
 using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.AccessControl.Models;
@@ -15,7 +14,7 @@ public sealed partial class ValidApiKeyCache
 }
 
 [Handler]
-public sealed partial class GetApiKey(DbContext context)
+public sealed partial class GetApiKey(DbContext context, TimeProvider timeProvider)
 {
 	public sealed record Request
 	{
@@ -33,9 +32,12 @@ public sealed partial class GetApiKey(DbContext context)
 		CancellationToken token
 	)
 	{
+		var now = timeProvider.GetUtcNow();
 		var userId = await context.AccessControl.Users
 			.Where(u => u.EmailAddress == request.ApiKey)
-			.Where(u => u.ApiKey != null)
+			.Where(u => u.IsActive && u.ApiKey != null)
+			.Where(u => u.ApiKey!.ExpirationDateTime > now
+				&& u.ApiKey.OwnerUser.IsActive && u.ApiKey.OwnerUser.ApiKey == null)
 			.Select(u => (UserId?)u.UserId)
 			.FirstOrDefaultAsync(token);
 

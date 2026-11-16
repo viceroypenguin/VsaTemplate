@@ -4,7 +4,7 @@ namespace VsaTemplate.Web.Features.Organizations.Authorization;
 
 public interface IOrganizationRequest
 {
-	static virtual OrganizationPermission OrganizationPermission { get; }
+	static abstract OrganizationPermission OrganizationPermission { get; }
 
 	OrganizationId OrganizationId { get; }
 }

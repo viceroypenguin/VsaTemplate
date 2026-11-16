@@ -4,7 +4,7 @@ namespace VsaTemplate.Web.Features.Tenants.Authorization;
 
 public interface ITenantRequest
 {
-	static virtual TenantPermission TenantPermission { get; }
+	static abstract TenantPermission TenantPermission { get; }
 
 	TenantId TenantId { get; }
 }

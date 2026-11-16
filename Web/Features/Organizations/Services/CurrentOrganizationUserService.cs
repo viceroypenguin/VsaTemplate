@@ -48,7 +48,7 @@ public static class PermissionExtensions
 		await permissions.Transform((IReadOnlyList<OrganizationPermission> p) => IsAdmin(p));
 
 	public static bool HasPermission(this IReadOnlyList<OrganizationPermission> permissions, OrganizationPermission permission) =>
-		permissions is not [OrganizationPermission.None] && (permission is OrganizationPermission.None || permissions.IsAdmin() || permissions.Contains(permission));
+		permissions.Count > 0 && (permission is OrganizationPermission.None || permissions.IsAdmin() || permissions.Contains(permission));
 
 	public static async ValueTask<bool> HasPermission(
 		this ValueTask<IReadOnlyList<OrganizationPermission>> permissions,

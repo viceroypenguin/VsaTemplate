@@ -1,33 +1,28 @@
-# init deployment image
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS init
-WORKDIR /app
-USER app
+# Build the React application using the committed npm lockfile.
+FROM node:22-bookworm-slim AS frontend
+WORKDIR /src/Web/ClientApp
+COPY Web/ClientApp/package.json Web/ClientApp/package-lock.json ./
+RUN npm ci
+COPY Web/ClientApp/ ./
+RUN npm run build
 
-# expose http
-EXPOSE 8080
-
-# build image
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:11.0 AS build
 WORKDIR /src
-
-# copy files
 COPY . .
+COPY --from=frontend /src/Web/ClientApp/dist ./Web/ClientApp/dist
 
-# restore packages
-RUN dotnet restore -r linux-x64
+# npm dependencies and output are supplied by the frontend stage.
+RUN dotnet restore ./Web/Web.csproj -r linux-x64
 
-# build project
 RUN --mount=type=secret,id=ScaffoldConnectionString \
 	ScaffoldConnectionString=$(cat /run/secrets/ScaffoldConnectionString) \
-	dotnet build "./Web/Web.csproj" \
-		-c Release -r linux-x64 --no-self-contained --no-restore
+	dotnet publish ./Web/Web.csproj \
+		-c Release -r linux-x64 --no-self-contained --no-restore \
+		-p:BuildFrontend=false -o /app/publish
 
-# publish project
-RUN dotnet publish "./Web/Web.csproj" -c Release -r linux-x64 --no-self-contained -o /app/publish --no-build
-
-# copy project to deployment image
-FROM init AS publish
+FROM mcr.microsoft.com/dotnet/aspnet:11.0 AS publish
+WORKDIR /app
+USER app
+EXPOSE 8080
 COPY --from=build /app/publish .
-
-# set entrypoint
 ENTRYPOINT ["dotnet", "Web.dll"]

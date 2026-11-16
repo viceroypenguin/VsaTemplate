@@ -1,4 +1,5 @@
 using System.Globalization;
+using Microsoft.Extensions.Options;
 using Serilog;
 using Serilog.Events;
 using Serilog.Exceptions;
@@ -34,7 +35,7 @@ public static class LoggingStartupExtensions
 				)
 				.WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
 				.ApplyIfNotNull(
-					sp.GetRequiredService<LoggingOptions>().SeqUrl,
+					sp.GetRequiredService<IOptions<LoggingOptions>>().Value.SeqUrl,
 					(url, x) => x.WriteTo.Seq(serverUrl: url.ToString(), formatProvider: CultureInfo.InvariantCulture)
 				)
 			);

@@ -1,6 +1,5 @@
 using Immediate.Injections.Shared;
 using Immediate.Validations.Shared;
-using VsaTemplate.Web.Database;
 
 namespace VsaTemplate.Web.Infrastructure.Emails;
 
@@ -13,7 +12,7 @@ public enum EmailServerType
 	Disabled = -1,
 }
 
-[RegisterOptions(nameof(DbContextOptions), ValidateOnStart = true)]
+[RegisterOptions(nameof(EmailServiceOptions), ValidateOnStart = true)]
 [Validate]
 public sealed partial class EmailServiceOptions : IValidationTarget<EmailServiceOptions>
 {

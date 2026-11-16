@@ -40,7 +40,13 @@ public sealed partial class TenantGetUserPermissions(
 	)
 	{
 		var apiKey = await context.AccessControl.ApiKeys
-			.FirstOrDefaultAsync(u => u.ApiKeyId == query.UserId, token);
+			.Where(u => u.ApiKeyId == query.UserId)
+			.Select(u => new
+			{
+				u.OwnerUserId,
+				PermissionsJson = u.TenantApiKey == null ? null : u.TenantApiKey.PermissionsJson,
+			})
+			.FirstOrDefaultAsync(token);
 
 		if (apiKey is null)
 		{
@@ -55,7 +61,6 @@ public sealed partial class TenantGetUserPermissions(
 						.ToListAsync(token)
 				)
 					.SelectMany(SuperEnumerable.Identity)
-					.DefaultIfEmpty(TenantPermission.None)
 					.Distinct()
 					.ToList(),
 			};
@@ -68,9 +73,12 @@ public sealed partial class TenantGetUserPermissions(
 
 		return new()
 		{
-			Permissions = JsonSerializer.Deserialize<List<TenantPermission>>(apiKey.PermissionsJson, default(JsonSerializerOptions))!
-				.Intersect(parentPermissions.Permissions)
-				.ToList(),
+			Permissions = apiKey.PermissionsJson is null || parentPermissions.Permissions.Count == 0
+				? []
+				: JsonSerializer.Deserialize<List<TenantPermission>>(apiKey.PermissionsJson, default(JsonSerializerOptions))!
+					.Where(p => p == TenantPermission.None || parentPermissions.Permissions.Contains(TenantPermission.Admin) || parentPermissions.Permissions.Contains(p))
+					.Distinct()
+					.ToList(),
 		};
 	}
 }

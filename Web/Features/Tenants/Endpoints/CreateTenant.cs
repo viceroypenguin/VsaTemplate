@@ -15,7 +15,8 @@ namespace VsaTemplate.Web.Features.Tenants.Endpoints;
 [MapPost("/api/tenants/create")]
 public sealed partial class CreateTenant(
 	CurrentUserService currentUserService,
-	DbContext context
+	DbContext context,
+	PermissionCacheInvalidator cacheInvalidator
 )
 {
 	public sealed record Request : IAuthorizedRequest
@@ -35,6 +36,8 @@ public sealed partial class CreateTenant(
 	)
 	{
 		var userId = await currentUserService.GetLoggedInUserId();
+		var ownerId = await currentUserService.GetMembershipUserId();
+		var name = TenantManagement.ValidateName(request.Name);
 		var recoveryKeys = BuildRecoveryKeys();
 
 		await using var transaction = await context.BeginTransactionAsync(token);
@@ -43,7 +46,7 @@ public sealed partial class CreateTenant(
 			.InsertWithInt32IdentityAsync(
 				new Database.Models.Tenant
 				{
-					Name = request.Name,
+					Name = name,
 					IsActive = true,
 					RecoveryKeysJson = JsonSerializer.Serialize(recoveryKeys),
 				},
@@ -65,7 +68,7 @@ public sealed partial class CreateTenant(
 		await context.InsertAsync(
 			new Database.Models.TenantRoleUser
 			{
-				UserId = userId,
+				UserId = ownerId,
 				TenantRoleId = tenantRoleId,
 				EditedUserId = userId,
 			},
@@ -73,6 +76,7 @@ public sealed partial class CreateTenant(
 		);
 
 		await transaction.CommitAsync(token);
+		await cacheInvalidator.InvalidateUser(ownerId, CancellationToken.None);
 
 		return new()
 		{

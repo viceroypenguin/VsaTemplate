@@ -1,9 +1,8 @@
 using System.Globalization;
 using Immediate.Cache.Shared;
 using Immediate.Handlers.Shared;
-using LinqToDB;
-using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.AccessControl.Models;
+using VsaTemplate.Web.Features.Organizations.Queries;
 
 namespace VsaTemplate.Web.Features.Organizations.Services;
 
@@ -16,7 +15,7 @@ public sealed partial class GetOrganizationsByUserCache
 
 [Handler]
 public sealed partial class GetOrganizationsByUser(
-	DbContext context
+	GetOrganizationsForUser.Handler getOrganizationsForUser
 )
 {
 	public sealed record Query
@@ -26,7 +25,7 @@ public sealed partial class GetOrganizationsByUser(
 
 	public sealed record Response
 	{
-		public required IReadOnlyList<Organization> Organizations { get; init; }
+		public required IReadOnlyList<GetOrganizationsForUser.Organization> Organizations { get; init; }
 	}
 
 	private async ValueTask<Response> HandleAsync(
@@ -34,18 +33,9 @@ public sealed partial class GetOrganizationsByUser(
 		CancellationToken token
 	)
 	{
-		var userId = query.UserId;
-		var organizations = context.Organizations
-			.Where(o => o.OrganizationRoles
-				.SelectMany(or => or.OrganizationRoleUsers)
-				.Any(oru => oru.UserId == userId)
-			);
-
 		return new()
 		{
-			Organizations = await organizations
-				.Select(Organization.FromDatabaseEntity)
-				.ToListAsync(token),
+			Organizations = await getOrganizationsForUser.HandleAsync(new() { UserId = query.UserId }, token),
 		};
 	}
 }

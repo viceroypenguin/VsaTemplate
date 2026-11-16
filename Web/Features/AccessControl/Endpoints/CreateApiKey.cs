@@ -4,11 +4,14 @@ using Immediate.Apis.Shared;
 using Immediate.Handlers.Shared;
 using Immediate.Validations.Shared;
 using LinqToDB;
+using LinqToDB.Async;
 using SimpleBase;
 using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.AccessControl.Authorization;
 using VsaTemplate.Web.Features.AccessControl.Models;
 using VsaTemplate.Web.Features.AccessControl.Services;
+using VsaTemplate.Web.Features.Shared.Exceptions;
+using VsaTemplate.Web.Infrastructure.Exceptions;
 
 namespace VsaTemplate.Web.Features.Users.Endpoints;
 
@@ -16,7 +19,8 @@ namespace VsaTemplate.Web.Features.Users.Endpoints;
 [MapPost("/api/users/apikey/create")]
 public sealed partial class CreateApiKey(
 	CurrentUserService currentUserService,
-	DbContext context
+	DbContext context,
+	TimeProvider timeProvider
 )
 {
 	[Validate]
@@ -43,11 +47,18 @@ public sealed partial class CreateApiKey(
 		var userId = await currentUserService.GetLoggedInUserId();
 		var currentUserPermissions = await currentUserService.GetLoggedInUserPermissions();
 
-		if (request.Permissions.Except(currentUserPermissions).Any())
-			throw new InvalidOperationException("Unable to create new API Key with additional permission.");
+		if (await context.AccessControl.ApiKeys.AnyAsync(k => k.ApiKeyId == userId, token))
+			throw new UnauthorizedException("API keys cannot create other API keys.");
+		if (request.Lifetime <= TimeSpan.Zero || request.Lifetime >= TimeSpan.FromDays(366))
+			throw new InvalidApiKeyInputException("API key lifetime must be positive and shorter than one year.");
+		if (request.Permissions is null || request.Permissions.Any(p => !Enum.IsDefined(p)))
+			throw new InvalidApiKeyInputException("Select valid API key permissions.");
+		if (!currentUserPermissions.Contains(Permission.Admin)
+			&& request.Permissions.Any(p => p is not Permission.None && !currentUserPermissions.Contains(p)))
+			throw new UnauthorizedException("Unable to create an API key with additional permissions.");
 
 		var key = GenerateApiKey();
-		var now = DateTimeOffset.UtcNow;
+		var now = timeProvider.GetUtcNow();
 
 		await using var transaction = await context.BeginTransactionAsync(token);
 
@@ -70,7 +81,7 @@ public sealed partial class CreateApiKey(
 				OwnerUserId = userId,
 				CreatedDateTime = now,
 				ExpirationDateTime = now.Add(request.Lifetime),
-				PermissionsJson = JsonSerializer.Serialize(currentUserPermissions),
+				PermissionsJson = JsonSerializer.Serialize(request.Permissions.Distinct().ToArray()),
 			},
 			token: token
 		);
@@ -89,3 +100,5 @@ public sealed partial class CreateApiKey(
 		return Base58.Bitcoin.Encode(bytes);
 	}
 }
+
+file sealed class InvalidApiKeyInputException(string message) : VsaTemplateException(message, 400);

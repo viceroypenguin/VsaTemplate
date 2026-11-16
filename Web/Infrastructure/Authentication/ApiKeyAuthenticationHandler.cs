@@ -18,7 +18,7 @@ public sealed class ApiKeyAuthenticationHandler(
 	IOptionsMonitor<ApiKeyAuthenticationSchemeOptions> options,
 	ILoggerFactory logger,
 	UrlEncoder encoder,
-	ValidApiKeyCache validApiKeyCache
+	GetApiKey.Handler getApiKey
 ) : AuthenticationHandler<ApiKeyAuthenticationSchemeOptions>(
 	options,
 	logger,
@@ -47,7 +47,9 @@ public sealed class ApiKeyAuthenticationHandler(
 		if (apiKey is not [{ Length: > 0 } key])
 			return AuthenticateResult.NoResult();
 
-		if (await validApiKeyCache.GetValue(new() { ApiKey = key }) is not
+		// Check account state and expiration on each request. A cached Boolean
+		// otherwise keeps disabled or expired keys authenticated.
+		if (await getApiKey.HandleAsync(new() { ApiKey = key }, Context.RequestAborted) is not
 			{
 				IsValid: true,
 				UserId: { } userId,

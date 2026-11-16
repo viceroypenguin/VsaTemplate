@@ -1,18 +1,17 @@
 using Immediate.Handlers.Shared;
-using LinqToDB;
 using LinqToDB.Async;
-using LinqToDB.DataProvider.SqlServer;
 using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.AccessControl.Services;
-using VsaTemplate.Web.Features.Shared.Extensions;
 using VsaTemplate.Web.Features.Tenants.Models;
+using VsaTemplate.Web.Features.Tenants.Services;
 
 namespace VsaTemplate.Web.Features.Tenants.Queries;
 
 [Handler]
 public sealed partial class GetTenantsForCurrentUser(
 	CurrentUserService currentUserService,
-	DbContext context
+	DbContext context,
+	CurrentTenantUserService currentTenantUserService
 )
 {
 	public sealed record Query;
@@ -26,52 +25,44 @@ public sealed partial class GetTenantsForCurrentUser(
 	{
 		public required TenantId TenantId { get; init; }
 		public required string Name { get; init; }
+		public required bool IsActive { get; init; }
 		public required IReadOnlyList<TenantPermission> Permissions { get; init; }
 	}
 
-	private async ValueTask<Response> HandleAsync(
-		Query _,
-		CancellationToken token
-	)
+	private async ValueTask<Response> HandleAsync(Query _, CancellationToken token)
 	{
-		if (await currentUserService.GetCurrentUserId() is not { } userId)
+		if (await currentUserService.GetCurrentUserId() is null)
 			return new() { Tenants = [] };
+		var userId = await currentUserService.GetMembershipUserId();
 
-		var tenants = await context.AccessControl.Users
-			.Where(u => u.UserId == userId)
-			.SelectMany(u => u.TenantRoleUsers)
-			.Select(tru => tru.TenantRole)
-			.Where(tr => tr.Tenant.IsActive)
-			.SelectMany(
-				tr => SqlFn.OpenJson(tr.PermissionsJson)
-					.Select(jd => new { tr.TenantId, tr.Tenant.Name, jd.Value })
-			)
-			.Where(jd => Sql.Convert<int, string?>(jd.Value) != 0)
-			.Distinct()
-			.ToListAsync(token)
-			.Transform(
-				l => l
-					.GroupBy(
-						p => (p.TenantId, p.Name),
-						(k, g) => new Tenant
-						{
-							TenantId = k.TenantId,
-							Name = k.Name,
-							Permissions = g
-								.Select(
-									v => int.TryParse(v.Value, provider: null, out var p)
-										? (TenantPermission)p
-										: TenantPermission.None
-								)
-								.ToList(),
-						}
-					)
-					.ToList()
-			);
+		var roles = await context.TenantRoleUsers
+			.Where(u => u.UserId == userId && u.User.IsActive)
+			.Select(u => new
+			{
+				u.TenantRole.TenantId,
+				u.TenantRole.Tenant.Name,
+				u.TenantRole.Tenant.IsActive,
+			})
+			.ToListAsync(token);
+
+		var tenants = new List<Tenant>();
+		foreach (var group in roles.GroupBy(r => (r.TenantId, r.Name, r.IsActive)))
+		{
+			var permissions = await currentTenantUserService.GetLoggedInUserPermissions(group.Key.TenantId);
+			if (permissions.Count == 0)
+				continue;
+			tenants.Add(new()
+			{
+				TenantId = group.Key.TenantId,
+				Name = group.Key.Name,
+				IsActive = group.Key.IsActive,
+				Permissions = permissions,
+			});
+		}
 
 		return new()
 		{
-			Tenants = tenants,
+			Tenants = tenants.OrderBy(t => t.Name, StringComparer.OrdinalIgnoreCase).ToList(),
 		};
 	}
 }

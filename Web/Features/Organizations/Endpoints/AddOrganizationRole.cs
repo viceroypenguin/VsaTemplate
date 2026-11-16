@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Immediate.Apis.Shared;
 using Immediate.Handlers.Shared;
+using Immediate.Validations.Shared;
 using LinqToDB;
 using Microsoft.AspNetCore.Mvc;
 using VsaTemplate.Web.Database;
@@ -8,16 +9,23 @@ using VsaTemplate.Web.Features.AccessControl.Authorization;
 using VsaTemplate.Web.Features.AccessControl.Services;
 using VsaTemplate.Web.Features.Organizations.Authorization;
 using VsaTemplate.Web.Features.Organizations.Models;
+using VsaTemplate.Web.Features.Organizations.Services;
 
 namespace VsaTemplate.Web.Features.Organizations.Endpoints;
 
 [Handler]
 [MapPost("/api/organizations/{organizationId}/roles/create")]
-public sealed partial class AddOrganizationRole(CurrentUserService currentUserService, DbContext context)
+public sealed partial class AddOrganizationRole(
+	CurrentUserService currentUserService,
+	CurrentOrganizationUserService currentOrganizationUserService,
+	DbContext context,
+	PermissionCacheInvalidator permissionCacheInvalidator
+)
 {
-	public sealed record Request : IAuthorizedRequest, IOrganizationRequest
+	[Validate]
+	public sealed partial record Request : IAuthorizedRequest, IOrganizationRequest, IValidationTarget<Request>
 	{
-		public static OrganizationPermission Demand => OrganizationPermission.UserManagement;
+		public static OrganizationPermission OrganizationPermission => OrganizationPermission.UserManagement;
 
 		[FromRoute]
 		public required OrganizationId OrganizationId { get; init; }
@@ -26,39 +34,36 @@ public sealed partial class AddOrganizationRole(CurrentUserService currentUserSe
 		public required RequestBody Body { get; init; }
 	}
 
-	public readonly record struct RequestBody
+	[Validate]
+	public sealed partial record RequestBody : IValidationTarget<RequestBody>
 	{
+		[NotEmpty]
+		[MaxLength(200)]
 		public required string Name { get; init; }
+
+		[NotEmpty]
 		public required IReadOnlyList<OrganizationPermission> Permissions { get; init; }
 	}
 
 	public sealed record Response
 	{
-		public required OrganizationRoleId OrganizationRoleId { get; init; }
+		public required OrganizationRoleId RoleId { get; init; }
 	}
 
-	private async ValueTask<Response> HandleAsync(
-		[AsParameters] Request request,
-		CancellationToken token
-	)
+	private async ValueTask<Response> HandleAsync([AsParameters] Request request, CancellationToken token)
 	{
-		var userId = await currentUserService.GetCurrentUserId();
-
-		var organizationRoleId = (OrganizationRoleId)await context
-			.InsertWithInt32IdentityAsync(
-				new Database.Models.VsaTemplate.OrganizationRole
-				{
-					OrganizationId = request.OrganizationId,
-					Name = request.Body.Name,
-					PermissionsJson = JsonSerializer.Serialize(request.Body.Permissions),
-					EditedUserId = userId,
-				},
-				token: token
-			);
-
-		return new()
-		{
-			OrganizationRoleId = organizationRoleId,
-		};
+		var name = OrganizationManagement.ValidateName(request.Body.Name);
+		var permissions = OrganizationManagement.ValidatePermissions(request.Body.Permissions);
+		await OrganizationManagement.DemandDelegablePermissions(currentOrganizationUserService, request.OrganizationId, permissions);
+		var roleId = (OrganizationRoleId)await context.InsertWithInt32IdentityAsync(
+			new Database.Models.OrganizationRole
+			{
+				OrganizationId = request.OrganizationId,
+				Name = name,
+				PermissionsJson = JsonSerializer.Serialize(permissions),
+				EditedUserId = await currentUserService.GetLoggedInUserId(),
+			}, token: token);
+		await permissionCacheInvalidator.InvalidateOrganization(request.OrganizationId, CancellationToken.None);
+		return new() { RoleId = roleId };
 	}
 }

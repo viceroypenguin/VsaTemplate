@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Immediate.Injections.Shared;
-using Microsoft.AspNetCore.Components.Authorization;
+using LinqToDB.Async;
+using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.AccessControl.Models;
 using VsaTemplate.Web.Features.Shared.Exceptions;
 using VsaTemplate.Web.Features.Shared.Extensions;
@@ -10,7 +11,7 @@ namespace VsaTemplate.Web.Features.AccessControl.Services;
 [RegisterScoped]
 public sealed class CurrentUserService(
 	IHttpContextAccessor httpContextAccessor,
-	AuthenticationStateProvider authenticationStateProvider,
+	DbContext context,
 	UserPermissionCache userPermissionCache
 )
 {
@@ -29,35 +30,33 @@ public sealed class CurrentUserService(
 
 	public async ValueTask<UserId?> GetCurrentUserId()
 	{
-		var user = await GetCurrentUser();
+		var user = httpContextAccessor.HttpContext?.User;
+		if (user?.Identity?.IsAuthenticated != true)
+			return null;
 
 		var claim = user?.FindFirstValue("vsa-id") ?? "";
 		if (!UserId.TryParse(claim, provider: null, out var userId))
 			return null;
 
-		return userId;
+		return await context.AccessControl.Users.AnyAsync(u => u.UserId == userId && u.IsActive)
+			? userId
+			: null;
 	}
 
-	public async ValueTask<UserId> GetLoggedInUserId()
+	public async ValueTask<UserId> GetLoggedInUserId() =>
+		await GetCurrentUserId() ?? UnauthorizedException.ThrowUnauthorizedException<UserId>();
+
+	// Memberships belong to a human owner; audit fields retain the authenticated
+	// API-key principal so callers can distinguish actions performed by a key.
+	public async ValueTask<UserId> GetMembershipUserId()
 	{
-		var user = await GetCurrentUser();
-
-		var claim = user?.FindFirstValue("vsa-id") ?? "";
-		if (!UserId.TryParse(claim, provider: null, out var userId))
-			UnauthorizedException.ThrowUnauthorizedException();
-
-		return userId;
-	}
-
-	private async ValueTask<ClaimsPrincipal?> GetCurrentUser()
-	{
-		if (httpContextAccessor.HttpContext is { User: { } user })
-			return user;
-
-		var authenticationState = await authenticationStateProvider
-			.GetAuthenticationStateAsync();
-
-		return authenticationState?.User;
+		var actorId = await GetLoggedInUserId();
+		var apiKey = await context.AccessControl.ApiKeys.FirstOrDefaultAsync(k => k.ApiKeyId == actorId);
+		if (apiKey is null)
+			return actorId;
+		if (!await context.AccessControl.Users.AnyAsync(u => u.UserId == apiKey.OwnerUserId && u.IsActive && u.ApiKey == null))
+			UnauthorizedException.ThrowUnauthorizedException("The API key owner is unavailable.");
+		return apiKey.OwnerUserId;
 	}
 }
 

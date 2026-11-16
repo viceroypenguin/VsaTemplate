@@ -1,8 +1,9 @@
+using System.Data;
 using System.Text.Json;
 using Immediate.Apis.Shared;
 using Immediate.Handlers.Shared;
-using Immediate.Validations.Shared;
 using LinqToDB;
+using LinqToDB.Async;
 using Microsoft.AspNetCore.Mvc;
 using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.AccessControl.Authorization;
@@ -10,6 +11,7 @@ using VsaTemplate.Web.Features.AccessControl.Services;
 using VsaTemplate.Web.Features.Shared.Exceptions;
 using VsaTemplate.Web.Features.Tenants.Authorization;
 using VsaTemplate.Web.Features.Tenants.Models;
+using VsaTemplate.Web.Features.Tenants.Services;
 
 namespace VsaTemplate.Web.Features.Tenants.Endpoints;
 
@@ -17,55 +19,49 @@ namespace VsaTemplate.Web.Features.Tenants.Endpoints;
 [MapPut("/api/tenants/{tenantId}/roles/{roleId}")]
 public sealed partial class SaveTenantRole(
 	CurrentUserService currentUserService,
-	DbContext context
+	CurrentTenantUserService currentTenantUserService,
+	DbContext context,
+	PermissionCacheInvalidator cacheInvalidator
 )
 {
-	[Validate]
-	public sealed partial record Request : IAuthorizedRequest, ITenantRequest, IValidationTarget<Request>
+	public sealed record Request : IAuthorizedRequest, ITenantRequest
 	{
-		public TenantPermission TenantPermission => TenantPermission.UserManagement;
-
-		[FromRoute]
-		public required TenantId TenantId { get; init; }
-
-		[FromRoute]
-		public required TenantRoleId RoleId { get; init; }
-
-		[FromBody]
-		public required RequestBody RequestBody { get; init; }
+		public static TenantPermission TenantPermission => TenantPermission.UserManagement;
+		[FromRoute] public required TenantId TenantId { get; init; }
+		[FromRoute] public required TenantRoleId RoleId { get; init; }
+		[FromBody] public required RequestBody RequestBody { get; init; }
 	}
 
-	[Validate]
-	public sealed partial record RequestBody : IValidationTarget<RequestBody>
+	public sealed record RequestBody
 	{
-		[NotEmpty]
 		public required string Name { get; init; }
-
-		[NotEmpty]
 		public required IReadOnlyList<TenantPermission> Permissions { get; init; }
 	}
 
-	private async ValueTask HandleAsync(
-		[AsParameters] Request request,
-		CancellationToken token
-	)
+	private async ValueTask HandleAsync([AsParameters] Request request, CancellationToken token)
 	{
+		var name = TenantManagement.ValidateName(request.RequestBody.Name);
+		var permissions = TenantManagement.ValidatePermissions(request.RequestBody.Permissions);
+		var actorPermissions = await currentTenantUserService.GetLoggedInUserPermissions(request.TenantId);
+		TenantManagement.EnsureCanGrant(actorPermissions, permissions);
 		var userId = await currentUserService.GetLoggedInUserId();
 
-		var count = await context.TenantRoles
-			.Where(tr => tr.TenantId == request.TenantId)
-			.Where(tr => tr.TenantRoleId == request.RoleId)
-			.UpdateAsync(
-				dst => new()
-				{
-					Name = request.RequestBody.Name,
-					PermissionsJson = JsonSerializer.Serialize(request.RequestBody.Permissions),
-					EditedUserId = userId,
-				},
-				token: token
-			);
+		await using var transaction = await context.BeginTransactionAsync(IsolationLevel.Serializable, token);
+		var role = await context.TenantRoles
+			.FirstOrDefaultAsync(r => r.TenantId == request.TenantId && r.TenantRoleId == request.RoleId, token)
+			?? throw new NotFoundException(nameof(Database.Models.TenantRole));
+		var oldPermissions = TenantManagement.ReadPermissions(role.PermissionsJson);
+		TenantManagement.EnsureCanGrant(actorPermissions, oldPermissions);
+		if (oldPermissions.Contains(TenantPermission.Admin) && !permissions.Contains(TenantPermission.Admin))
+			await TenantManagement.EnsureAdministratorRemains(context, request.TenantId, request.RoleId, excludedUserId: null, token);
 
-		if (count == 0)
-			NotFoundException.ThrowNotFoundException(nameof(Database.Models.TenantRole));
+		await context.TenantRoles
+			.Where(r => r.TenantId == request.TenantId && r.TenantRoleId == request.RoleId)
+			.Set(r => r.Name, name)
+			.Set(r => r.PermissionsJson, JsonSerializer.Serialize(permissions))
+			.Set(r => r.EditedUserId, userId)
+			.UpdateAsync(token);
+		await transaction.CommitAsync(token);
+		await cacheInvalidator.InvalidateTenant(request.TenantId, CancellationToken.None);
 	}
 }

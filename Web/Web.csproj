@@ -16,11 +16,21 @@
 
   <PropertyGroup>
 	<RootNamespace>VsaTemplate.Web</RootNamespace>
+	<BuildFrontend Condition="'$(BuildFrontend)' == ''">true</BuildFrontend>
+	<FrontendDirectory>$(MSBuildProjectDirectory)/ClientApp</FrontendDirectory>
+	<FrontendWebRoot>$(MSBuildProjectDirectory)/wwwroot/</FrontendWebRoot>
+	<!-- Generated assets are added after synchronization, when their filenames are current. -->
+	<DefaultItemExcludes>$(DefaultItemExcludes);ClientApp/node_modules/**;ClientApp/dist/**;wwwroot/**</DefaultItemExcludes>
   </PropertyGroup>
+
+  <ItemGroup>
+	<Content Remove="ClientApp/**/*" />
+	<None Remove="ClientApp/**/*" />
+	<None Include="ClientApp/**/*" Exclude="ClientApp/node_modules/**/*;ClientApp/dist/**/*" />
+  </ItemGroup>
 
   <ItemGroup Label="Usings">
 	<Using Include="Vogen" />
-	<Using Include="VsaTemplate.Web.Infrastructure.Blazor" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,7 +41,6 @@
 
   <ItemGroup>
 	<PackageReference Include="Auth0.AspNetCore.Authentication" />
-	<PackageReference Include="Blazicons.FontAwesome" />
 	<PackageReference Include="Immediate.Apis" />
 	<PackageReference Include="Immediate.Cache" />
 	<PackageReference Include="Immediate.Handlers" />
@@ -54,5 +63,58 @@
 	<PackageReference Include="SuperLinq" />
 	<PackageReference Include="Vogen" />
   </ItemGroup>
+
+  <ItemGroup>
+	<FrontendSource Include="$(MSBuildProjectFullPath)" />
+	<FrontendSource Include="$(FrontendDirectory)/index.html;$(FrontendDirectory)/package.json;$(FrontendDirectory)/package-lock.json" />
+	<FrontendSource Include="$(FrontendDirectory)/src/**/*;$(FrontendDirectory)/public/**/*" />
+	<FrontendSource Include="$(FrontendDirectory)/tsconfig*.json;$(FrontendDirectory)/*.config.*" />
+  </ItemGroup>
+
+  <Target Name="RestoreFrontend"
+	Inputs="$(FrontendDirectory)/package.json;$(FrontendDirectory)/package-lock.json"
+	Outputs="$(FrontendDirectory)/node_modules/.package-lock.json"
+	Condition="'$(DesignTimeBuild)' != 'true' and '$(BuildFrontend)' == 'true'">
+	<Exec Command="npm ci" WorkingDirectory="$(FrontendDirectory)" />
+  </Target>
+
+  <!-- A manifest also invalidates the build when a source file is removed. -->
+  <Target Name="CollectFrontendSources"
+	Condition="'$(DesignTimeBuild)' != 'true' and '$(BuildFrontend)' == 'true'">
+	<PropertyGroup>
+	  <FrontendBuildStamp>$(IntermediateOutputPath)frontend-build.stamp</FrontendBuildStamp>
+	  <FrontendSourceManifest>$(IntermediateOutputPath)frontend-sources.txt</FrontendSourceManifest>
+	</PropertyGroup>
+	<MakeDir Directories="$(IntermediateOutputPath)" />
+	<WriteLinesToFile File="$(FrontendSourceManifest)" Lines="@(FrontendSource)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+  </Target>
+
+  <Target Name="BuildReactApp"
+	DependsOnTargets="RestoreFrontend;CollectFrontendSources"
+	Inputs="@(FrontendSource);$(FrontendSourceManifest)"
+	Outputs="$(FrontendBuildStamp);$(FrontendDirectory)/dist/index.html"
+	Condition="'$(DesignTimeBuild)' != 'true' and '$(BuildFrontend)' == 'true'">
+	<Exec Command="npm run build" WorkingDirectory="$(FrontendDirectory)" />
+	<Touch Files="$(FrontendBuildStamp)" AlwaysCreate="true" />
+  </Target>
+
+  <Target Name="IncludeFrontendAssets"
+	BeforeTargets="PrepareForBuild;ComputeFilesToPublish"
+	DependsOnTargets="BuildReactApp"
+	Condition="'$(DesignTimeBuild)' != 'true'">
+	<Error Condition="!Exists('$(FrontendDirectory)/dist/index.html')" Text="The React app has not been built. Run npm ci and npm run build in Web/ClientApp before using BuildFrontend=false." />
+	<ItemGroup>
+	  <FrontendOutput Include="$(FrontendDirectory)/dist/**/*" />
+	  <FrontendDestination Include="@(FrontendOutput->'$(FrontendWebRoot)%(RecursiveDir)%(Filename)%(Extension)')" />
+	  <StaleFrontendOutput Include="$(FrontendWebRoot)**/*" Exclude="@(FrontendDestination)" />
+	</ItemGroup>
+	<Delete Files="@(StaleFrontendOutput)" />
+	<Copy SourceFiles="@(FrontendOutput)" DestinationFiles="@(FrontendDestination)" SkipUnchangedFiles="true" />
+	<!-- Generated files must be added after copying on a clean checkout. -->
+	<ItemGroup>
+	  <Content Remove="wwwroot/**/*" />
+	  <Content Include="wwwroot/**/*" CopyToPublishDirectory="PreserveNewest" />
+	</ItemGroup>
+  </Target>
 
 </Project>
