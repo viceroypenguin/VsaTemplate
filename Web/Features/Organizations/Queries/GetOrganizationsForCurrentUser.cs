@@ -14,7 +14,7 @@ public sealed partial class GetOrganizationsForCurrentUser(
 	private async ValueTask<IReadOnlyList<GetOrganizationsForUser.Organization>> HandleAsync(Query _, CancellationToken token)
 	{
 
-		return await currentUserService.GetCurrentUserId() is { } userId
+		return currentUserService.GetCurrentUserId() is { } userId
 			? await getOrganizationsForUser.HandleAsync(new() { UserId = userId }, token)
 			: [];
 

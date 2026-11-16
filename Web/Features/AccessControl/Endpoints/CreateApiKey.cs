@@ -44,7 +44,7 @@ public sealed partial class CreateApiKey(
 		CancellationToken token
 	)
 	{
-		var userId = await currentUserService.GetLoggedInUserId();
+		var userId = currentUserService.GetLoggedInUserId();
 		var currentUserPermissions = await currentUserService.GetLoggedInUserPermissions();
 
 		if (await context.AccessControl.ApiKeys

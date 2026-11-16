@@ -62,7 +62,7 @@ public sealed partial class AddOrganizationRole(
 				OrganizationId = request.OrganizationId,
 				Name = name,
 				PermissionsJson = JsonSerializer.Serialize(permissions),
-				EditedUserId = await currentUserService.GetLoggedInUserId(),
+				EditedUserId = currentUserService.GetLoggedInUserId(),
 			}, token: token);
 
 		await permissionCacheInvalidator.InvalidateOrganization(request.OrganizationId, CancellationToken.None);

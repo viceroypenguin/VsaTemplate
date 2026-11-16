@@ -36,7 +36,7 @@ public sealed partial class GetOrganizationsByTenant(
 	{
 
 		var memberships = await getOrganizationsForUser.HandleAsync(
-			new() { UserId = await currentUserService.GetLoggedInUserId() },
+			new() { UserId = currentUserService.GetLoggedInUserId() },
 			token
 		);
 

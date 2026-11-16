@@ -36,7 +36,7 @@ public sealed partial class CreateTenant(
 		CancellationToken token
 	)
 	{
-		var userId = await currentUserService.GetLoggedInUserId();
+		var userId = currentUserService.GetLoggedInUserId();
 		var ownerId = await currentUserService.GetMembershipUserId();
 		var name = TenantManagement.ValidateName(request.Name);
 		var recoveryKeys = BuildRecoveryKeys();

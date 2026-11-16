@@ -85,7 +85,7 @@ public sealed partial class AddOrganizationMember(
 			{
 				OrganizationRoleId = request.Body.RoleId,
 				UserId = userId,
-				EditedUserId = await currentUserService.GetLoggedInUserId(),
+				EditedUserId = currentUserService.GetLoggedInUserId(),
 			},
 		])
 			.OnTargetKey()

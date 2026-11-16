@@ -49,7 +49,7 @@ public sealed partial class CreateOrganization(
 
 	private async ValueTask<Response> HandleAsync([AsParameters] Request request, CancellationToken token)
 	{
-		var userId = await currentUserService.GetLoggedInUserId();
+		var userId = currentUserService.GetLoggedInUserId();
 		var memberUserId = await currentUserService.GetMembershipUserId();
 		await using var transaction = await context.BeginTransactionAsync(token);
 

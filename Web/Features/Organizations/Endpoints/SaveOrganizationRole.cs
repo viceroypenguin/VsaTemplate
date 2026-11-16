@@ -51,7 +51,7 @@ public sealed partial class SaveOrganizationRole(
 		if (oldPermissions.Contains(OrganizationPermission.Admin) && !permissions.Contains(OrganizationPermission.Admin))
 			await OrganizationManagement.EnsureAdministratorRemains(context, request.OrganizationId, removingUserId: null, request.RoleId, token);
 
-		var userId = await currentUserService.GetLoggedInUserId();
+		var userId = currentUserService.GetLoggedInUserId();
 
 		await context.OrganizationRoles
 			.Where(r => r.OrganizationId == request.OrganizationId && r.OrganizationRoleId == request.RoleId)

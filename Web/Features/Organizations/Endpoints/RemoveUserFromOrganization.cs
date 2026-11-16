@@ -54,7 +54,7 @@ public sealed partial class RemoveUserFromOrganization(
 				.ToArray());
 
 		await OrganizationManagement.EnsureAdministratorRemains(context, request.OrganizationId, request.UserId, changingRoleId: null, token);
-		var userId = await currentUserService.GetLoggedInUserId();
+		var userId = currentUserService.GetLoggedInUserId();
 
 		var memberships = context.OrganizationRoleUsers
 			.Where(u => u.UserId == request.UserId && u.OrganizationRole.OrganizationId == request.OrganizationId);

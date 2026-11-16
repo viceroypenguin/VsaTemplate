@@ -46,7 +46,7 @@ public sealed partial class UpdateOrganization(
 		var administration = await administrationCache.GetValue(
 			new()
 			{
-				UserId = await currentUserService.GetLoggedInUserId(),
+				UserId = currentUserService.GetLoggedInUserId(),
 				OrganizationId = request.OrganizationId,
 			},
 			token

@@ -32,7 +32,7 @@ public sealed partial class RemoveUserFromTenant(
 
 	private async ValueTask HandleAsync([AsParameters] Request request, CancellationToken token)
 	{
-		var actorId = await currentUserService.GetLoggedInUserId();
+		var actorId = currentUserService.GetLoggedInUserId();
 		var actorPermissions = await currentTenantUserService.GetLoggedInUserPermissions(request.TenantId);
 		await using var transaction = await context.BeginTransactionAsync(IsolationLevel.Serializable, token);
 

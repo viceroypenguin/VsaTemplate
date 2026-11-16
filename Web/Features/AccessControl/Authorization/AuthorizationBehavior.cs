@@ -20,7 +20,7 @@ public sealed partial class AuthorizationBehavior<TRequest, TResponse>(
 		if (permissions.Count == 0
 			|| (permission is not Permission.None && !permissions.HasPermission(permission)))
 		{
-			var userId = await currentUserService.GetCurrentUserId();
+			var userId = currentUserService.GetCurrentUserId();
 
 			LogUnauthorizedAccess(logger, userId, HandlerType.FullName, permission);
 			UnauthorizedException.ThrowUnauthorizedException();

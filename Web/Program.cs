@@ -256,7 +256,7 @@ internal static class StartupExtensions
 		app.MapGet("/api/session", async (HttpContext context, CurrentUserService currentUser, DbContext db, IAntiforgery antiforgery) =>
 		{
 			context.Response.Headers.CacheControl = "no-store";
-			var userId = await currentUser.GetCurrentUserId();
+			var userId = currentUser.GetCurrentUserId();
 
 			var user = userId is { } id
 				? await db.AccessControl.Users

@@ -25,7 +25,7 @@ public sealed partial class GetOrganizationsBySelf(
 	{
 
 		var result = await organizationsCache.GetValue(
-			new() { UserId = await currentUserService.GetLoggedInUserId() },
+			new() { UserId = currentUserService.GetLoggedInUserId() },
 			token
 		);
 

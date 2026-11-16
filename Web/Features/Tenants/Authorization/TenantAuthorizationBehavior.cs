@@ -28,7 +28,7 @@ public sealed partial class TenantAuthorizationBehavior<TRequest, TResponse>(
 			return await Next(request, cancellationToken);
 		}
 
-		var userId = await currentUserService.GetCurrentUserId();
+		var userId = currentUserService.GetCurrentUserId();
 
 		LogUnauthorizedAccess(logger, userId, tenantId, HandlerType.FullName, permission);
 		return UnauthorizedException.ThrowUnauthorizedException<TResponse>();

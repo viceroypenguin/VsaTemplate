@@ -33,7 +33,7 @@ public sealed partial class GetTenantsForCurrentUser(
 	private async ValueTask<Response> HandleAsync(Query _, CancellationToken token)
 	{
 
-		if (await currentUserService.GetCurrentUserId() is null)
+		if (currentUserService.GetCurrentUserId() is null)
 			return new() { Tenants = [] };
 
 		var userId = await currentUserService.GetMembershipUserId();
@@ -57,7 +57,7 @@ public sealed partial class GetTenantsForCurrentUser(
 			var permissions = group.Key.IsActive
 				? await currentTenantUserService.GetLoggedInUserPermissions(group.Key.TenantId)
 				: (await administration.GetValue(
-					new() { UserId = await currentUserService.GetLoggedInUserId(), TenantId = group.Key.TenantId },
+					new() { UserId = currentUserService.GetLoggedInUserId(), TenantId = group.Key.TenantId },
 					token
 				)).Permissions;
 

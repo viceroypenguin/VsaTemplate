@@ -46,7 +46,7 @@ public sealed partial class AddRoleToTenant(
 		TenantManagement.EnsureCanGrant(
 			await currentTenantUserService.GetLoggedInUserPermissions(request.TenantId), permissions);
 
-		var userId = await currentUserService.GetLoggedInUserId();
+		var userId = currentUserService.GetLoggedInUserId();
 
 		var roleId = TenantRoleId.From(await context.InsertWithInt32IdentityAsync(
 			new Database.Models.TenantRole

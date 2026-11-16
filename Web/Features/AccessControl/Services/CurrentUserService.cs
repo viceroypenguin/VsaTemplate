@@ -15,42 +15,42 @@ public sealed class CurrentUserService(
 	UserPermissionCache userPermissionCache
 )
 {
-	public async ValueTask<IReadOnlyList<Permission>> GetCurrentUserPermissions() =>
-		await GetCurrentUserId() switch
+	public ValueTask<IReadOnlyList<Permission>> GetCurrentUserPermissions() =>
+		GetCurrentUserId() switch
 		{
-			{ } userId => await userPermissionCache.GetValue(new() { UserId = userId })
+			{ } userId => userPermissionCache.GetValue(new() { UserId = userId })
 				.Transform(r => r.Permissions),
 
-			_ => [],
+			_ => ValueTask.FromResult<IReadOnlyList<Permission>>([]),
 		};
 
-	public async ValueTask<IReadOnlyList<Permission>> GetLoggedInUserPermissions() =>
-		await userPermissionCache.GetValue(new() { UserId = await GetLoggedInUserId() })
+	public ValueTask<IReadOnlyList<Permission>> GetLoggedInUserPermissions() =>
+		userPermissionCache.GetValue(new() { UserId = GetLoggedInUserId() })
 			.Transform(r => r.Permissions);
 
-	public ValueTask<UserId?> GetCurrentUserId()
+	public UserId? GetCurrentUserId()
 	{
 		var user = httpContextAccessor.HttpContext?.User;
 
 		if (user?.Identity?.IsAuthenticated != true)
-			return ValueTask.FromResult<UserId?>(null);
+			return null;
 
 		var claim = user?.FindFirstValue("vsa-id") ?? "";
 
 		if (!UserId.TryParse(claim, provider: null, out var userId))
-			return ValueTask.FromResult<UserId?>(null);
+			return null;
 
-		return ValueTask.FromResult<UserId?>(userId);
+		return userId;
 	}
 
-	public async ValueTask<UserId> GetLoggedInUserId() =>
-		await GetCurrentUserId() ?? UnauthorizedException.ThrowUnauthorizedException<UserId>();
+	public UserId GetLoggedInUserId() =>
+		GetCurrentUserId() ?? UnauthorizedException.ThrowUnauthorizedException<UserId>();
 
 	// Memberships belong to a human owner; audit fields retain the authenticated
 	// API-key principal so callers can distinguish actions performed by a key.
 	public async ValueTask<UserId> GetMembershipUserId()
 	{
-		var actorId = await GetLoggedInUserId();
+		var actorId = GetLoggedInUserId();
 
 		var apiKey = await context.AccessControl.ApiKeys
 			.FirstOrDefaultAsync(k => k.ApiKeyId == actorId);

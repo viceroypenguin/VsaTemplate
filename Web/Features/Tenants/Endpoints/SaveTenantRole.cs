@@ -44,7 +44,7 @@ public sealed partial class SaveTenantRole(
 		var permissions = TenantManagement.ValidatePermissions(request.RequestBody.Permissions);
 		var actorPermissions = await currentTenantUserService.GetLoggedInUserPermissions(request.TenantId);
 		TenantManagement.EnsureCanGrant(actorPermissions, permissions);
-		var userId = await currentUserService.GetLoggedInUserId();
+		var userId = currentUserService.GetLoggedInUserId();
 
 		await using var transaction = await context.BeginTransactionAsync(IsolationLevel.Serializable, token);
 

@@ -38,7 +38,7 @@ public sealed partial class UpdateTenant(
 		var permissions = await administration.GetValue(
 			new()
 			{
-				UserId = await currentUserService.GetLoggedInUserId(),
+				UserId = currentUserService.GetLoggedInUserId(),
 				TenantId = request.TenantId,
 			},
 			token

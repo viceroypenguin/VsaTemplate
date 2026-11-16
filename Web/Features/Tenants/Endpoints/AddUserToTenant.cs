@@ -48,7 +48,7 @@ public sealed partial class AddUserToTenant(
 			.AnyAsync(u => u.UserId == request.UserId && u.IsActive && u.ApiKey == null, token))
 			throw new NotFoundException(nameof(Database.Models.AccessControl.User));
 
-		var userId = await currentUserService.GetLoggedInUserId();
+		var userId = currentUserService.GetLoggedInUserId();
 
 		await context.TenantRoleUsers
 			.Merge().Using([

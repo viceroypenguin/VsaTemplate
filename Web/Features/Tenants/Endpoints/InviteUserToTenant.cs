@@ -53,7 +53,7 @@ public sealed partial class InviteUserToTenant(
 			|| !string.Equals(address.Address, emailAddress, StringComparison.OrdinalIgnoreCase))
 			throw new TenantValidationException("Enter a valid email address of at most 500 characters.");
 
-		var actorId = await currentUserService.GetLoggedInUserId();
+		var actorId = currentUserService.GetLoggedInUserId();
 		var actorPermissions = await currentTenantUserService.GetLoggedInUserPermissions(request.TenantId);
 
 		await using var transaction = await context.BeginTransactionAsync(IsolationLevel.Serializable, token);

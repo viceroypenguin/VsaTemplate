@@ -52,7 +52,7 @@ public sealed partial class AddUserToOrganization(
 			{
 				OrganizationRoleId = request.RoleId,
 				UserId = request.UserId,
-				EditedUserId = await currentUserService.GetLoggedInUserId(),
+				EditedUserId = currentUserService.GetLoggedInUserId(),
 			},
 		])
 			.OnTargetKey()

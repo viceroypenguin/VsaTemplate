@@ -48,6 +48,11 @@ belongs in the query behind the relevant cache, including user or resource activ
 calculation. Do not add a separate database read in a behavior or hide the same eligibility check in another behavior
 dependency. Keeping eligibility in the cache query gives authorization a single definition.
 
+Current-user identifiers come from authenticated claims and are read synchronously, without an `async` or `ValueTask`
+wrapper. API-key membership-owner resolution and permission lookups remain asynchronous when they need database or cache
+data. Forward cache-backed `ValueTask`s directly when no additional asynchronous processing is needed; do not block them
+to make a caller synchronous.
+
 The scoped request contracts expose **static virtual** permission demands. Their default `None` demand expresses base
 membership access; operations requiring management rights override the demand. Do not make the demand abstract merely to
 force every read operation to repeat the default.

@@ -28,7 +28,7 @@ public sealed partial class OrganizationAuthorizationBehavior<TRequest, TRespons
 			return await Next(request, cancellationToken);
 		}
 
-		var userId = await currentUserService.GetCurrentUserId();
+		var userId = currentUserService.GetCurrentUserId();
 
 		LogUnauthorizedAccess(logger, userId, organizationId, HandlerType.FullName, permission);
 		return UnauthorizedException.ThrowUnauthorizedException<TResponse>();
