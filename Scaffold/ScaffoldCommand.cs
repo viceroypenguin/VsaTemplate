@@ -63,13 +63,7 @@ internal sealed class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Settings>
 
 			var provider = conn.DataProvider.GetSchemaProvider();
 
-			var schema = provider.GetSchema(
-				conn,
-				new()
-				{
-					ExcludedSchemas = ["Hangfire"],
-				}
-			);
+			var schema = provider.GetSchema(conn);
 
 			var entities = schema.Tables
 				.Select(t => new DbEntity
