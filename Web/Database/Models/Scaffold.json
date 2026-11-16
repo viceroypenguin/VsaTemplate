@@ -167,6 +167,112 @@
     }
   },
   {
+    "PropertyName": "EmailLoginChallenges",
+    "TypeName": "EmailLoginChallenge",
+    "TableName": "EmailLoginChallenge",
+    "SchemaName": "AccessControl",
+    "Properties": {
+      "Collection": [
+        {
+          "TypeName": "global::System.DateTimeOffset",
+          "PropertyName": "CreatedAt",
+          "ColumnName": "CreatedAt",
+          "IsNullable": false,
+          "DataType": "datetimeoffset(7)",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "string",
+          "PropertyName": "EmailAddress",
+          "ColumnName": "EmailAddress",
+          "IsNullable": false,
+          "DataType": "nvarchar(500)",
+          "ForceNotNull": true,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "global::System.DateTimeOffset",
+          "PropertyName": "ExpiresAt",
+          "ColumnName": "ExpiresAt",
+          "IsNullable": false,
+          "DataType": "datetimeoffset(7)",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "int",
+          "PropertyName": "FailedAttempts",
+          "ColumnName": "FailedAttempts",
+          "IsNullable": false,
+          "DataType": "int",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "bool",
+          "PropertyName": "IsConsumed",
+          "ColumnName": "IsConsumed",
+          "IsNullable": false,
+          "DataType": "bit",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "byte[]",
+          "PropertyName": "SessionIdHash",
+          "ColumnName": "SessionIdHash",
+          "IsNullable": false,
+          "DataType": "binary(32)",
+          "ForceNotNull": true,
+          "IsPrimaryKey": true,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
+          "TypeName": "byte[]",
+          "PropertyName": "TokenHash",
+          "ColumnName": "TokenHash",
+          "IsNullable": false,
+          "DataType": "binary(32)",
+          "ForceNotNull": true,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        }
+      ],
+      "Count": 7
+    },
+    "Associations": {
+      "Collection": [],
+      "Count": 0
+    }
+  },
+  {
     "PropertyName": "Organizations",
     "TypeName": "Organization",
     "TableName": "Organization",
@@ -1675,19 +1781,6 @@
       "Collection": [
         {
           "TypeName": "string",
-          "PropertyName": "Auth0UserId",
-          "ColumnName": "Auth0UserId",
-          "IsNullable": true,
-          "DataType": "nvarchar(100)",
-          "ForceNotNull": false,
-          "IsPrimaryKey": false,
-          "PrimaryKeyOrder": null,
-          "IsIdentity": false,
-          "SkipOnInsert": false,
-          "SkipOnUpdate": false
-        },
-        {
-          "TypeName": "string",
           "PropertyName": "EmailAddress",
           "ColumnName": "EmailAddress",
           "IsNullable": false,
@@ -1752,7 +1845,7 @@
           "SkipOnUpdate": true
         }
       ],
-      "Count": 6
+      "Count": 5
     },
     "Associations": {
       "Collection": [

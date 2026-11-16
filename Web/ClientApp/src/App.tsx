@@ -5,32 +5,15 @@ import { useResource, useRoute } from './hooks';
 import { TenantList } from './TenantList';
 import { ScopePage } from './ScopePage';
 import { RecoveryKeys } from './RecoveryKeys';
+import { PublicHome } from './PublicHome';
 import type { Organization, Session, Tenant } from './types';
 
 export function App() {
   const session = useResource(getSession, []);
   if (session.loading) return <div className="initial-loading"><Brand /><Loading label="Opening your workspace…" /></div>;
   if (session.error || !session.data) return <main className="initial-loading"><Brand /><h1>Unable to connect</h1><Retry error={session.error ?? 'No session was returned.'} retry={session.refresh} /></main>;
-  if (!session.data.isAuthenticated) return <Welcome />;
+  if (!session.data.isAuthenticated) return <PublicHome onLoggedIn={session.refresh} />;
   return <Workspace session={session.data} />;
-}
-
-function Welcome() {
-  return <div className="welcome">
-    <header className="welcome-header"><Brand /><a className="button secondary" href="/Login?returnUrl=%2F">Sign in <Icon name="arrow" size={17} /></a></header>
-    <main className="welcome-content">
-      <span className="welcome-label"><span /> A place for every team</span>
-      <h1>Your teams.<br />One <em>workspace.</em></h1>
-      <p>Create a home for your business, bring your organizations together, and give people the access they need.</p>
-      <a className="button primary large" href="/Login?returnUrl=%2F">Sign in to get started <Icon name="arrow" /></a>
-      <div className="welcome-features">
-        <article><Icon name="building" /><h2>Start with a tenant</h2><p>Keep each business and its organizations in a separate space.</p></article>
-        <article><Icon name="teams" /><h2>Bring people together</h2><p>Invite members and organize work around your teams.</p></article>
-        <article><Icon name="shield" /><h2>Make access clear</h2><p>Choose roles and permissions for each workspace.</p></article>
-      </div>
-    </main>
-    <footer className="welcome-footer">VSA Template <span>Built around your organization.</span></footer>
-  </div>;
 }
 
 function Workspace({ session }: { session: Session }) {

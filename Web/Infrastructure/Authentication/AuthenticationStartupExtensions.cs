@@ -1,130 +1,74 @@
 using System.Globalization;
 using System.Security.Claims;
-using Auth0.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using LinqToDB.Async;
+using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.AccessControl.Models;
-using VsaTemplate.Web.Features.AccessControl.Queries;
 
 namespace VsaTemplate.Web.Infrastructure.Authentication;
 
 public static class AuthenticationStartupExtensions
 {
-	public static void AddWebAuthentication(
-		this IServiceCollection services,
-		string? domain,
-		string? clientId,
-		bool useAuth0
-	)
+	public static void AddWebAuthentication(this IServiceCollection services)
 	{
 
-		var authBuilder = services
+		services
 			.AddAuthentication(o =>
 			{
+				o.DefaultAuthenticateScheme = ApiKeyAuthenticationHandler.AuthenticationScheme;
+				o.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+				o.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+			})
+			.AddCookie(o =>
+			{
+				o.LoginPath = "/";
+				o.AccessDeniedPath = "/";
+				o.Cookie.HttpOnly = true;
+				o.Cookie.SameSite = SameSiteMode.Lax;
+				o.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
 
-				if (useAuth0)
+				o.Events.OnRedirectToLogin = context =>
 				{
-					o.DefaultAuthenticateScheme = ApiKeyAuthenticationHandler.AuthenticationScheme;
-					o.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-					o.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-				}
-				else
+
+					if (context.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
+						context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+					else
+						context.Response.Redirect(context.RedirectUri);
+
+					return Task.CompletedTask;
+				};
+
+				o.Events.OnRedirectToAccessDenied = context =>
 				{
-					o.DefaultScheme = ApiKeyAuthenticationHandler.AuthenticationScheme;
-				}
+
+					if (context.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
+						context.Response.StatusCode = StatusCodes.Status403Forbidden;
+					else
+						context.Response.Redirect(context.RedirectUri);
+
+					return Task.CompletedTask;
+				};
+
+				o.Events.OnValidatePrincipal = async context =>
+				{
+					var value = context.Principal?.FindFirstValue("vsa-id");
+					var db = context.HttpContext.RequestServices.GetRequiredService<DbContext>();
+
+					if (UserId.TryParse(value ?? "", CultureInfo.InvariantCulture, out var userId)
+						&& await db.AccessControl.Users
+							.AnyAsync(u => u.UserId == userId && u.IsActive && u.ApiKey == null))
+					{
+						return;
+					}
+
+					context.RejectPrincipal();
+				};
 
 			})
 			.AddScheme<ApiKeyAuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(
 				ApiKeyAuthenticationHandler.AuthenticationScheme,
-				configureOptions: o => o.UseCookiesBackup = useAuth0
+				configureOptions: null
 			);
-
-		if (useAuth0)
-		{
-			ArgumentNullException.ThrowIfNull(domain);
-			ArgumentNullException.ThrowIfNull(clientId);
-
-			authBuilder
-				.AddAuth0WebAppAuthentication(o =>
-				{
-					o.Domain = domain;
-					o.ClientId = clientId;
-					o.Scope = "openid profile email";
-
-					o.OpenIdConnectEvents = new()
-					{
-						OnTicketReceived = ProcessTicket,
-					};
-
-				});
-
-			services.Configure<CookieAuthenticationOptions>(CookieAuthenticationDefaults.AuthenticationScheme, o =>
-			{
-
-				o.Events.OnRedirectToLogin = ctx =>
-				{
-
-					if (ctx.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
-						ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
-					else
-						ctx.Response.Redirect(ctx.RedirectUri);
-
-					return Task.CompletedTask;
-				};
-
-				o.Events.OnRedirectToAccessDenied = ctx =>
-				{
-
-					if (ctx.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
-						ctx.Response.StatusCode = StatusCodes.Status403Forbidden;
-					else
-						ctx.Response.Redirect(ctx.RedirectUri);
-
-					return Task.CompletedTask;
-				};
-
-			});
-
-		}
-
-	}
-
-	private static async Task ProcessTicket(TicketReceivedContext ctx)
-	{
-
-		var user = ctx.Principal
-			?? throw new InvalidOperationException("Got a ticket, but no valid user attached.");
-
-		var auth0Id = user.Claims
-			.FirstOrDefault(c => c.Type is ClaimTypes.NameIdentifier)?.Value;
-
-		if (string.IsNullOrWhiteSpace(auth0Id))
-			throw new InvalidOperationException("Completed Auth0 login, but no Auth0 Id present.");
-
-		var emailAddress = user.Claims
-			.FirstOrDefault(c => c.Type is ClaimTypes.Email)?.Value;
-
-		if (string.IsNullOrWhiteSpace(emailAddress))
-			throw new InvalidOperationException("Completed Auth0 login, but no email address present.");
-
-		var usersService = ctx.HttpContext.RequestServices.GetRequiredService<GetUserId.Handler>();
-
-		var userId = await usersService.HandleAsync(
-			new()
-			{
-				Auth0UserId = Auth0UserId.From(auth0Id),
-				EmailAddress = emailAddress,
-			},
-			CancellationToken.None
-		);
-
-		user.AddIdentity(
-			new ClaimsIdentity(
-				[
-					new Claim("vsa-id", string.Create(CultureInfo.InvariantCulture, $"{userId}")),
-				]
-			)
-		);
 
 	}
 }

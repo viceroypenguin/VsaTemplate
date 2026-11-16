@@ -14,7 +14,8 @@ describe('workspace flows', () => {
     const fetchMock = vi.fn().mockResolvedValue(json({ isAuthenticated: false, user: null, requestToken: null }));
     vi.stubGlobal('fetch', fetchMock);
     render(<App />);
-    expect(await screen.findByRole('link', { name: 'Sign in to get started' })).toHaveAttribute('href', '/Login?returnUrl=%2F');
+    expect(await screen.findByRole('button', { name: 'Log in to your workspace' })).toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: 'Email address' })).not.toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/session');
   });
@@ -93,7 +94,7 @@ describe('workspace flows', () => {
     const onChanged = vi.fn();
     const fetchMock = vi.fn(async (input: RequestInfo | URL, options?: RequestInit) => {
       if (options?.method === 'PUT') {
-        return String(options.body).includes('outsider@example.com') ? json({ detail: 'Member must belong to the parent tenant.' }, 409) : json({ userId: 2 });
+        return String(options.body).includes('inactive@example.com') ? json({ detail: 'This account is inactive.' }, 409) : json({ userId: 2 });
       }
       if (String(input).endsWith('/roles')) return json({ roles: [{ roleId: 3, name: 'Member', permissions: ['None'] }] });
       return json({ users: [{ userId: 1, name: 'Alex', emailAddress: 'alex@example.com', roles: [{ roleId: 3, name: 'Member' }] }] });
@@ -101,13 +102,13 @@ describe('workspace flows', () => {
     vi.stubGlobal('fetch', fetchMock);
     render(<AccessPanel scope={{ ...adminScope, kind: 'organizations', id: 4 }} view="members" onChanged={onChanged} />);
     await user.click(await screen.findByRole('button', { name: 'Add member' }));
-    expect(screen.getByText(/existing member of the parent tenant/)).toBeInTheDocument();
+    expect(screen.getByText(/access this organization when they sign in/)).toBeInTheDocument();
     const email = screen.getByRole('textbox', { name: 'Email address' });
-    await user.type(email, 'outsider@example.com');
+    await user.type(email, 'inactive@example.com');
     const submit = within(email.closest('form')!).getByRole('button', { name: 'Add member' });
     await user.click(submit);
-    expect(await screen.findByRole('alert')).toHaveTextContent('Member must belong to the parent tenant.');
-    expect(email).toHaveValue('outsider@example.com');
+    expect(await screen.findByRole('alert')).toHaveTextContent('This account is inactive.');
+    expect(email).toHaveValue('inactive@example.com');
     await user.clear(email); await user.type(email, 'teammate@example.com');
     await user.click(submit);
     await waitFor(() => expect(onChanged).toHaveBeenCalledOnce());

@@ -3,17 +3,17 @@ using Immediate.Injections.Shared;
 using Immediate.Validations.Shared;
 using MailKit;
 using MailKit.Net.Smtp;
-using Microsoft.Extensions.Options;
 using Resend;
+using Microsoft.Extensions.Options;
 
 namespace VsaTemplate.Web.Infrastructure.Emails;
 
-[RegisterScoped]
+[RegisterScoped(RegistrationStrategy = RegistrationStrategy.SelfAndImplementedInterfaces)]
 public sealed class EmailService(
 	ResendClient resendClient,
 	IOptions<EmailServiceOptions> options,
 	IHostEnvironment environment
-)
+) : IEmailSender
 {
 	private readonly EmailServiceOptions _options = options.Value;
 
@@ -31,6 +31,23 @@ public sealed class EmailService(
 
 		if (!environment.IsProduction())
 			message = message with { To = _options.AdminEmailAddresses };
+
+		await SendCore(message, cancellationToken);
+	}
+
+	public async Task SendLoginEmail(EmailMessage message, CancellationToken cancellationToken = default)
+	{
+		ArgumentNullException.ThrowIfNull(message);
+		ValidationException.ThrowIfInvalid(message);
+
+		if (_options.ServerType is not (EmailServerType.Smtp or EmailServerType.Resend))
+			throw new InvalidOperationException("Email delivery is not configured.");
+
+		await SendCore(message, cancellationToken);
+	}
+
+	private async Task SendCore(EmailMessage message, CancellationToken cancellationToken)
+	{
 
 		switch (_options.ServerType)
 		{

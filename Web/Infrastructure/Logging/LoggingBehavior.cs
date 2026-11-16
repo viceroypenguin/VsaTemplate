@@ -17,7 +17,7 @@ public sealed partial class LoggingBehavior<TRequest, TResponse>(
 
 		var properties = new Dictionary<string, object?>(StringComparer.Ordinal)
 		{
-			["@RequestData"] = request is GetApiKey.Request ? "[API key redacted]" : request,
+			["@RequestData"] = request is GetApiKey.Request or ISensitiveRequest ? "[Authentication request redacted]" : request,
 		};
 
 		var httpContext = _httpContextAccessor.HttpContext;

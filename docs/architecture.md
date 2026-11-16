@@ -90,7 +90,9 @@ feature request and response models.
 
 The server enforces authentication, authorization, input validation, and persistence invariants. Frontend permission controls
 explain available actions, but never replace API enforcement. Production UI and API share an origin; cookie-authenticated
-mutations use antiforgery protection, while API-key clients use their own authentication path.
+mutations use antiforgery protection, while API-key clients use their own authentication path. Browser authentication uses
+[session-bound email codes](authentication.md); keep that flow separate from the public homepage's content and from the
+roles that authorize an authenticated identity.
 
 Keep the public homepage capable of serving an application's public content independently of its authenticated workspace.
 Frontend source, configuration, and tests live under `Web/ClientApp`; do not introduce a separate JavaScript project merely

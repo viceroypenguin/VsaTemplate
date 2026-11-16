@@ -10,4 +10,5 @@ afterEach(() => {
   vi.unstubAllGlobals();
   window.location.hash = '';
   localStorage.clear();
+  sessionStorage.clear();
 });

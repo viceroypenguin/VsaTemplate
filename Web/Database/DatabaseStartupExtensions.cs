@@ -1,6 +1,6 @@
 using LinqToDB;
 using VsaTemplate.Web.Features.AccessControl.Models;
-using VsaTemplate.Web.Features.AccessControl.Queries;
+using VsaTemplate.Web.Features.AccessControl.Commands;
 
 namespace VsaTemplate.Web.Database;
 
@@ -21,12 +21,11 @@ public static partial class DatabaseStartupExtensions
 			var logger = sp.GetRequiredService<ILoggerFactory>().CreateLogger("OverrideRootUser");
 			ReportRootUserSetup(logger, rootUser);
 
-			var getUserId = sp.GetRequiredService<GetUserId.Handler>();
+			var getUserId = sp.GetRequiredService<EnsureEmailUser.Handler>();
 
 			var rootUserId = await getUserId.HandleAsync(
 				new()
 				{
-					Auth0UserId = Auth0UserId.From(""),
 					EmailAddress = rootUser,
 				}
 			);

@@ -1,11 +1,9 @@
 using System.Diagnostics;
 using System.Text.Json.Serialization;
-using Auth0.AspNetCore.Authentication;
 using Immediate.Injections.Shared;
-using LinqToDB.Async;
-using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OpenApi;
@@ -16,8 +14,9 @@ using Scalar.AspNetCore;
 using Serilog;
 using VsaTemplate.Web;
 using VsaTemplate.Web.Database;
-using VsaTemplate.Web.Features.AccessControl.Models;
 using VsaTemplate.Web.Features.AccessControl.Services;
+using VsaTemplate.Web.Features.AccessControl.Models;
+using LinqToDB.Async;
 using VsaTemplate.Web.Infrastructure.Authentication;
 using VsaTemplate.Web.Infrastructure.Emails;
 using VsaTemplate.Web.Infrastructure.Exceptions;
@@ -37,11 +36,7 @@ try
 
 	builder.ConfigureSerilog();
 
-	builder.Services.AddWebAuthentication(
-		builder.Configuration["Auth0:Domain"],
-		builder.Configuration["Auth0:ClientId"],
-		builder.Configuration.GetValue("UseAuth0", defaultValue: true)
-	);
+	builder.Services.AddWebAuthentication();
 
 	builder.Services.AddWebServices();
 
@@ -63,7 +58,8 @@ try
 	app.Use(async (context, next) =>
 	{
 
-		if (context.User.Identity?.IsAuthenticated == true
+		if ((context.User.Identity?.IsAuthenticated == true
+			|| context.Request.Path.StartsWithSegments("/api/auth/email", StringComparison.OrdinalIgnoreCase))
 			&& !context.User.Identities
 				.Any(i => i.AuthenticationType == ApiKeyAuthenticationHandler.AuthenticationScheme)
 			&& !HttpMethods.IsGet(context.Request.Method)
@@ -86,6 +82,7 @@ try
 		await next(context);
 	});
 
+	app.UseRateLimiter();
 	app.UseLogging();
 
 	app.MapOpenApi().CacheOutput();
@@ -272,41 +269,22 @@ internal static class StartupExtensions
 			{
 				IsAuthenticated = user is not null,
 				User = user,
-				RequestToken = user is null ? null : antiforgery.GetAndStoreTokens(context).RequestToken,
+				antiforgery.GetAndStoreTokens(context).RequestToken,
 			});
 
 		}).AllowAnonymous();
 
 		app
-			.MapGet("/Login", async (HttpContext context, string returnUrl = "/") =>
-			{
-
-				var authenticationProperties = new LoginAuthenticationPropertiesBuilder()
-					.WithRedirectUri(LocalReturnUrl(returnUrl))
-					.Build();
-
-				await context.ChallengeAsync(Auth0Constants.AuthenticationScheme, authenticationProperties);
-			});
-
-		app
 			.MapPost("/Logout", async context =>
 			{
-
-				var authenticationProperties = new LogoutAuthenticationPropertiesBuilder()
-					.WithRedirectUri("/")
-					.Build();
-
-				await context.SignOutAsync(Auth0Constants.AuthenticationScheme, authenticationProperties);
 				await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+				context.Response.Redirect("/");
 			})
 			.RequireAuthorization();
 
 		return app;
 	}
 
-	private static string LocalReturnUrl(string returnUrl) =>
-		returnUrl.StartsWith('/', StringComparison.Ordinal) && !returnUrl.StartsWith("//", StringComparison.Ordinal)
-			&& !returnUrl.Contains('\\', StringComparison.Ordinal) ? returnUrl : "/";
 }
 
 internal sealed record SessionUser

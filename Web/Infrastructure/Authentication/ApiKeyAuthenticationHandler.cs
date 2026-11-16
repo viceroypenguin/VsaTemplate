@@ -1,17 +1,14 @@
 using System.Security.Claims;
 using System.Text.Encodings.Web;
-using Immediate.Injections.Shared;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.Options;
 using VsaTemplate.Web.Features.AccessControl.Queries;
+using Immediate.Injections.Shared;
 
 namespace VsaTemplate.Web.Infrastructure.Authentication;
 
-public sealed class ApiKeyAuthenticationSchemeOptions : AuthenticationSchemeOptions
-{
-	public bool UseCookiesBackup { get; set; }
-}
+public sealed class ApiKeyAuthenticationSchemeOptions : AuthenticationSchemeOptions;
 
 [RegisterScoped]
 public sealed class ApiKeyAuthenticationHandler(
@@ -35,10 +32,7 @@ public sealed class ApiKeyAuthenticationHandler(
 		if (result.Succeeded)
 			return result;
 
-		if (Options.UseCookiesBackup)
-			return await Context.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-
-		return AuthenticateResult.NoResult();
+		return await Context.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 	}
 
 	private async Task<AuthenticateResult> AuthenticateApiKey()

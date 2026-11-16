@@ -21,7 +21,8 @@ operations instead of routing every change through a shared service layer.
 - .NET 11 SDK.
 - Node.js 22.12 or later and npm.
 - SQL Server 2025; the migrations use its native `json` type.
-- An Auth0 regular web application for browser login.
+- An SMTP relay/inbox or a Resend account to deliver email sign-in codes. The public homepage can run without
+  email delivery, but completing a browser login requires a working transport.
 - Docker to run the integration tests or build the application container. A separately managed SQL Server can be
   used for local application development and schema scaffolding.
 
@@ -49,17 +50,43 @@ temporary database. Then create a separate, empty application database and add `
   "DbContextOptions": {
     "ConnectionString": "Server=localhost;Database=VsaTemplate;User ID=app-user;Password=your-password;TrustServerCertificate=true"
   },
-  "Auth0": {
-    "Domain": "your-tenant.auth0.com",
-    "ClientId": "your-client-id"
-  },
   "EmailServiceOptions": {
-    "ServerType": "Disabled",
+    "ServerType": "Smtp",
+    "SmtpServer": "localhost",
+    "SmtpPort": 1025,
     "FromEmailAddress": "VsaTemplate <no-reply@example.com>",
-    "AdminEmailAddresses": ["admin@example.com"]
+    "AdminEmailAddresses": []
   }
 }
 ```
+
+The SMTP example assumes a local relay or development inbox listening on port 1025. For example, start a local
+[Mailpit](https://mailpit.axllent.org/) inbox with Docker:
+
+```sh
+docker run --rm --name vsatemplate-mail \
+  -p 127.0.0.1:1025:1025 -p 127.0.0.1:8025:8025 axllent/mailpit
+```
+
+Open `http://localhost:8025` to read the sign-in code. The current SMTP adapter accepts a host and port for a relay;
+it does not expose SMTP username/password settings. For a Resend transport, replace the email section in your settings
+with the following and use a sender verified for your Resend account:
+
+```json
+{
+  "EmailServiceOptions": {
+    "ServerType": "Resend",
+    "ResendApiToken": "your-resend-api-token",
+    "FromEmailAddress": "VsaTemplate <no-reply@your-domain.example>",
+    "AdminEmailAddresses": []
+  }
+}
+```
+
+Login messages go to the submitted email address in every environment. Other application email can use the configured
+administrator-address redirect during development; that redirect must not intercept sign-in codes. With
+`ServerType: "Disabled"`, the homepage still renders but requesting a login code returns an explicit delivery-unavailable
+response. Codes are not printed in the server console or returned in the API response.
 
 At startup, the server applies outstanding migrations to the application database. If migrations require a separate
 identity, provide `DbContextOptions:ConnectionStringInit`. Neither secrets file should be committed. Production hosts
@@ -90,8 +117,12 @@ npm run dev
 ```
 
 Open `http://localhost:5173`. Vite proxies API and authentication requests to `http://localhost:5106` by default;
-set `WEB_API_URL` if the backend uses another origin. Configure Auth0's callback and logout URLs for the origin used
-for authentication, including `/callback` for the callback URL.
+set `WEB_API_URL` if the backend uses another origin.
+
+On the public homepage, choose the login button and provide an email address. After the request succeeds, the email field
+is disabled and a field for the six-digit code appears. Read the code in that email inbox and enter it in the same tab or
+window within 15 minutes. A successful verification consumes the code and signs the user in with a session cookie. The
+public page and login panel remain separate so a fork can replace the public content without redesigning authentication.
 
 Open `VsaTemplate.slnx` in Visual Studio and expand `Web/ClientApp` under `Web` to review the React components,
 TypeScript, styles, and npm configuration. The frontend is part of the existing C# project. There is no separate
@@ -116,7 +147,8 @@ dotnet test --project Web.Tests/Web.Tests.csproj
 ```
 
 The backend tests start disposable SQL Server containers and an ASP.NET Core application factory, then make HTTP
-requests against the application. Docker must be available, and an ordinary build still needs the scaffolder's
+requests against the application. Login tests capture messages through a test email sender; they do not require an external
+mail provider or print real login codes. Docker must be available, and an ordinary build still needs the scaffolder's
 connection string described above.
 
 ### Publish
@@ -139,7 +171,7 @@ docker build --secret id=ScaffoldConnectionString,src=/path/to/scaffold-connecti
 
 The Node stage restores packages from the npm lockfile and builds the frontend. The .NET stage publishes the server
 with those assets. The final ASP.NET Core image runs as the `app` user on port 8080. The scaffolding database must be
-reachable from the build container; runtime database and authentication settings are supplied when starting the image.
+reachable from the build container; runtime database and email-delivery settings are supplied when starting the image.
 
 If the frontend was built separately, `-p:BuildFrontend=false` uses the existing `Web/ClientApp/dist` output and skips
 npm. The build fails if that output is missing. Normal local builds and publishes do not need this option.
@@ -288,6 +320,27 @@ and UI from one origin keeps deployment and cookie-based authentication straight
 The frontend hides unavailable actions to explain access to the user. The API remains responsible for enforcing access;
 a hidden button is not an authorization boundary. Cookie-authenticated mutations use antiforgery tokens, and API-key
 clients authenticate separately for machine access.
+
+### Email codes for browser authentication
+
+Browser authentication uses an emailed one-time code, leaving the application free of password storage and external
+identity-provider setup. This keeps a fork's starting point understandable: mailbox control establishes identity, while
+the application's own roles and cached permissions decide what that identity can do.
+
+The client generates an unpredictable session identifier and keeps it in `sessionStorage` for the requesting tab. It sends
+that identifier when requesting the code and again when verifying it, so the code alone cannot complete a login in another
+window. The browser also handles duplicated-tab storage rather than assuming a copied `sessionStorage` value identifies
+a new tab. The server generates a cryptographically secure six-digit number, enforces the 15-minute lifetime, and consumes
+a successful challenge atomically. A code is usable once; wrong attempts and request frequency are limited.
+
+Challenges are persisted in SQL Server, with hashes of the session and token material rather than their raw values. This
+lets verification and consumption remain consistent across application instances. Database-backed data-protection keys
+allow those instances to validate the same authentication cookies. The browser's anonymous session endpoint supplies an
+antiforgery token before login requests, so requesting and verifying a code use the same request protection as other
+cookie-backed changes.
+
+See the [authentication guide](docs/authentication.md) for the protocol, email configuration, deployment considerations,
+and the boundaries that should remain intact when extending the flow.
 
 ### Integration tests over mocked persistence
 

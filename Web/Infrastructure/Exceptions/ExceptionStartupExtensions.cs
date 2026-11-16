@@ -1,4 +1,6 @@
 using Immediate.Validations.Shared;
+using System.Globalization;
+using VsaTemplate.Web.Features.AccessControl.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace VsaTemplate.Web.Infrastructure.Exceptions;
@@ -14,6 +16,12 @@ public static class ExceptionStartupExtensions
 
 			c.ProblemDetails = c.Exception switch
 			{
+				BadHttpRequestException ex => new()
+				{
+					Detail = "The request body or parameters are invalid.",
+					Status = ex.StatusCode,
+				},
+
 				ValidationException ex => new ValidationProblemDetails(
 					ex
 						.Errors
@@ -48,6 +56,9 @@ public static class ExceptionStartupExtensions
 					Status = StatusCodes.Status500InternalServerError,
 				},
 			};
+
+			if (c.Exception is EmailLoginRateLimitException rateLimit)
+				c.HttpContext.Response.Headers.RetryAfter = rateLimit.RetryAfterSeconds.ToString(CultureInfo.InvariantCulture);
 
 			c.HttpContext.Response.Headers
 				.Append("RequestId", c.HttpContext.TraceIdentifier);

@@ -10,7 +10,7 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
     proxy: Object.fromEntries(
-      ['/api', '/Login', '/Logout', '/callback', '/signout-callback-oidc'].map((path) => [
+      ['/api', '/Logout'].map((path) => [
         path, { target: backend, changeOrigin: true, secure: true },
       ]),
     ),

@@ -232,7 +232,7 @@ tr:last-child td { border: 0; }
 .welcome-label span { width: 5px; height: 5px; background: currentColor; border-radius: 100%; }
 .welcome h1 { font-size: clamp(44px, 7vw, 78px); line-height: 1.09; letter-spacing: -.06em; margin-bottom: 23px; font-weight: 600; }
 .welcome h1 em { font-style: normal; color: var(--accent); }
-.welcome-content > p { max-width: 470px; font-size: 15px; line-height: 1.9; margin: 0 auto 27px; }
+.welcome-hero > p { max-width: 470px; font-size: 15px; line-height: 1.9; margin: 0 auto 27px; }
 .welcome-features { display: grid; grid-template-columns: repeat(3, 1fr); text-align: left; margin-top: 70px; gap: 20px; }
 .welcome-features article { background: var(--panel); border: 1px solid var(--border); padding: 27px; border-radius: 10px; }
 .welcome-features article > svg { color: var(--accent); margin-bottom: 18px; }
@@ -287,3 +287,37 @@ tr:last-child td { border: 0; }
 }
 @media (max-width: 400px) { .main-content { padding-left: 15px; padding-right: 15px; } .recovery-keys { grid-template-columns: 1fr; } .stats-row > div { padding: 13px 10px; } .theme-control { max-width: 105px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+
+
+.email-login {
+  max-width: 460px;
+  margin: 35px auto 0;
+  padding: 28px;
+  text-align: left;
+}
+
+.email-login-heading {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin-bottom: 24px;
+}
+
+.email-login-heading .entity-icon { flex-shrink: 0; }
+.email-login-heading h2 { margin-bottom: 5px; font-size: 18px; }
+.email-login-heading p { margin: 0; font-size: 12px; }
+.email-login-form { display: grid; gap: 18px; }
+.email-login-form > .button { width: 100%; }
+.email-login-form .form-hint { margin-bottom: 0; line-height: 1.8; }
+.email-login-form .alert { margin-bottom: 0; }
+.email-login-form input:disabled { color: var(--text-subtle); background: var(--panel-strong); cursor: not-allowed; }
+.email-login-form .login-code { font-size: 24px; font-weight: 600; letter-spacing: .28em; padding: 11px 15px; }
+.login-delivery-note { margin: 0; font-size: 12px; line-height: 1.8; }
+.email-login-secondary { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; }
+.email-login-secondary .text-button { padding: 0; font-size: 11px; }
+
+@media (max-width: 400px) {
+  .email-login { padding: 20px; }
+  .email-login-heading { align-items: flex-start; }
+  .email-login-heading h2 { font-size: 17px; }
+}

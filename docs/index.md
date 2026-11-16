@@ -5,6 +5,7 @@ including agents outside the original development environment. Read the public [
 purpose, architectural rationale, and instructions for building and running it.
 
 - [Architecture](architecture.md): project relationships, feature ownership, persistence, authorization, and frontend hosting.
+- [Authentication](authentication.md): email-code sign-in, tab binding, delivery, and protection boundaries.
 - [Contributing](contributing.md): code placement, reading style, change validation, and maintaining these guides.
 
 Keep these files about decisions that remain useful across tasks. Do not add chat transcripts, individual query answers,

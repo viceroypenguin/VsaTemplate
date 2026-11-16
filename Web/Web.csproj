@@ -40,7 +40,6 @@
   </ItemGroup>
 
   <ItemGroup>
-	<PackageReference Include="Auth0.AspNetCore.Authentication" />
 	<PackageReference Include="Immediate.Apis" />
 	<PackageReference Include="Immediate.Cache" />
 	<PackageReference Include="Immediate.Handlers" />
