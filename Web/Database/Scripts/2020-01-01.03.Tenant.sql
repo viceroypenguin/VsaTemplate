@@ -7,9 +7,7 @@ create table [Tenant]
 	[Name] varchar(200) not null,
 	[IsActive] bit not null,
 
-	[RecoveryKeysJson] varchar(max) not null
-		constraint [CK_Tenant_RecoveryKeysJson_IsJson]
-		check (isjson([RecoveryKeysJson]) = 1),
+	[RecoveryKeysJson] json not null,
 );
 
 create table [TenantRole]
@@ -23,9 +21,7 @@ create table [TenantRole]
 
 	[Name] varchar(200) not null,
 
-	[PermissionsJson] varchar(max) not null
-		constraint [CK_TenantRole_PermissionsJson_IsJson]
-		check (isjson([PermissionsJson]) = 1),
+	[PermissionsJson] json not null,
 
 	EditedUserId int not null
 		constraint [FK_TenantRole_EditUser]
@@ -70,7 +66,5 @@ create table [TenantApiKey]
 		constraint [FK_TenantApiKey_ApiKey]
 		foreign key references [AccessControl].[ApiKey],
 
-	[PermissionsJson] varchar(max) not null
-		constraint [CK_TenantApiKey_PermissionsJson_IsJson]
-		check (isjson([PermissionsJson]) = 1),
+	[PermissionsJson] json not null,
 );

@@ -36,9 +36,7 @@ create table [AccessControl].[Role]
 
 	[Name] varchar(200) not null,
 
-	[PermissionsJson] varchar(max) not null
-		constraint [CK_Role_PermissionsJson_IsJson]
-		check (isjson([PermissionsJson]) = 1),
+	[PermissionsJson] json not null,
 
 	EditedUserId int not null
 		constraint [FK_Role_EditUser]
@@ -98,9 +96,7 @@ create table [AccessControl].[ApiKey]
 		constraint [FK_ApiKey_Owner]
 		foreign key references [AccessControl].[User],
 
-	[PermissionsJson] varchar(max) not null
-		constraint [CK_ApiKey_PermissionsJson_IsJson]
-		check (isjson([PermissionsJson]) = 1),
+	[PermissionsJson] json not null,
 
 	[CreatedDateTime] datetimeoffset not null,
 	[ExpirationDateTime] datetimeoffset not null,
