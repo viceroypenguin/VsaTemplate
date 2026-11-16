@@ -45,8 +45,8 @@ public static class ObjectExtensions
 	/// <summary>
 	///     Wraps an object in a ValueTask.
 	/// </summary>
-	public static ValueTask<T> ToValueTask<T>(this T input)
-		=> ValueTask.FromResult(input);
+	public static async ValueTask<T> ToValueTask<T>(this T input)
+		=> await ValueTask.FromResult(input);
 
 	/// <summary>
 	///     Transforms an object using a function.

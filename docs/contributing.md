@@ -104,6 +104,10 @@ Prefer request and response records with named properties over positional record
 explicitly qualified as `Database.Models` types. Use typed IDs consistently rather than weakening a feature contract to a
 primitive integer for convenience.
 
+Use `async` and `await` in every `ValueTask`-returning implementation rather than returning a `ValueTask` directly. The
+wrapper is intentional for error stack reporting with runtime-async; do not remove it as a simplification. Keep genuinely
+synchronous methods synchronous and return their values without an asynchronous wrapper.
+
 ## Validating a change
 
 Choose checks that demonstrate the behavior affected by the change. Run frontend checks from `Web/ClientApp`:

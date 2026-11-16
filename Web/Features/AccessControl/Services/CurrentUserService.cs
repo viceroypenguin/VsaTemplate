@@ -15,17 +15,17 @@ public sealed class CurrentUserService(
 	UserPermissionCache userPermissionCache
 )
 {
-	public ValueTask<IReadOnlyList<Permission>> GetCurrentUserPermissions() =>
+	public async ValueTask<IReadOnlyList<Permission>> GetCurrentUserPermissions() =>
 		GetCurrentUserId() switch
 		{
-			{ } userId => userPermissionCache.GetValue(new() { UserId = userId })
+			{ } userId => await userPermissionCache.GetValue(new() { UserId = userId })
 				.Transform(r => r.Permissions),
 
-			_ => ValueTask.FromResult<IReadOnlyList<Permission>>([]),
+			_ => [],
 		};
 
-	public ValueTask<IReadOnlyList<Permission>> GetLoggedInUserPermissions() =>
-		userPermissionCache.GetValue(new() { UserId = GetLoggedInUserId() })
+	public async ValueTask<IReadOnlyList<Permission>> GetLoggedInUserPermissions() =>
+		await userPermissionCache.GetValue(new() { UserId = GetLoggedInUserId() })
 			.Transform(r => r.Permissions);
 
 	public UserId? GetCurrentUserId()
