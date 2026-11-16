@@ -6,5 +6,5 @@ public enum TenantPermission
 	Admin = 1,
 
 	UserManagement = 2,
-	Organizationmanagement = 3,
+	OrganizationManagement = 3,
 }
