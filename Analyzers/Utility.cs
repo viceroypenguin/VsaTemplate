@@ -8,10 +8,8 @@ public static class Utility
 {
 	public static bool IsInExpression(this SyntaxNodeAnalysisContext context, SyntaxNode node)
 	{
-
 		for (var n = node.Parent; n is not (null or MethodDeclarationSyntax); n = n.Parent)
 		{
-
 			if (n is not SimpleLambdaExpressionSyntax)
 				continue;
 
@@ -24,7 +22,6 @@ public static class Utility
 			{
 				return true;
 			}
-
 		}
 
 		return false;

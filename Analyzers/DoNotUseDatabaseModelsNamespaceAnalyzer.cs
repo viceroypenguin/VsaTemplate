@@ -58,6 +58,5 @@ public sealed class DoNotUseDatabaseModelsNamespaceAnalyzer : DiagnosticAnalyzer
 				proj
 			)
 		);
-
 	}
 }

@@ -19,11 +19,9 @@ public sealed class LoggerMessageDiagnosticSuppressor : DiagnosticSuppressor
 
 	public override void ReportSuppressions(SuppressionAnalysisContext context)
 	{
-
 		foreach (var diagnostic in context.ReportedDiagnostics)
 		{
-
-			if (diagnostic.Location.SourceTree?.GetRoot().FindNode(diagnostic.Location.SourceSpan) is not
+			if (diagnostic.Location.SourceTree?.GetRoot(context.CancellationToken).FindNode(diagnostic.Location.SourceSpan) is not
 					InvocationExpressionSyntax { ArgumentList.Arguments.Count: 1 })
 			{
 				continue;
@@ -35,8 +33,6 @@ public sealed class LoggerMessageDiagnosticSuppressor : DiagnosticSuppressor
 					diagnostic
 				)
 			);
-
 		}
-
 	}
 }

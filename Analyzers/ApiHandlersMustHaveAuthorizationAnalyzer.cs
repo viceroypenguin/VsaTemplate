@@ -44,8 +44,7 @@ public sealed class ApiHandlersMustHaveAuthorizationAnalyzer : DiagnosticAnalyze
 			return;
 		}
 
-		if (!node.Modifiers
-			.Any(SyntaxKind.StaticKeyword))
+		if (!node.Modifiers.Any(SyntaxKind.StaticKeyword))
 			return;
 
 		var handlerSymbol = context.SemanticModel
@@ -85,8 +84,7 @@ public sealed class ApiHandlersMustHaveAuthorizationAnalyzer : DiagnosticAnalyze
 
 		token.ThrowIfCancellationRequested();
 
-		if (requestType.Interfaces
-			.Any(s => s.IsIAuthorizedRequest()))
+		if (requestType.Interfaces.Any(s => s.IsIAuthorizedRequest()))
 			return;
 
 		var declaration = (TypeDeclarationSyntax?)requestType

@@ -29,7 +29,6 @@ internal sealed class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Settings>
 	public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
 	{
 #pragma warning disable CA1031 // Do not catch general exception types
-
 		try
 		{
 			var code = await GenerateScaffold(settings);
@@ -45,7 +44,6 @@ internal sealed class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Settings>
 			await Console.Error.WriteLineAsync(ex.Message, cancellationToken);
 			return 1;
 		}
-
 #pragma warning restore CA1031 // Do not catch general exception types
 	}
 
@@ -96,12 +94,8 @@ internal sealed class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Settings>
 						{
 							Name = fk.KeyName,
 							CanBeNull = fk.CanBeNull,
-							ThisKeys = string
-								.Join(',', fk.ThisColumns
-	.Select(c => c.MemberName)),
-							OtherKeys = string
-								.Join(',', fk.OtherColumns
-	.Select(c => c.MemberName)),
+							ThisKeys = string.Join(',', fk.ThisColumns.Select(c => c.MemberName)),
+							OtherKeys = string.Join(',', fk.OtherColumns.Select(c => c.MemberName)),
 							OtherName = GetAssociationName(fk),
 
 							OtherType =
@@ -128,7 +122,6 @@ internal sealed class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Settings>
 
 			static string GetAssociationName(ForeignKeySchema fk)
 			{
-
 				if (fk.AssociationType is AssociationType.OneToMany)
 					return Pluralize(fk.OtherTable.TypeName);
 
@@ -151,25 +144,22 @@ internal sealed class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Settings>
 #pragma warning disable CA1869 // Cache and reuse 'JsonSerializerOptions' instances
 			return JsonSerializer.Serialize(entities, new JsonSerializerOptions() { WriteIndented = true });
 #pragma warning restore CA1869 // Cache and reuse 'JsonSerializerOptions' instances
+
 		}
 		finally
 		{
 			await DropDatabase(conn, dbName);
 		}
-
 	}
 
 	private static string Pluralize(string typeName) =>
-		string
-			.Concat(
+		string.Concat(
 			typeName
 				.Segment(char.IsUpper)
 				.TagFirstLast((str, _, isLast) =>
 					isLast
-						? string
-							.Concat(str).Pluralize()
-						: string
-							.Concat(str)
+						? string.Concat(str).Pluralize()
+						: string.Concat(str)
 				)
 		);
 
@@ -228,26 +218,23 @@ internal sealed class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Settings>
 		await conn.ExecuteAsync($"use master; create database {database};");
 	}
 
+	[GeneratedRegex(@"^go\r?$", RegexOptions.IgnoreCase | RegexOptions.Multiline, matchTimeoutMilliseconds: 1_000)]
+	private static partial Regex GoRegex { get; }
+
 	private static async Task LoadMigrationScripts(DataConnection conn, string dbName, IEnumerable<string> sqlFiles)
 	{
 		Console.WriteLine("Running Migration Scripts");
 		await conn.ExecuteAsync($"use {dbName};");
 
-		var sqlBlocksRegex = new Regex(@"^go\r?$", RegexOptions.IgnoreCase | RegexOptions.Multiline, TimeSpan.FromSeconds(1));
-
-		foreach (var path in sqlFiles
-			.OrderBy(f => Path.GetFileName(f), StringComparer.Ordinal))
+		foreach (var path in sqlFiles.OrderBy(f => Path.GetFileName(f), StringComparer.Ordinal))
 		{
 			Console.WriteLine($"Executing Script: {Path.GetFileName(path)}");
 
 			var text = await File.ReadAllTextAsync(path);
 
-			foreach (var b in sqlBlocksRegex.Split(text)
-				.Where(s => !string.IsNullOrWhiteSpace(s)))
+			foreach (var b in GoRegex.Split(text).Where(s => !string.IsNullOrWhiteSpace(s)))
 				await conn.ExecuteAsync(b);
-
 		}
-
 	}
 
 	private static async Task DropDatabase(DataConnection conn, string database)
@@ -264,7 +251,6 @@ internal sealed class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Settings>
 			end
 			"""
 		);
-
 	}
 
 	private static DataConnection GetSqlServerConnection(string connectionString, string database)
@@ -279,7 +265,5 @@ internal sealed class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Settings>
 			builder.ToString(),
 			SqlServerVersion.v2022,
 			SqlServerProvider.MicrosoftDataSqlClient);
-
 	}
-
 }

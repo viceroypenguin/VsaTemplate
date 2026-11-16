@@ -7,7 +7,6 @@ public sealed partial class DbGenerator : IIncrementalGenerator
 {
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
-
 		var rootNamespace = context.AnalyzerConfigOptionsProvider
 			.Select((p, _) =>
 				p.GlobalOptions.TryGetValue("build_property.RootNamespace", out var ns)
@@ -70,7 +69,9 @@ public sealed partial class DbGenerator : IIncrementalGenerator
 			.Collect()
 			.Select((x, _) => x
 				.Distinct(StringComparer.Ordinal)
-				.OrderBy(x => x, StringComparer.Ordinal).ToEquatableReadOnlyList());
+				.OrderBy(x => x, StringComparer.Ordinal)
+				.ToEquatableReadOnlyList()
+			);
 
 		var entityTemplate = Utility.GetScribanTemplate("DbScaffold.Entity");
 
@@ -168,7 +169,6 @@ public sealed partial class DbGenerator : IIncrementalGenerator
 			UnderlyingTypeName = underlying,
 			IsEnum = false,
 		};
-
 	}
 
 	private static MappedType TransformSyncEnum(
@@ -176,7 +176,6 @@ public sealed partial class DbGenerator : IIncrementalGenerator
 		CancellationToken token
 	)
 	{
-
 		return new()
 		{
 			ColumnNames = new([@enum.Name + "Id"]),
@@ -184,7 +183,6 @@ public sealed partial class DbGenerator : IIncrementalGenerator
 			UnderlyingTypeName = "int",
 			IsEnum = true,
 		};
-
 	}
 
 	private sealed record MappedType
