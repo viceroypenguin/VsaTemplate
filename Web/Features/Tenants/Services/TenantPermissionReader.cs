@@ -17,11 +17,8 @@ public sealed class TenantPermissionReader(DbContext context, TimeProvider timeP
 		CancellationToken token
 	)
 	{
-
-		if (!await context.AccessControl.Users
-			.AnyAsync(u => u.UserId == userId && u.IsActive, token)
-			|| !await context.Tenants
-				.AnyAsync(t => t.TenantId == tenantId && (includeInactive || t.IsActive), token))
+		if (!await context.AccessControl.Users.AnyAsync(u => u.UserId == userId && u.IsActive, token)
+			|| !await context.Tenants.AnyAsync(t => t.TenantId == tenantId && (includeInactive || t.IsActive), token))
 		{
 			return [];
 		}
@@ -40,7 +37,6 @@ public sealed class TenantPermissionReader(DbContext context, TimeProvider timeP
 
 		if (apiKey is null)
 		{
-
 			var permissionSets = await context.TenantRoleUsers
 				.Where(u => u.UserId == userId && u.TenantRole.TenantId == tenantId)
 				.Select(u => u.TenantRole.PermissionsJson)
@@ -50,7 +46,6 @@ public sealed class TenantPermissionReader(DbContext context, TimeProvider timeP
 				.SelectMany(p => JsonSerializer.Deserialize<List<TenantPermission>>(p) ?? [])
 				.Distinct()
 				.ToList();
-
 		}
 
 		if (apiKey is not { OwnerIsActive: true, OwnerIsApiKey: false, PermissionsJson: { } grants }
@@ -68,6 +63,5 @@ public sealed class TenantPermissionReader(DbContext context, TimeProvider timeP
 			.Where(p => p == TenantPermission.None || ownerPermissions.Contains(TenantPermission.Admin) || ownerPermissions.Contains(p))
 			.Distinct()
 			.ToList();
-
 	}
 }

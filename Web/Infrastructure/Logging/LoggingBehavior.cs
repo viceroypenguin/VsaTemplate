@@ -14,7 +14,6 @@ public sealed partial class LoggingBehavior<TRequest, TResponse>(
 
 	public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
 	{
-
 		var properties = new Dictionary<string, object?>(StringComparer.Ordinal)
 		{
 			["@RequestData"] = request is GetApiKey.Request or ISensitiveRequest ? "[Authentication request redacted]" : request,
@@ -45,13 +44,11 @@ public sealed partial class LoggingBehavior<TRequest, TResponse>(
 		}
 		catch (Exception ex)
 		{
-
 			using (var scope = _logger.BeginScope(properties))
 				LogException(HandlerType, ex);
 
 			throw;
 		}
-
 	}
 
 	[LoggerMessage(

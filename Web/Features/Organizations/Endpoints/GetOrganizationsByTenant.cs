@@ -34,7 +34,6 @@ public sealed partial class GetOrganizationsByTenant(
 
 	private async ValueTask<Response> HandleAsync([AsParameters] Query query, CancellationToken token)
 	{
-
 		var memberships = await getOrganizationsForUser.HandleAsync(
 			new() { UserId = currentUserService.GetLoggedInUserId() },
 			token

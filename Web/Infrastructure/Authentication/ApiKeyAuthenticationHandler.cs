@@ -68,6 +68,5 @@ public sealed class ApiKeyAuthenticationHandler(
 				AuthenticationScheme
 			)
 		);
-
 	}
 }

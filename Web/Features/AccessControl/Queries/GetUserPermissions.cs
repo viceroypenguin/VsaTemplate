@@ -28,9 +28,7 @@ public sealed partial class GetUserPermissions(
 		CancellationToken token
 	)
 	{
-
-		if (!await context.AccessControl.Users
-			.AnyAsync(u => u.UserId == query.UserId && u.IsActive, token))
+		if (!await context.AccessControl.Users.AnyAsync(u => u.UserId == query.UserId && u.IsActive, token))
 			return new() { Permissions = [] };
 
 		var apiKey = await context.AccessControl.ApiKeys
@@ -38,7 +36,6 @@ public sealed partial class GetUserPermissions(
 
 		if (apiKey is null)
 		{
-
 			return new()
 			{
 				Permissions = (
@@ -53,7 +50,6 @@ public sealed partial class GetUserPermissions(
 					.Distinct()
 					.ToList(),
 			};
-
 		}
 
 		var parentPermissions = await userPermissionCache.GetValue(new() { UserId = apiKey.OwnerUserId }, token);
@@ -69,6 +65,5 @@ public sealed partial class GetUserPermissions(
 				.Distinct()
 				.ToList(),
 		};
-
 	}
 }

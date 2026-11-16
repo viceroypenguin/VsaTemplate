@@ -42,7 +42,6 @@ public sealed partial class UpdateOrganization(
 
 	private async ValueTask HandleAsync([AsParameters] Request request, CancellationToken token)
 	{
-
 		var administration = await administrationCache.GetValue(
 			new()
 			{

@@ -57,16 +57,13 @@ try
 
 	app.Use(async (context, next) =>
 	{
-
 		if ((context.User.Identity?.IsAuthenticated == true
 			|| context.Request.Path.StartsWithSegments("/api/auth/email", StringComparison.OrdinalIgnoreCase))
-			&& !context.User.Identities
-				.Any(i => i.AuthenticationType == ApiKeyAuthenticationHandler.AuthenticationScheme)
+			&& !context.User.Identities.Any(i => i.AuthenticationType == ApiKeyAuthenticationHandler.AuthenticationScheme)
 			&& !HttpMethods.IsGet(context.Request.Method)
 			&& !HttpMethods.IsHead(context.Request.Method)
 			&& !HttpMethods.IsOptions(context.Request.Method))
 		{
-
 			try
 			{
 				await context.RequestServices.GetRequiredService<IAntiforgery>().ValidateRequestAsync(context);
@@ -76,7 +73,6 @@ try
 				await Results.Problem(statusCode: StatusCodes.Status400BadRequest, detail: "The request verification token is missing or invalid. Refresh the page and try again.").ExecuteAsync(context);
 				return;
 			}
-
 		}
 
 		await next(context);
@@ -106,13 +102,11 @@ catch (Exception ex) when (ex is not HostAbortedException)
 }
 finally
 {
-
 	if (new StackTrace().FrameCount == 1)
 	{
 		Log.Information("Shut down complete");
 		await Log.CloseAndFlushAsync();
 	}
-
 }
 
 internal static class StartupExtensions
@@ -120,7 +114,6 @@ internal static class StartupExtensions
 	[RegisterServices]
 	public static void ConfigureWebOptions(IServiceCollection services)
 	{
-
 		services.Configure<ApiBehaviorOptions>(
 			o => o.SuppressInferBindingSourcesForParameters = true
 		);
@@ -136,13 +129,11 @@ internal static class StartupExtensions
 		services.AddResponseCompression(
 			options => options.EnableForHttps = true
 		);
-
 	}
 
 	[RegisterServices]
 	public static void AddEmail(IServiceCollection services)
 	{
-
 		services
 			.AddOptions<ResendClientOptions>()
 			.Configure<IOptions<EmailServiceOptions>>((o, eso) => o.ApiToken = eso.Value.ResendApiToken ?? string.Empty);
@@ -183,16 +174,13 @@ internal static class StartupExtensions
 				options => options.XmlRepository = sp.GetRequiredService<LinqToDBXmlRepository>()
 			)
 		);
-
 	}
 
 	[RegisterServices]
 	public static void AddWebOpenApi(this IServiceCollection services)
 	{
-
 		services.AddOpenApi(o =>
 		{
-
 			o.CreateSchemaReferenceId = t =>
 				t.Type.IsNested
 					? $"{t.Type.DeclaringType!.Name}+{t.Type.Name}"
@@ -203,7 +191,6 @@ internal static class StartupExtensions
 			o.AddDocumentTransformer(
 				(document, context, cancellationToken) =>
 				{
-
 					var key = new OpenApiSecurityScheme()
 					{
 						Scheme = "ApiKey",
@@ -223,7 +210,6 @@ internal static class StartupExtensions
 			o.AddOperationTransformer(
 				(operation, context, cancellationToken) =>
 				{
-
 					if (context.Description.RelativePath?.Split(
 							"/",
 							count: 3,
@@ -245,14 +231,11 @@ internal static class StartupExtensions
 					return Task.CompletedTask;
 				}
 			);
-
 		});
-
 	}
 
 	public static IEndpointRouteBuilder MapAccountServices(this IEndpointRouteBuilder app)
 	{
-
 		app.MapGet("/api/session", async (HttpContext context, CurrentUserService currentUser, DbContext db, IAntiforgery antiforgery) =>
 		{
 			context.Response.Headers.CacheControl = "no-store";
@@ -271,7 +254,6 @@ internal static class StartupExtensions
 				User = user,
 				antiforgery.GetAndStoreTokens(context).RequestToken,
 			});
-
 		}).AllowAnonymous();
 
 		app
@@ -284,7 +266,6 @@ internal static class StartupExtensions
 
 		return app;
 	}
-
 }
 
 internal sealed record SessionUser

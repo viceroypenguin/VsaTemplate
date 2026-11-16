@@ -16,8 +16,33 @@ A feature subfolder contains only the kind of item named by that folder. HTTP en
 management or validation helpers belong in services or validators; standalone feature exceptions belong in exceptions.
 Keep related code within the feature unless it has a real cross-feature consumer.
 
-Each LINQ operator starts on a separate line, including terminal operators. The deliberate exception is `Merge().Using()`,
-which may remain together on one line. This makes the sequence of transformations easy to scan:
+Keep short predicates, simple `foreach` sources, and small nested projections compact when they fit naturally in their
+surrounding statement:
+
+```csharp
+if (requestType.Interfaces.Any(type => type.IsIAuthorizedRequest()))
+    return;
+
+foreach (var path in sqlFiles.OrderBy(Path.GetFileName, StringComparer.Ordinal))
+    await LoadScript(path);
+
+var keys = string.Join(',', columns.Select(column => column.MemberName));
+```
+
+A single call in an assignment or query lookup can still use a readable multiline layout. Do not collapse every
+one-operator expression just because it could fit on one line; preserve deliberate layouts that make the receiver and
+operation clear:
+
+```csharp
+var requestParameter = node.ParameterList.Parameters
+    .FirstOrDefault();
+
+var handlerSymbol = context.SemanticModel
+    .GetDeclaredSymbol(handlerDeclaration, token);
+```
+
+For a multistage LINQ pipeline, put each operator on a separate line, including terminal operations and custom operators.
+Keep the source expression together rather than splitting its member accesses. This makes the transformations easy to scan:
 
 ```csharp
 var names = users
@@ -35,21 +60,45 @@ await context.Users
     .MergeAsync(token);
 ```
 
-Put a blank line before and after a multiline statement, separating it from adjacent statements. For example:
+`Merge().Using()` may remain together on one line. Ordinary method calls are not automatically LINQ pipelines:
+`string.Join(...)` and `string.Concat(...)` should keep their receiver and method name together. Choose wrapping from the
+expression's structure rather than from method names alone; a short nested `Select` does not require expanding the whole
+containing call.
+
+Indent a nested pipeline relative to its containing expression. When a lambda returns a multiline pipeline, put the
+containing call's closing parenthesis on its own line rather than attaching it to the last operator:
 
 ```csharp
-var userId = await currentUserService.GetLoggedInUserId();
-
-var roles = await context.TenantRoles
-    .Where(role => role.TenantId == request.TenantId)
-    .ToListAsync(token);
-
-return new Response { Roles = roles };
+var names = groups
+    .Select(group => group
+        .Distinct(StringComparer.Ordinal)
+        .OrderBy(name => name, StringComparer.Ordinal)
+        .ToEquatableReadOnlyList()
+    );
 ```
 
-Apply the same spacing to multiline calls, declarations, and control-flow statements, rather than limiting the convention
-to LINQ. Keep object properties and named parameters readable; avoid compressing a query or initializer to bypass the
-spacing convention. Follow the repository's `.editorconfig` for indentation and the remaining C# style rules.
+Use blank lines to separate adjacent statements and logical groups, including before and after a multiline statement when
+there are neighboring statements. Do not add padding immediately after an opening brace or before a closing brace. A first
+or last statement in a block does not need a blank line between itself and the brace:
+
+```csharp
+private async Task<Response> LoadRoles(TenantId tenantId, CancellationToken token)
+{
+    var userId = currentUserService.GetLoggedInUserId();
+
+    var roles = await context.TenantRoles
+        .Where(role => role.TenantId == tenantId)
+        .ToListAsync(token);
+
+    return new Response { Roles = roles };
+}
+```
+
+Apply this separation to multiline calls, declarations, and control flow without adding empty lines around every nested
+block. Keep related short statements together when they form one readable group. Preserve meaningful grouping around
+comments and preprocessor directives rather than treating them as reasons to pad blocks. Keep object properties and named
+parameters readable; do not compress a query or initializer to bypass the spacing convention. Follow `.editorconfig` for
+indentation and the remaining C# style rules.
 
 Prefer request and response records with named properties over positional record constructors. Keep database entities
 explicitly qualified as `Database.Models` types. Use typed IDs consistently rather than weakening a feature contract to a

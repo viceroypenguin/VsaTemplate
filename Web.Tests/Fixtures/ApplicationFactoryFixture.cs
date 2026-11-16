@@ -64,7 +64,6 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime
 			{
 				InitialCatalog = _externalDatabase,
 			}.ConnectionString;
-
 		}
 
 		_factory = new TestWebApplicationFactory(connectionString, Emails);
@@ -144,7 +143,6 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime
 			.Where(u => u.EmailAddress == key)
 			.Select(u => u.UserId)
 			.SingleAsync(TestContext.Current.CancellationToken);
-
 	}
 
 	public async Task ExpireApiKeyAsync(string key)
@@ -156,7 +154,6 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime
 			.Where(k => k.User.EmailAddress == key)
 			.Set(k => k.ExpirationDateTime, DateTimeOffset.UtcNow.AddMinutes(-1))
 			.UpdateAsync(TestContext.Current.CancellationToken);
-
 	}
 
 	public HttpClient CreateAnonymousClient() => GetFactory().CreateClient(new()
@@ -216,7 +213,6 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime
 			.Set(c => c.CreatedAt, createdAt)
 			.Set(c => c.ExpiresAt, createdAt.AddMinutes(15))
 			.UpdateAsync(TestContext.Current.CancellationToken);
-
 	}
 
 	public async Task<bool> UserExistsAsync(string emailAddress)
@@ -226,7 +222,6 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime
 
 		return await db.AccessControl.Users
 			.AnyAsync(u => u.EmailAddress == emailAddress, TestContext.Current.CancellationToken);
-
 	}
 
 	public async Task DeactivateUserAsync(UserId userId)
@@ -238,12 +233,10 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime
 			.Where(u => u.UserId == userId)
 			.Set(u => u.IsActive, value: false)
 			.UpdateAsync(TestContext.Current.CancellationToken);
-
 	}
 
 	public async ValueTask DisposeAsync()
 	{
-
 		if (_factory is not null)
 			await _factory.DisposeAsync();
 
@@ -251,7 +244,6 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime
 			await ExecuteDatabaseCommandAsync(_externalServer, _externalDatabase, create: false);
 		else
 			await _container.DisposeAsync();
-
 	}
 
 	private static async Task ExecuteDatabaseCommandAsync(string connectionString, string name, bool create)
@@ -275,7 +267,6 @@ file sealed class TestWebApplicationFactory(string connectionString, CapturingEm
 {
 	protected override IHost CreateHost(IHostBuilder builder)
 	{
-
 		builder
 			.UseEnvironment("Testing")
 			.ConfigureAppConfiguration(cb => cb.AddInMemoryCollection(
@@ -308,9 +299,7 @@ file sealed class TestWebApplicationFactory(string connectionString, CapturingEm
 					options.DefaultChallengeScheme = TestAuthenticationHandler.Scheme;
 				})
 				.AddScheme<AuthenticationSchemeOptions, TestAuthenticationHandler>(TestAuthenticationHandler.Scheme, _ => { });
-
 		});
-
 }
 
 file sealed class TestAuthenticationHandler(
@@ -323,7 +312,6 @@ file sealed class TestAuthenticationHandler(
 
 	protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
 	{
-
 		if (!Request.Headers.TryGetValue("X-Test-User", out var value)
 			|| !int.TryParse(value.ToString(), CultureInfo.InvariantCulture, out var userId))
 		{
@@ -358,7 +346,6 @@ public sealed partial class CapturingEmailSender : IEmailSender
 
 	public Task SendLoginEmail(EmailMessage message, CancellationToken cancellationToken = default)
 	{
-
 		var email = message.To
 			.Single();
 

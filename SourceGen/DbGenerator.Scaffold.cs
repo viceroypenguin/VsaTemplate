@@ -22,7 +22,6 @@ public sealed partial class DbGenerator
 		Template template
 	)
 	{
-
 		var properties = entity.Properties.Collection
 			.Select(p =>
 			{
@@ -55,22 +54,20 @@ public sealed partial class DbGenerator
 					p.SkipOnInsert,
 					p.SkipOnUpdate,
 				};
-
 			});
 
-		var output = template
-			.Render(
-				new
-				{
-					RootNamespace = rootNamespace,
-					Schemas = schemas.Collection,
-					entity.SchemaName,
-					entity.TableName,
-					entity.TypeName,
-					Properties = properties,
-					Associations = entity.Associations.Collection,
-				}
-			);
+		var output = template.Render(
+			new
+			{
+				RootNamespace = rootNamespace,
+				Schemas = schemas.Collection,
+				entity.SchemaName,
+				entity.TableName,
+				entity.TypeName,
+				Properties = properties,
+				Associations = entity.Associations.Collection,
+			}
+		);
 
 		spc.AddSource($"DbContext.Entity.{entity.SchemaName}.{entity.TypeName}.g.cs", SourceText.From(output, Encoding.UTF8));
 	}
@@ -83,17 +80,14 @@ public sealed partial class DbGenerator
 		Template template
 	)
 	{
+		var tablesBySchema = entities.GroupBy(x => x.SchemaName, StringComparer.Ordinal);
 
-		var tablesBySchema = entities
-			.GroupBy(x => x.SchemaName, StringComparer.Ordinal);
-
-		var output = template
-			.Render(new
-			{
-				TablesBySchema = tablesBySchema,
-				Schemas = schemas.Collection,
-				RootNamespace = rootNamespace,
-			});
+		var output = template.Render(new
+		{
+			TablesBySchema = tablesBySchema,
+			Schemas = schemas.Collection,
+			RootNamespace = rootNamespace,
+		});
 
 		spc.AddSource("DbContext.Context.g.cs", SourceText.From(output, Encoding.UTF8));
 	}
@@ -105,7 +99,6 @@ public sealed partial class DbGenerator
 		Template template
 	)
 	{
-
 		var types = context
 			.Where(x => !x.IsEnum)
 			.Select(x => new

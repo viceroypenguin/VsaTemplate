@@ -58,8 +58,7 @@ public sealed class CurrentUserService(
 		if (apiKey is null)
 			return actorId;
 
-		if (!await context.AccessControl.Users
-			.AnyAsync(u => u.UserId == apiKey.OwnerUserId && u.IsActive && u.ApiKey == null))
+		if (!await context.AccessControl.Users.AnyAsync(u => u.UserId == apiKey.OwnerUserId && u.IsActive && u.ApiKey == null))
 			UnauthorizedException.ThrowUnauthorizedException("The API key owner is unavailable.");
 
 		return apiKey.OwnerUserId;

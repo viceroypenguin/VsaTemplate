@@ -84,12 +84,10 @@ public sealed partial class CreateTenant(
 			TenantId = tenantId,
 			RecoveryKeys = recoveryKeys,
 		};
-
 	}
 
 	private static List<string> BuildRecoveryKeys()
 	{
-
 		return Enumerable.Range(0, 12)
 			.Select(_ =>
 				Base58.Bitcoin.Encode(
@@ -97,6 +95,5 @@ public sealed partial class CreateTenant(
 				)
 			)
 			.ToList();
-
 	}
 }

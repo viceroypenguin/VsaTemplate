@@ -34,7 +34,6 @@ public sealed partial class UpdateTenant(
 
 	private async ValueTask HandleAsync([AsParameters] Request request, CancellationToken token)
 	{
-
 		var permissions = await administration.GetValue(
 			new()
 			{

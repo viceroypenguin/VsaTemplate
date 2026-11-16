@@ -22,16 +22,13 @@ internal static class TenantManagement
 
 	public static IReadOnlyList<TenantPermission> ValidatePermissions(IReadOnlyList<TenantPermission>? permissions)
 	{
-
 		if (permissions is not { Count: > 0 }
-			|| permissions
-				.Any(p => !Enum.IsDefined(p)))
+			|| permissions.Any(p => !Enum.IsDefined(p)))
 			throw new TenantValidationException("Select at least one valid permission.");
 
 		return permissions
 			.Distinct()
 			.ToList();
-
 	}
 
 	public static IReadOnlyList<TenantPermission> ReadPermissions(string permissionsJson) =>
@@ -39,12 +36,9 @@ internal static class TenantManagement
 
 	public static void EnsureCanGrant(IReadOnlyList<TenantPermission> actorPermissions, IReadOnlyList<TenantPermission> permissions)
 	{
-
 		if (!actorPermissions.Contains(TenantPermission.Admin)
-			&& permissions
-				.Any(p => p is TenantPermission.Admin || (p is not TenantPermission.None && !actorPermissions.Contains(p))))
+			&& permissions.Any(p => p is TenantPermission.Admin || (p is not TenantPermission.None && !actorPermissions.Contains(p))))
 			throw new UnauthorizedException("You cannot manage permissions beyond your own tenant permissions.");
-
 	}
 
 	public static async Task EnsureAdministratorRemains(
@@ -54,15 +48,13 @@ internal static class TenantManagement
 		UserId? excludedUserId,
 		CancellationToken token)
 	{
-
 		var roles = await context.TenantRoles
 			.Where(r => r.TenantId == tenantId)
 			.ToListAsync(token);
 
 		var administratorRoleIds = roles
 			.Where(r => (excludedRoleId is null || r.TenantRoleId != excludedRoleId.Value)
-				&& ReadPermissions(r.PermissionsJson)
-					.Contains(TenantPermission.Admin))
+				&& ReadPermissions(r.PermissionsJson).Contains(TenantPermission.Admin))
 			.Select(r => r.TenantRoleId)
 			.ToList();
 
@@ -74,9 +66,7 @@ internal static class TenantManagement
 			administrators = administrators
 				.Where(u => u.UserId != userId);
 
-		if (!await administrators
-			.AnyAsync(token))
+		if (!await administrators.AnyAsync(token))
 			throw new ConflictException("A tenant must retain at least one active administrator.");
-
 	}
 }

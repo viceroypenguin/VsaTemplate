@@ -31,7 +31,6 @@ public sealed partial class GetOrganization(DbContext context)
 
 	private async ValueTask<Response> HandleAsync([AsParameters] Query query, CancellationToken token)
 	{
-
 		return await context.Organizations
 			.Where(o => o.OrganizationId == query.OrganizationId)
 			.Select(o => new Response
@@ -43,6 +42,5 @@ public sealed partial class GetOrganization(DbContext context)
 			})
 			.FirstOrDefaultAsync(token)
 			?? throw new NotFoundException(nameof(Database.Models.Organization));
-
 	}
 }

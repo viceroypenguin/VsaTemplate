@@ -27,6 +27,5 @@ public sealed partial class GetTenantAdministrationPermissions(TenantPermissionR
 		{
 			Permissions = effectivePermissions.Contains(TenantPermission.Admin) ? [TenantPermission.Admin] : [],
 		};
-
 	}
 }

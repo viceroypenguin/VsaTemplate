@@ -23,7 +23,6 @@ public sealed class PermissionCacheInvalidator(
 {
 	public async Task InvalidateTenant(TenantId tenantId, CancellationToken token = default)
 	{
-
 		var userIds = await context.TenantRoleUsers
 			.Where(u => u.TenantRole.TenantId == tenantId)
 			.Select(u => u.UserId)
@@ -34,12 +33,10 @@ public sealed class PermissionCacheInvalidator(
 
 		foreach (var userId in userIds)
 			await InvalidateUser(userId, token);
-
 	}
 
 	public async Task InvalidateOrganization(OrganizationId organizationId, CancellationToken token = default)
 	{
-
 		var userIds = await context.OrganizationRoleUsers
 			.Where(u => u.OrganizationRole.OrganizationId == organizationId)
 			.Select(u => u.UserId)
@@ -48,7 +45,6 @@ public sealed class PermissionCacheInvalidator(
 
 		foreach (var userId in userIds)
 			await InvalidateUser(userId, token);
-
 	}
 
 	public async Task InvalidateUser(UserId userId, CancellationToken token = default)
@@ -87,8 +83,6 @@ public sealed class PermissionCacheInvalidator(
 				organizationPermissions.RemoveValue(new() { UserId = id, OrganizationId = organizationId });
 				organizationAdministration.RemoveValue(new() { UserId = id, OrganizationId = organizationId });
 			}
-
 		}
-
 	}
 }

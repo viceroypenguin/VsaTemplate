@@ -10,7 +10,6 @@ public static class ExceptionStartupExtensions
 	public static void ConfigureProblemDetails(ProblemDetailsOptions options) =>
 		options.CustomizeProblemDetails = c =>
 		{
-
 			if (c.Exception is null)
 				return;
 
@@ -66,7 +65,5 @@ public static class ExceptionStartupExtensions
 			c.HttpContext.Response.StatusCode =
 				c.ProblemDetails.Status
 				?? StatusCodes.Status500InternalServerError;
-
 		};
-
 }

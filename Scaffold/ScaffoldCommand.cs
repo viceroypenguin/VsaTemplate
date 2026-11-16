@@ -12,7 +12,7 @@ using VsaTemplate.SourceGen;
 
 namespace VsaTemplate.Scaffold;
 
-internal sealed class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Settings>
+internal sealed partial class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Settings>
 {
 	public sealed class Settings : CommandSettings
 	{

@@ -40,7 +40,6 @@ public static partial class DatabaseStartupExtensions
 					EditedUserId = UserId.From(-1),
 				})
 				.MergeAsync();
-
 		}
 
 		return app;

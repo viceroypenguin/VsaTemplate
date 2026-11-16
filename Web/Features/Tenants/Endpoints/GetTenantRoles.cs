@@ -34,7 +34,6 @@ public sealed partial class GetTenantRoles(DbContext context)
 
 	private async ValueTask<Response> HandleAsync([AsParameters] Query query, CancellationToken token)
 	{
-
 		var roles = await context.TenantRoles
 			.Where(r => r.TenantId == query.TenantId)
 			.OrderBy(r => r.Name)
@@ -51,6 +50,5 @@ public sealed partial class GetTenantRoles(DbContext context)
 				})
 				.ToList(),
 		};
-
 	}
 }

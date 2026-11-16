@@ -60,10 +60,8 @@ public sealed partial class GetOrganizationsForUser(DbContext context, TimeProvi
 		var keyPermissions = apiKey is null ? null : OrganizationManagement.ReadPermissions(apiKey.PermissionsJson);
 		var organizations = new List<Organization>();
 
-		foreach (var group in roles
-			.GroupBy(r => (r.OrganizationId, r.TenantId, r.Name, r.IsActive)))
+		foreach (var group in roles.GroupBy(r => (r.OrganizationId, r.TenantId, r.Name, r.IsActive)))
 		{
-
 			var membershipPermissions = group
 				.SelectMany(r => OrganizationManagement.ReadPermissions(r.PermissionsJson))
 				.Distinct()
@@ -95,13 +93,11 @@ public sealed partial class GetOrganizationsForUser(DbContext context, TimeProvi
 				IsActive = group.Key.IsActive,
 				Permissions = permissions,
 			});
-
 		}
 
 		return organizations
 			.OrderBy(o => o.Name, StringComparer.OrdinalIgnoreCase)
 			.ThenBy(o => o.OrganizationId.Value)
 			.ToList();
-
 	}
 }

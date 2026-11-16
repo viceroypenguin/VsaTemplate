@@ -30,7 +30,6 @@ public sealed partial class GetOrganizationRoles(DbContext context)
 
 	private async ValueTask<Response> HandleAsync([AsParameters] Query query, CancellationToken token)
 	{
-
 		var roles = await context.OrganizationRoles
 			.Where(r => r.OrganizationId == query.OrganizationId)
 			.OrderBy(r => r.Name)
@@ -48,6 +47,5 @@ public sealed partial class GetOrganizationRoles(DbContext context)
 				})
 				.ToList(),
 		};
-
 	}
 }

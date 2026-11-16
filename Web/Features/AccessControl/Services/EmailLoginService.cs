@@ -41,7 +41,6 @@ public sealed class EmailLoginService(
 
 		await using (var transaction = await context.BeginTransactionAsync(IsolationLevel.Serializable, token))
 		{
-
 			await context.AccessControl.EmailLoginChallenges
 				.Where(c => c.ExpiresAt <= now)
 				.DeleteAsync(token);
@@ -56,12 +55,9 @@ public sealed class EmailLoginService(
 
 			if (recent is { } issuedAt)
 			{
-
 				throw new EmailLoginRateLimitException(
-					Math
-						.Max(1, (int)Math.Ceiling(issuedAt.Add(RequestCooldown).Subtract(now).TotalSeconds))
+					Math.Max(1, (int)Math.Ceiling(issuedAt.Add(RequestCooldown).Subtract(now).TotalSeconds))
 				);
-
 			}
 
 			var previousHash = await context.AccessControl.EmailLoginChallenges
@@ -72,7 +68,6 @@ public sealed class EmailLoginService(
 
 			for (var attempt = 0; previousHash is not null && CryptographicOperations.FixedTimeEquals(previousHash, codeHash); attempt++)
 			{
-
 				if (attempt >= 10)
 					throw new InvalidOperationException("The sign-in code generator repeatedly returned the previous code.");
 
@@ -107,7 +102,6 @@ public sealed class EmailLoginService(
 
 		try
 		{
-
 			await emailSender.SendLoginEmail(
 				new()
 				{
@@ -117,7 +111,6 @@ public sealed class EmailLoginService(
 				},
 				token
 			);
-
 		}
 		catch (Exception)
 		{

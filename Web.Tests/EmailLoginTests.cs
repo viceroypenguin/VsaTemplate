@@ -167,22 +167,15 @@ public sealed class EmailLoginTests(ApplicationFactoryFixture fixture)
 
 		try
 		{
+			Assert.Single(responses, response => response.StatusCode == HttpStatusCode.NoContent);
 
-			Assert
-				.Single(responses, response => response.StatusCode == HttpStatusCode.NoContent);
-
-			Assert
-				.Single(responses, response => response.StatusCode == HttpStatusCode.BadRequest);
-
+			Assert.Single(responses, response => response.StatusCode == HttpStatusCode.BadRequest);
 		}
 		finally
 		{
-
 			foreach (var response in responses)
 				response.Dispose();
-
 		}
-
 	}
 
 	[Fact]

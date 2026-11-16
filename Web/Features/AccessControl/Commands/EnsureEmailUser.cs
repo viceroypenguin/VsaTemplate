@@ -37,7 +37,6 @@ public sealed partial class EnsureEmailUser(DbContext context)
 		CancellationToken token
 	)
 	{
-
 		var existing = await context.AccessControl.Users
 			.TableHint("UPDLOCK")
 			.Where(u => u.EmailAddress == email)
@@ -56,7 +55,6 @@ public sealed partial class EnsureEmailUser(DbContext context)
 
 		if (existing is null)
 		{
-
 			var userId = UserId.From(
 				await context.InsertWithInt32IdentityAsync(
 					new Database.Models.AccessControl.User
@@ -74,12 +72,10 @@ public sealed partial class EnsureEmailUser(DbContext context)
 
 		if (loginAt is { } time)
 		{
-
 			await context.AccessControl.Users
 				.Where(u => u.UserId == existing.UserId)
 				.Set(u => u.LastLogin, time)
 				.UpdateAsync(token);
-
 		}
 
 		return new()
@@ -88,6 +84,5 @@ public sealed partial class EnsureEmailUser(DbContext context)
 			Name = existing.Name,
 			EmailAddress = existing.EmailAddress,
 		};
-
 	}
 }

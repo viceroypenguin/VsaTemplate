@@ -17,7 +17,6 @@ public sealed class OrganizationPermissionReader(DbContext context, TimeProvider
 		CancellationToken token
 	)
 	{
-
 		var isActive = await context.Organizations
 			.Where(o => o.OrganizationId == organizationId)
 			.Select(o => (bool?)o.IsActive)
@@ -63,6 +62,5 @@ public sealed class OrganizationPermissionReader(DbContext context, TimeProvider
 				|| permissions.Contains(p))
 			.Distinct()
 			.ToArray();
-
 	}
 }

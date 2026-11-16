@@ -48,7 +48,6 @@ public sealed class EmailService(
 
 	private async Task SendCore(EmailMessage message, CancellationToken cancellationToken)
 	{
-
 		switch (_options.ServerType)
 		{
 			case EmailServerType.Smtp:
@@ -78,7 +77,6 @@ public sealed class EmailService(
 
 			case EmailServerType.Resend:
 			{
-
 				await resendClient.EmailSendAsync(
 					new()
 					{
@@ -100,7 +98,6 @@ public sealed class EmailService(
 			default:
 				return;
 		}
-
 	}
 }
 
@@ -108,17 +105,13 @@ file static class Extensions
 {
 	public static void Add(this List<EmailAddress> addresses, IReadOnlyList<string> moreAddresses)
 	{
-
 		foreach (var a in moreAddresses)
 			addresses.Add(a);
-
 	}
 
 	public static void Add(this MimeKit.InternetAddressList addresses, IReadOnlyList<string> moreAddresses)
 	{
-
 		foreach (var a in moreAddresses)
 			addresses.Add(MimeKit.MailboxAddress.Parse(a));
-
 	}
 }

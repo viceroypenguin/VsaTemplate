@@ -39,6 +39,5 @@ public sealed partial class GetApiKey(DbContext context, TimeProvider timeProvid
 			IsValid = userId != null,
 			UserId = userId,
 		};
-
 	}
 }

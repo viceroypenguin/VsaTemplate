@@ -34,14 +34,11 @@ public sealed partial class EmailServiceOptions : IValidationTarget<EmailService
 
 	private static void AdditionalValidations(ValidationResult errors, EmailServiceOptions target)
 	{
-
 		switch (target.ServerType)
 		{
 			case EmailServerType.Smtp:
-
 				if (target.SmtpServer is null)
 				{
-
 					errors.Add(
 						new()
 						{
@@ -49,12 +46,10 @@ public sealed partial class EmailServiceOptions : IValidationTarget<EmailService
 							ErrorMessage = $"`{nameof(SmtpServer)}` is required when `{nameof(ServerType)}` is `{nameof(ServerType.Smtp)}`",
 						}
 					);
-
 				}
 
 				if (target.SmtpPort is null)
 				{
-
 					errors.Add(
 						new()
 						{
@@ -62,16 +57,13 @@ public sealed partial class EmailServiceOptions : IValidationTarget<EmailService
 							ErrorMessage = $"`{nameof(SmtpPort)}` is required when `{nameof(ServerType)}` is `{nameof(ServerType.Smtp)}`",
 						}
 					);
-
 				}
 
 				return;
 
 			case EmailServerType.Resend:
-
 				if (target.ResendApiToken is null)
 				{
-
 					errors.Add(
 						new()
 						{
@@ -79,13 +71,11 @@ public sealed partial class EmailServiceOptions : IValidationTarget<EmailService
 							ErrorMessage = $"`{nameof(ResendApiToken)}` is required when `{nameof(ServerType)}` is `{nameof(ServerType.Resend)}`",
 						}
 					);
-
 				}
 
 				return;
 
 			case EmailServerType.None:
-
 				errors.Add(
 					new()
 					{
@@ -100,6 +90,5 @@ public sealed partial class EmailServiceOptions : IValidationTarget<EmailService
 			default:
 				return;
 		}
-
 	}
 }

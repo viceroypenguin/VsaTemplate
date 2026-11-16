@@ -41,7 +41,6 @@ public sealed partial class GetUsersByTenant(DbContext context)
 
 	private async ValueTask<Response> HandleAsync([AsParameters] Query query, CancellationToken token)
 	{
-
 		var memberships = await context.TenantRoleUsers
 			.Where(u => u.TenantRole.TenantId == query.TenantId && u.User.ApiKey == null)
 			.Select(u => new
@@ -71,6 +70,5 @@ public sealed partial class GetUsersByTenant(DbContext context)
 				.OrderBy(u => u.EmailAddress, StringComparer.OrdinalIgnoreCase)
 				.ToList(),
 		};
-
 	}
 }

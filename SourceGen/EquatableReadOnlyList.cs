@@ -5,8 +5,7 @@ namespace VsaTemplate.SourceGen;
 public static class EquatableReadOnlyList
 {
 	public static EquatableReadOnlyList<T> ToEquatableReadOnlyList<T>(this IEnumerable<T> enumerable) =>
-		new(enumerable as IReadOnlyList<T> ?? enumerable
-			.ToList());
+		new(enumerable as IReadOnlyList<T> ?? enumerable.ToList());
 }
 
 /// <summary>

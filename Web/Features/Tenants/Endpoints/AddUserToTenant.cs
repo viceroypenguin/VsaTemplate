@@ -44,8 +44,7 @@ public sealed partial class AddUserToTenant(
 			await currentTenantUserService.GetLoggedInUserPermissions(request.TenantId),
 			TenantManagement.ReadPermissions(role.PermissionsJson));
 
-		if (!await context.AccessControl.Users
-			.AnyAsync(u => u.UserId == request.UserId && u.IsActive && u.ApiKey == null, token))
+		if (!await context.AccessControl.Users.AnyAsync(u => u.UserId == request.UserId && u.IsActive && u.ApiKey == null, token))
 			throw new NotFoundException(nameof(Database.Models.AccessControl.User));
 
 		var userId = currentUserService.GetLoggedInUserId();

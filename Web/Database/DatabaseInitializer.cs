@@ -66,20 +66,16 @@ public static partial class DatabaseInitializer
 					startTime,
 					endTime
 				);
-
 			}
-
 		}
 
 		private void ExecuteScript(string scriptName)
 		{
-
 			try
 			{
 				var script = Assembly.GetContent(scriptName);
 
-				foreach (var b in SqlBlockRegex.Split(script)
-					.Where(s => !string.IsNullOrWhiteSpace(s)))
+				foreach (var b in SqlBlockRegex.Split(script).Where(s => !string.IsNullOrWhiteSpace(s)))
 					context.Execute(b);
 
 				LogExecutedScript(logger, scriptName);
@@ -89,19 +85,16 @@ public static partial class DatabaseInitializer
 				LogUnableToRunScript(logger, ex, scriptName);
 				throw;
 			}
-
 		}
 
 		private static List<string> GetEmbeddedScripts()
 		{
 			var resourcePrefix = typeof(TContext).Namespace + ".Scripts.";
 
-			return Assembly
-				.GetManifestResourceNames()
+			return Assembly.GetManifestResourceNames()
 				.Where(s => Path.GetExtension(s).Equals(".sql", StringComparison.OrdinalIgnoreCase))
 				.Select(s => s[resourcePrefix.Length..])
 				.ToList();
-
 		}
 	}
 
@@ -114,7 +107,6 @@ public static partial class DatabaseInitializer
 
 	public static Stream GetStream(this Assembly assembly, string resourceName)
 	{
-
 		var manifestResourceName = assembly
 			.GetManifestResourceNames()
 			.FirstOrDefault(x => x.EndsWith(resourceName, StringComparison.OrdinalIgnoreCase));

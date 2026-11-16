@@ -21,7 +21,6 @@ public sealed partial class GetOrganizationAdministrationPermissions(Organizatio
 
 	private async ValueTask<Response> HandleAsync(Query query, CancellationToken token)
 	{
-
 		var permissions = await permissionReader.Read(
 			query.UserId,
 			query.OrganizationId,
@@ -33,6 +32,5 @@ public sealed partial class GetOrganizationAdministrationPermissions(Organizatio
 		{
 			Permissions = permissions.Contains(OrganizationPermission.Admin) ? [OrganizationPermission.Admin] : [],
 		};
-
 	}
 }

@@ -24,7 +24,6 @@ internal static class EmailLoginValidation
 
 	public static string NormalizeSession(string? sessionId)
 	{
-
 		if (!Guid.TryParseExact(sessionId, "D", out var session) || session == Guid.Empty)
 			throw new EmailLoginException();
 

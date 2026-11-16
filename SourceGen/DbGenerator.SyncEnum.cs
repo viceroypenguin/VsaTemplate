@@ -38,7 +38,6 @@ public sealed partial class DbGenerator
 
 		foreach (var member in @enum.Members)
 		{
-
 			if (member.EqualsValue is not { Value: { } ev })
 				continue;
 
@@ -74,7 +73,6 @@ public sealed partial class DbGenerator
 			TypeName = symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
 			Values = new(list),
 		};
-
 	}
 
 	private static void RenderEnum(
@@ -85,21 +83,19 @@ public sealed partial class DbGenerator
 		Template perEnumTemplate
 	)
 	{
-
 		var type = map.TryGetValue(node.Table + "Id", out var value)
 			? value.UnderlyingType
 			: "int";
 
-		var output = perEnumTemplate
-			.Render(new
-			{
-				RootNamespace = rootNamespace,
-				node.DeleteUnknown,
-				node.Table,
-				node.Name,
-				Type = type,
-				values = node.Values.Collection,
-			});
+		var output = perEnumTemplate.Render(new
+		{
+			RootNamespace = rootNamespace,
+			node.DeleteUnknown,
+			node.Table,
+			node.Name,
+			Type = type,
+			values = node.Values.Collection,
+		});
 
 		spc.AddSource($"{node.Name}.g.cs", SourceText.From(output, Encoding.UTF8));
 	}
@@ -111,13 +107,11 @@ public sealed partial class DbGenerator
 		Template allEnumsTemplate
 	)
 	{
-
-		var output = allEnumsTemplate
-			.Render(new
-			{
-				Names = n,
-				RootNamespace = rootNamespace,
-			});
+		var output = allEnumsTemplate.Render(new
+		{
+			Names = n,
+			RootNamespace = rootNamespace,
+		});
 
 		spc.AddSource("SyncAllEnums.g.cs", SourceText.From(output, Encoding.UTF8));
 	}

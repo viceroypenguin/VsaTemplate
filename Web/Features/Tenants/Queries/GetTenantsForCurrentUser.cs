@@ -32,7 +32,6 @@ public sealed partial class GetTenantsForCurrentUser(
 
 	private async ValueTask<Response> HandleAsync(Query _, CancellationToken token)
 	{
-
 		if (currentUserService.GetCurrentUserId() is null)
 			return new() { Tenants = [] };
 
@@ -50,10 +49,8 @@ public sealed partial class GetTenantsForCurrentUser(
 
 		var tenants = new List<Tenant>();
 
-		foreach (var group in roles
-			.GroupBy(r => (r.TenantId, r.Name, r.IsActive)))
+		foreach (var group in roles.GroupBy(r => (r.TenantId, r.Name, r.IsActive)))
 		{
-
 			var permissions = group.Key.IsActive
 				? await currentTenantUserService.GetLoggedInUserPermissions(group.Key.TenantId)
 				: (await administration.GetValue(
@@ -71,7 +68,6 @@ public sealed partial class GetTenantsForCurrentUser(
 				IsActive = group.Key.IsActive,
 				Permissions = permissions,
 			});
-
 		}
 
 		return new()
@@ -80,6 +76,5 @@ public sealed partial class GetTenantsForCurrentUser(
 				.OrderBy(t => t.Name, StringComparer.OrdinalIgnoreCase)
 				.ToList(),
 		};
-
 	}
 }

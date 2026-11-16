@@ -28,7 +28,6 @@ public sealed partial class GetUsersByOrganization(DbContext context)
 
 	private async ValueTask<Response> HandleAsync([AsParameters] Query query, CancellationToken token)
 	{
-
 		var memberships = await context.OrganizationRoleUsers
 			.Where(u => u.OrganizationRole.OrganizationId == query.OrganizationId && u.User.ApiKey == null)
 			.Select(u => new
@@ -62,6 +61,5 @@ public sealed partial class GetUsersByOrganization(DbContext context)
 				.OrderBy(u => u.EmailAddress, StringComparer.OrdinalIgnoreCase)
 				.ToList(),
 		};
-
 	}
 }

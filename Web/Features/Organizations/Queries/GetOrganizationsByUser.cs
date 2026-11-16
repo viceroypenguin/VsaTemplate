@@ -23,11 +23,9 @@ public sealed partial class GetOrganizationsByUser(
 		CancellationToken token
 	)
 	{
-
 		return new()
 		{
 			Organizations = await getOrganizationsForUser.HandleAsync(new() { UserId = query.UserId }, token),
 		};
-
 	}
 }

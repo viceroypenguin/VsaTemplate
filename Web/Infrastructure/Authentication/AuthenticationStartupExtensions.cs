@@ -11,7 +11,6 @@ public static class AuthenticationStartupExtensions
 {
 	public static void AddWebAuthentication(this IServiceCollection services)
 	{
-
 		services
 			.AddAuthentication(o =>
 			{
@@ -29,7 +28,6 @@ public static class AuthenticationStartupExtensions
 
 				o.Events.OnRedirectToLogin = context =>
 				{
-
 					if (context.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
 						context.Response.StatusCode = StatusCodes.Status401Unauthorized;
 					else
@@ -40,7 +38,6 @@ public static class AuthenticationStartupExtensions
 
 				o.Events.OnRedirectToAccessDenied = context =>
 				{
-
 					if (context.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
 						context.Response.StatusCode = StatusCodes.Status403Forbidden;
 					else
@@ -55,20 +52,17 @@ public static class AuthenticationStartupExtensions
 					var db = context.HttpContext.RequestServices.GetRequiredService<DbContext>();
 
 					if (UserId.TryParse(value ?? "", CultureInfo.InvariantCulture, out var userId)
-						&& await db.AccessControl.Users
-							.AnyAsync(u => u.UserId == userId && u.IsActive && u.ApiKey == null))
+						&& await db.AccessControl.Users.AnyAsync(u => u.UserId == userId && u.IsActive && u.ApiKey == null))
 					{
 						return;
 					}
 
 					context.RejectPrincipal();
 				};
-
 			})
 			.AddScheme<ApiKeyAuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(
 				ApiKeyAuthenticationHandler.AuthenticationScheme,
 				configureOptions: null
 			);
-
 	}
 }

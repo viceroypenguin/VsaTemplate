@@ -23,7 +23,6 @@ public sealed partial class GetOrganizationsBySelf(
 
 	private async ValueTask<Response> HandleAsync(Query _, CancellationToken token)
 	{
-
 		var result = await organizationsCache.GetValue(
 			new() { UserId = currentUserService.GetLoggedInUserId() },
 			token

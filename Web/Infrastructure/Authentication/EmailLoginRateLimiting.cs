@@ -10,17 +10,14 @@ public static class EmailLoginRateLimiting
 	[RegisterServices]
 	public static void AddEmailLoginRateLimiting(IServiceCollection services)
 	{
-
 		services.AddRateLimiter(options =>
 		{
 			options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
 			options.OnRejected = async (context, _) =>
 			{
-
 				var seconds = context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter)
-					? Math
-						.Max(1, (int)Math.Ceiling(retryAfter.TotalSeconds))
+					? Math.Max(1, (int)Math.Ceiling(retryAfter.TotalSeconds))
 					: 60;
 
 				context.HttpContext.Response.Headers.RetryAfter = seconds.ToString(CultureInfo.InvariantCulture);
@@ -29,7 +26,6 @@ public static class EmailLoginRateLimiting
 					statusCode: StatusCodes.Status429TooManyRequests,
 					detail: "Too many sign-in requests. Please try again later."
 				).ExecuteAsync(context.HttpContext);
-
 			};
 
 			options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
@@ -53,10 +49,7 @@ public static class EmailLoginRateLimiting
 					QueueLimit = 0,
 					AutoReplenishment = true,
 				});
-
 			});
-
 		});
-
 	}
 }
