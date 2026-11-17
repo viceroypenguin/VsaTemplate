@@ -1,11 +1,13 @@
 using System.Text.Json;
 using Immediate.Apis.Shared;
 using Immediate.Handlers.Shared;
+using Immediate.Validations.Shared;
 using LinqToDB;
 using Microsoft.AspNetCore.Mvc;
 using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.AccessControl.Authorization;
 using VsaTemplate.Web.Features.AccessControl.Services;
+using VsaTemplate.Web.Features.Shared.Validators;
 using VsaTemplate.Web.Features.Tenants.Authorization;
 using VsaTemplate.Web.Features.Tenants.Models;
 using VsaTemplate.Web.Features.Tenants.Services;
@@ -20,16 +22,22 @@ public sealed partial class AddRoleToTenant(
 	DbContext context
 )
 {
-	public sealed record Request : IAuthorizedRequest, ITenantRequest
+	[Validate]
+	public sealed partial record Request : IAuthorizedRequest, ITenantRequest, IValidationTarget<Request>
 	{
 		public static TenantPermission TenantPermission => TenantPermission.UserManagement;
 		[FromRoute] public required TenantId TenantId { get; init; }
 		[FromBody] public required RequestBody RequestBody { get; init; }
 	}
 
-	public sealed record RequestBody
+	[Validate]
+	public sealed partial record RequestBody : IValidationTarget<RequestBody>
 	{
+		[NotEmpty]
+		[TrimmedMaxLength(200)]
 		public required string Name { get; init; }
+
+		[NotEmpty]
 		public required IReadOnlyList<TenantPermission> Permissions { get; init; }
 	}
 
@@ -40,8 +48,11 @@ public sealed partial class AddRoleToTenant(
 
 	private async ValueTask<Response> HandleAsync([AsParameters] Request request, CancellationToken token)
 	{
-		var name = TenantManagement.ValidateName(request.RequestBody.Name);
-		var permissions = TenantManagement.ValidatePermissions(request.RequestBody.Permissions);
+		var name = request.RequestBody.Name.Trim();
+
+		var permissions = request.RequestBody.Permissions
+			.Distinct()
+			.ToList();
 
 		TenantManagement.EnsureCanGrant(
 			await currentTenantUserService.GetLoggedInUserPermissions(request.TenantId), permissions);

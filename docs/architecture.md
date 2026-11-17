@@ -93,6 +93,12 @@ feature request and response models.
 
 ## Browser and API responsibilities
 
+Validate request and command input with Immediate.Validations, including nested bodies and internal entry points. Reuse
+custom validators for shared input formats. Keep normalization, such as trimming, canonical email casing, and permission
+deduplication, explicit in the operation. Preserve whether length limits apply before or after normalization. Authorization,
+database existence checks, and transactional invariants remain with the code that owns those decisions; request validation
+must not replace their status codes, locking, or state updates. Checks on generated server output remain server invariants.
+
 The server enforces authentication, authorization, input validation, and persistence invariants. Frontend permission controls
 explain available actions, but never replace API enforcement. Production UI and API share an origin; cookie-authenticated
 mutations use antiforgery protection, while API-key clients use their own authentication path. Browser authentication uses

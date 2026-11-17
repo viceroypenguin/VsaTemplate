@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using System.Text;
+using Immediate.Validations.Shared;
 using VsaTemplate.Web.Tests.Fixtures;
 
 namespace VsaTemplate.Web.Tests;
@@ -259,8 +260,50 @@ public sealed class EmailLoginTests(ApplicationFactoryFixture fixture)
 	}
 
 	[Theory]
+	[InlineData("x123456x")]
+	[InlineData("1234567")]
+	[InlineData("١٢٣٤٥٦")]
+	public async Task MalformedCodesDoNotConsumeVerificationAttempts(string code)
+	{
+		using var client = await fixture.CreateEmailLoginClientAsync();
+		var email = NewEmail();
+		var session = NewSession();
+		using var issued = await RequestCode(client, email, session);
+		issued.EnsureSuccessStatusCode();
+
+		for (var attempt = 0; attempt < 5; attempt++)
+		{
+			using var rejected = await VerifyCode(client, email, session, code);
+			Assert.Equal(HttpStatusCode.BadRequest, rejected.StatusCode);
+		}
+
+		using var verified = await VerifyCode(client, email, session, fixture.Emails.ReadCode(email));
+		Assert.Equal(HttpStatusCode.NoContent, verified.StatusCode);
+	}
+
+	[Fact]
+	public async Task BootstrapReusesAnExistingUserWithoutALoginTimestamp()
+	{
+		var email = NewEmail();
+		var userId = await fixture.CreateUserAsync(emailAddress: email);
+
+		Assert.Equal(userId, await fixture.EnsureEmailUserAsync($"  {email.ToUpperInvariant()}  "));
+		Assert.Equal(userId, await fixture.EnsureEmailUserAsync(email));
+	}
+
+	[Theory]
+	[InlineData("not-an-email")]
+	[InlineData("Display Name <user@example.test>")]
+	public async Task BootstrapValidatesEmailBeforeCallingTheService(string email) =>
+		await Assert.ThrowsAsync<ValidationException>(() => fixture.EnsureEmailUserAsync(email));
+
+	[Theory]
 	[InlineData("not-an-email", "bed177d7-7d54-4cdc-b872-dc42407b05db")]
 	[InlineData("user@example.test", "not-a-session")]
+	[InlineData("Display Name <user@example.test>", "bed177d7-7d54-4cdc-b872-dc42407b05db")]
+	[InlineData("user@example.test", "00000000-0000-0000-0000-000000000000")]
+	[InlineData("user@example.test", "bed177d77d544cdcb872dc42407b05db")]
+	[InlineData("   ", "bed177d7-7d54-4cdc-b872-dc42407b05db")]
 	public async Task MalformedEmailOrSessionIsRejected(string email, string session)
 	{
 		using var client = await fixture.CreateEmailLoginClientAsync();

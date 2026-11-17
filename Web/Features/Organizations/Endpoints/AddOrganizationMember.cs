@@ -1,5 +1,4 @@
 using System.Data;
-using System.Net.Mail;
 using Immediate.Apis.Shared;
 using Immediate.Handlers.Shared;
 using Immediate.Validations.Shared;
@@ -11,10 +10,10 @@ using VsaTemplate.Web.Features.AccessControl.Authorization;
 using VsaTemplate.Web.Features.AccessControl.Models;
 using VsaTemplate.Web.Features.AccessControl.Services;
 using VsaTemplate.Web.Features.Organizations.Authorization;
-using VsaTemplate.Web.Features.Organizations.Exceptions;
 using VsaTemplate.Web.Features.Organizations.Models;
 using VsaTemplate.Web.Features.Organizations.Services;
 using VsaTemplate.Web.Features.Shared.Exceptions;
+using VsaTemplate.Web.Features.Shared.Validators;
 
 namespace VsaTemplate.Web.Features.Organizations.Endpoints;
 
@@ -44,6 +43,7 @@ public sealed partial class AddOrganizationMember(
 	{
 		[NotEmpty]
 		[MaxLength(500)]
+		[BareEmailAddress]
 		public required string EmailAddress { get; init; }
 		public required OrganizationRoleId RoleId { get; init; }
 	}
@@ -56,9 +56,6 @@ public sealed partial class AddOrganizationMember(
 	private async ValueTask<Response> HandleAsync([AsParameters] Request request, CancellationToken token)
 	{
 		var email = request.Body.EmailAddress.Trim();
-
-		if (!MailAddress.TryCreate(email, out var address) || !string.Equals(address.Address, email, StringComparison.OrdinalIgnoreCase))
-			throw new InvalidMemberInputException("A valid email address is required.");
 
 		await using var transaction = await context.BeginTransactionAsync(IsolationLevel.Serializable, token);
 		var role = await OrganizationManagement.GetRole(context, request.OrganizationId, request.Body.RoleId, token);

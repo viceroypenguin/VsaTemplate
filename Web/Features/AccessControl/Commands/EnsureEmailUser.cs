@@ -1,9 +1,10 @@
 using Immediate.Handlers.Shared;
+using Immediate.Validations.Shared;
 using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.AccessControl.Exceptions;
 using VsaTemplate.Web.Features.AccessControl.Models;
 using VsaTemplate.Web.Features.AccessControl.Services;
-using VsaTemplate.Web.Features.AccessControl.Validators;
+using VsaTemplate.Web.Features.Shared.Validators;
 
 namespace VsaTemplate.Web.Features.AccessControl.Commands;
 
@@ -13,14 +14,18 @@ public sealed partial class EnsureEmailUser(
 	DbContext context
 )
 {
-	public sealed record Command
+	[Validate]
+	public sealed partial record Command : IValidationTarget<Command>
 	{
+		[NotEmpty]
+		[TrimmedMaxLength(500)]
+		[BareEmailAddress]
 		public required string EmailAddress { get; init; }
 	}
 
 	private async ValueTask<UserId> HandleAsync(Command command, CancellationToken token)
 	{
-		var email = EmailLoginValidation.NormalizeEmail(command.EmailAddress);
+		var email = EmailLoginNormalization.NormalizeEmail(command.EmailAddress);
 
 		await using var transaction = await context.BeginTransactionAsync(token);
 

@@ -22,6 +22,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Testcontainers.MsSql;
 using VsaTemplate.Web.Database;
+using VsaTemplate.Web.Features.AccessControl.Commands;
 using VsaTemplate.Web.Features.AccessControl.Models;
 using VsaTemplate.Web.Infrastructure.Authentication;
 using VsaTemplate.Web.Infrastructure.Emails;
@@ -109,6 +110,14 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime
 		}
 
 		return userId;
+	}
+
+	public async Task<UserId> EnsureEmailUserAsync(string emailAddress)
+	{
+		await using var scope = GetFactory().Services.CreateAsyncScope();
+		var handler = scope.ServiceProvider.GetRequiredService<EnsureEmailUser.Handler>();
+
+		return await handler.HandleAsync(new() { EmailAddress = emailAddress }, TestContext.Current.CancellationToken);
 	}
 
 	public async Task<string> CreateApiKeyAsync(UserId ownerId, DateTimeOffset expiresAt)

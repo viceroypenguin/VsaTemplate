@@ -2,13 +2,14 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using Immediate.Apis.Shared;
 using Immediate.Handlers.Shared;
+using Immediate.Validations.Shared;
 using LinqToDB;
 using SimpleBase;
 using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.AccessControl.Authorization;
 using VsaTemplate.Web.Features.AccessControl.Services;
+using VsaTemplate.Web.Features.Shared.Validators;
 using VsaTemplate.Web.Features.Tenants.Models;
-using VsaTemplate.Web.Features.Tenants.Services;
 
 namespace VsaTemplate.Web.Features.Tenants.Endpoints;
 
@@ -20,8 +21,11 @@ public sealed partial class CreateTenant(
 	PermissionCacheInvalidator cacheInvalidator
 )
 {
-	public sealed record Request : IAuthorizedRequest
+	[Validate]
+	public sealed partial record Request : IAuthorizedRequest, IValidationTarget<Request>
 	{
+		[NotEmpty]
+		[TrimmedMaxLength(200)]
 		public required string Name { get; init; }
 	}
 
@@ -38,7 +42,7 @@ public sealed partial class CreateTenant(
 	{
 		var userId = currentUserService.GetLoggedInUserId();
 		var ownerId = await currentUserService.GetMembershipUserId();
-		var name = TenantManagement.ValidateName(request.Name);
+		var name = request.Name.Trim();
 		var recoveryKeys = BuildRecoveryKeys();
 
 		await using var transaction = await context.BeginTransactionAsync(token);

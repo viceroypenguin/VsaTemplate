@@ -3,6 +3,8 @@ using Immediate.Handlers.Shared;
 using Microsoft.AspNetCore.Authorization;
 using VsaTemplate.Web.Infrastructure.Logging;
 using VsaTemplate.Web.Features.AccessControl.Services;
+using VsaTemplate.Web.Features.AccessControl.Validators;
+using VsaTemplate.Web.Features.Shared.Validators;
 using Immediate.Validations.Shared;
 
 namespace VsaTemplate.Web.Features.AccessControl.Endpoints;
@@ -16,9 +18,12 @@ public sealed partial class RequestEmailLogin(EmailLoginService emailLoginServic
 	public sealed partial record Request : ISensitiveRequest, IValidationTarget<Request>
 	{
 		[NotEmpty]
+		[TrimmedMaxLength(500)]
+		[BareEmailAddress]
 		public required string EmailAddress { get; init; }
 
 		[NotEmpty]
+		[LoginSessionId]
 		public required string SessionId { get; init; }
 	}
 

@@ -1,11 +1,13 @@
 using Immediate.Apis.Shared;
 using Immediate.Handlers.Shared;
+using Immediate.Validations.Shared;
 using LinqToDB;
 using Microsoft.AspNetCore.Mvc;
 using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.AccessControl.Authorization;
 using VsaTemplate.Web.Features.AccessControl.Services;
 using VsaTemplate.Web.Features.Shared.Exceptions;
+using VsaTemplate.Web.Features.Shared.Validators;
 using VsaTemplate.Web.Features.Tenants.Models;
 using VsaTemplate.Web.Features.Tenants.Services;
 
@@ -20,14 +22,18 @@ public sealed partial class UpdateTenant(
 	PermissionCacheInvalidator cacheInvalidator
 )
 {
-	public sealed record Request : IAuthorizedRequest
+	[Validate]
+	public sealed partial record Request : IAuthorizedRequest, IValidationTarget<Request>
 	{
 		[FromRoute] public required TenantId TenantId { get; init; }
 		[FromBody] public required RequestBody Body { get; init; }
 	}
 
-	public sealed record RequestBody
+	[Validate]
+	public sealed partial record RequestBody : IValidationTarget<RequestBody>
 	{
+		[NotEmpty]
+		[TrimmedMaxLength(200)]
 		public required string Name { get; init; }
 		public required bool IsActive { get; init; }
 	}
@@ -46,7 +52,7 @@ public sealed partial class UpdateTenant(
 		if (!permissions.Permissions.Contains(TenantPermission.Admin))
 			UnauthorizedException.ThrowUnauthorizedException();
 
-		var name = TenantManagement.ValidateName(request.Body.Name);
+		var name = request.Body.Name.Trim();
 
 		var count = await context.Tenants
 			.Where(t => t.TenantId == request.TenantId)

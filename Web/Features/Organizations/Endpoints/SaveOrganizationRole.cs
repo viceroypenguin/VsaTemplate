@@ -40,8 +40,12 @@ public sealed partial class SaveOrganizationRole(
 
 	private async ValueTask HandleAsync([AsParameters] Request request, CancellationToken token)
 	{
-		var name = OrganizationManagement.ValidateName(request.Body.Name);
-		var permissions = OrganizationManagement.ValidatePermissions(request.Body.Permissions);
+		var name = request.Body.Name.Trim();
+
+		var permissions = request.Body.Permissions
+			.Distinct()
+			.ToArray();
+
 		await using var transaction = await context.BeginTransactionAsync(IsolationLevel.Serializable, token);
 		var role = await OrganizationManagement.GetRole(context, request.OrganizationId, request.RoleId, token);
 		var oldPermissions = OrganizationManagement.ReadPermissions(role.PermissionsJson);

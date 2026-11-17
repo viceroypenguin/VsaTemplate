@@ -1,7 +1,7 @@
 using System.Data;
-using System.Net.Mail;
 using Immediate.Apis.Shared;
 using Immediate.Handlers.Shared;
+using Immediate.Validations.Shared;
 using LinqToDB;
 using LinqToDB.Async;
 using Microsoft.AspNetCore.Mvc;
@@ -10,8 +10,8 @@ using VsaTemplate.Web.Features.AccessControl.Authorization;
 using VsaTemplate.Web.Features.AccessControl.Models;
 using VsaTemplate.Web.Features.AccessControl.Services;
 using VsaTemplate.Web.Features.Shared.Exceptions;
+using VsaTemplate.Web.Features.Shared.Validators;
 using VsaTemplate.Web.Features.Tenants.Authorization;
-using VsaTemplate.Web.Features.Tenants.Exceptions;
 using VsaTemplate.Web.Features.Tenants.Models;
 using VsaTemplate.Web.Features.Tenants.Services;
 
@@ -26,15 +26,20 @@ public sealed partial class InviteUserToTenant(
 	PermissionCacheInvalidator cacheInvalidator
 )
 {
-	public sealed record Request : IAuthorizedRequest, ITenantRequest
+	[Validate]
+	public sealed partial record Request : IAuthorizedRequest, ITenantRequest, IValidationTarget<Request>
 	{
 		public static TenantPermission TenantPermission => TenantPermission.UserManagement;
 		[FromRoute] public required TenantId TenantId { get; init; }
 		[FromBody] public required RequestBody Body { get; init; }
 	}
 
-	public sealed record RequestBody
+	[Validate]
+	public sealed partial record RequestBody : IValidationTarget<RequestBody>
 	{
+		[NotEmpty]
+		[TrimmedMaxLength(500)]
+		[BareEmailAddress]
 		public required string EmailAddress { get; init; }
 		public required TenantRoleId RoleId { get; init; }
 	}
@@ -46,12 +51,7 @@ public sealed partial class InviteUserToTenant(
 
 	private async ValueTask<Response> HandleAsync([AsParameters] Request request, CancellationToken token)
 	{
-		var emailAddress = request.Body.EmailAddress?.Trim();
-
-		if (string.IsNullOrEmpty(emailAddress) || emailAddress.Length > 500
-			|| !MailAddress.TryCreate(emailAddress, out var address)
-			|| !string.Equals(address.Address, emailAddress, StringComparison.OrdinalIgnoreCase))
-			throw new TenantValidationException("Enter a valid email address of at most 500 characters.");
+		var emailAddress = request.Body.EmailAddress.Trim();
 
 		var actorId = currentUserService.GetLoggedInUserId();
 		var actorPermissions = await currentTenantUserService.GetLoggedInUserPermissions(request.TenantId);

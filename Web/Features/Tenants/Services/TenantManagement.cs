@@ -3,34 +3,12 @@ using LinqToDB.Async;
 using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.AccessControl.Models;
 using VsaTemplate.Web.Features.Shared.Exceptions;
-using VsaTemplate.Web.Features.Tenants.Exceptions;
 using VsaTemplate.Web.Features.Tenants.Models;
 
 namespace VsaTemplate.Web.Features.Tenants.Services;
 
 internal static class TenantManagement
 {
-	public static string ValidateName(string? name)
-	{
-		var result = name?.Trim();
-
-		if (string.IsNullOrEmpty(result) || result.Length > 200)
-			throw new TenantValidationException("Name must contain between 1 and 200 characters.");
-
-		return result;
-	}
-
-	public static IReadOnlyList<TenantPermission> ValidatePermissions(IReadOnlyList<TenantPermission>? permissions)
-	{
-		if (permissions is not { Count: > 0 }
-			|| permissions.Any(p => !Enum.IsDefined(p)))
-			throw new TenantValidationException("Select at least one valid permission.");
-
-		return permissions
-			.Distinct()
-			.ToList();
-	}
-
 	public static IReadOnlyList<TenantPermission> ReadPermissions(string permissionsJson) =>
 		JsonSerializer.Deserialize<List<TenantPermission>>(permissionsJson) ?? [];
 

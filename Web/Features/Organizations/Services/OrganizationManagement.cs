@@ -2,7 +2,6 @@ using System.Text.Json;
 using LinqToDB.Async;
 using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.AccessControl.Models;
-using VsaTemplate.Web.Features.Organizations.Exceptions;
 using VsaTemplate.Web.Features.Organizations.Models;
 using VsaTemplate.Web.Features.Shared.Exceptions;
 
@@ -10,24 +9,6 @@ namespace VsaTemplate.Web.Features.Organizations.Services;
 
 internal static class OrganizationManagement
 {
-	public static string ValidateName(string? name)
-	{
-		if (string.IsNullOrWhiteSpace(name) || name.Trim().Length > 200)
-			throw new InvalidOrganizationInputException("Name is required and must contain at most 200 characters.");
-
-		return name.Trim();
-	}
-
-	public static OrganizationPermission[] ValidatePermissions(IReadOnlyList<OrganizationPermission>? permissions)
-	{
-		if (permissions is null || permissions.Count == 0 || permissions.Any(p => !Enum.IsDefined(p)))
-			throw new InvalidOrganizationInputException("Select at least one valid organization permission.");
-
-		return permissions
-			.Distinct()
-			.ToArray();
-	}
-
 	public static OrganizationPermission[] ReadPermissions(string json) =>
 		JsonSerializer.Deserialize<OrganizationPermission[]>(json) ?? [];
 

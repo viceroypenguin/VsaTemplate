@@ -8,6 +8,7 @@ namespace VsaTemplate.Web.Tests;
 public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 {
 	private static readonly string[] ReadOnlyPermissions = ["None"];
+	private static readonly string[] DuplicateReadOnlyPermissions = ["None", "None"];
 	private static readonly string[] AdministratorPermissions = ["Admin"];
 	private static readonly string[] UserManagementPermissions = ["UserManagement"];
 	private static readonly string[] OrganizationManagementPermissions = ["OrganizationManagement"];
@@ -424,6 +425,84 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 		Assert.Empty((await GetAsync(member, "/api/organizations")).GetProperty("organizations").EnumerateArray());
 		await PutAsync(owner, $"/api/organizations/{organizationId}", new { name = "Restored", isActive = true });
 		await GetAsync(member, $"/api/organizations/{organizationId}");
+	}
+
+	[Fact]
+	public async Task TenantNameLengthIsMeasuredAfterTrimming()
+	{
+		using var owner = await fixture.CreateClientAsync(await fixture.CreateUserAsync());
+		var name = new string('a', 200);
+		var created = await PostAsync(owner, "/api/tenants/create", new { name = $"  {name}  " });
+		var tenantId = created.GetProperty("tenantId").GetInt32();
+		var route = $"/api/tenants/{tenantId}";
+		Assert.Equal(name, (await GetAsync(owner, route)).GetProperty("name").GetString());
+
+		await PutAsync(owner, route, new { name = $"  {name}  ", isActive = true });
+		await AssertStatusAsync(owner, HttpMethod.Post, "/api/tenants/create", HttpStatusCode.BadRequest, new { name = name + "a" });
+		await AssertStatusAsync(owner, HttpMethod.Put, route, HttpStatusCode.BadRequest, new { name = name + "a", isActive = true });
+	}
+
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task RoleInputsAreValidatedAndNormalized(bool organization)
+	{
+		using var owner = await fixture.CreateClientAsync(await fixture.CreateUserAsync());
+		var tenantId = await CreateTenantAsync(owner);
+		var route = organization
+			? $"/api/organizations/{await CreateOrganizationAsync(owner, tenantId)}"
+			: $"/api/tenants/{tenantId}";
+
+		var createRoute = organization ? $"{route}/roles/create" : $"{route}/roles";
+		var createMethod = organization ? HttpMethod.Post : HttpMethod.Put;
+
+		var created = await SendAsync(owner, createMethod, createRoute,
+			new { name = "  Readers  ", permissions = DuplicateReadOnlyPermissions });
+
+		var roleId = created.GetProperty("roleId").GetInt32();
+
+		var role = (await GetAsync(owner, $"{route}/roles")).GetProperty("roles")
+			.EnumerateArray()
+			.Single(r => r.GetProperty("roleId").GetInt32() == roleId);
+
+		Assert.Equal("Readers", role.GetProperty("name").GetString());
+		Assert.Equal("None", Assert.Single(role.GetProperty("permissions").EnumerateArray()).GetString());
+
+		object[] invalidInputs =
+		[
+			new { name = "", permissions = ReadOnlyPermissions },
+			new { name = "   ", permissions = ReadOnlyPermissions },
+			new { name = new string('a', 201), permissions = ReadOnlyPermissions },
+			new { name = "Readers", permissions = Array.Empty<string>() },
+			new { name = "Readers", permissions = (string[]?)null },
+			new { name = "Readers", permissions = new[] { 999 } },
+		];
+
+		foreach (var input in invalidInputs)
+		{
+			await AssertStatusAsync(owner, createMethod, createRoute, HttpStatusCode.BadRequest, input);
+			await AssertStatusAsync(owner, HttpMethod.Put, $"{route}/roles/{roleId}", HttpStatusCode.BadRequest, input);
+		}
+	}
+
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task MemberEmailValidationRejectsDisplayNamesAndMalformedAddresses(bool organization)
+	{
+		using var owner = await fixture.CreateClientAsync(await fixture.CreateUserAsync());
+		var tenantId = await CreateTenantAsync(owner);
+		var route = organization
+			? $"/api/organizations/{await CreateOrganizationAsync(owner, tenantId)}"
+			: $"/api/tenants/{tenantId}";
+
+		var roleId = await GetOnlyRoleIdAsync(owner, $"{route}/roles");
+
+		foreach (var email in new[] { "", "not-an-email", "Display Name <user@example.test>", new string('a', 501) })
+		{
+			await AssertStatusAsync(owner, HttpMethod.Put, $"{route}/users", HttpStatusCode.BadRequest,
+				new { emailAddress = email, roleId });
+		}
 	}
 
 	private static async Task<int> CreateTenantAsync(HttpClient client) =>

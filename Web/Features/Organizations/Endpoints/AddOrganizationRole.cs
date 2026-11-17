@@ -52,8 +52,12 @@ public sealed partial class AddOrganizationRole(
 
 	private async ValueTask<Response> HandleAsync([AsParameters] Request request, CancellationToken token)
 	{
-		var name = OrganizationManagement.ValidateName(request.Body.Name);
-		var permissions = OrganizationManagement.ValidatePermissions(request.Body.Permissions);
+		var name = request.Body.Name.Trim();
+
+		var permissions = request.Body.Permissions
+			.Distinct()
+			.ToArray();
+
 		await OrganizationManagement.DemandDelegablePermissions(currentOrganizationUserService, request.OrganizationId, permissions);
 
 		var roleId = (OrganizationRoleId)await context.InsertWithInt32IdentityAsync(

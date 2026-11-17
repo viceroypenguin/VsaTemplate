@@ -8,7 +8,6 @@ using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.AccessControl.Authorization;
 using VsaTemplate.Web.Features.AccessControl.Services;
 using VsaTemplate.Web.Features.Organizations.Models;
-using VsaTemplate.Web.Features.Organizations.Services;
 using VsaTemplate.Web.Features.Tenants.Authorization;
 using VsaTemplate.Web.Features.Tenants.Models;
 
@@ -57,7 +56,7 @@ public sealed partial class CreateOrganization(
 			new Database.Models.Organization
 			{
 				TenantId = request.TenantId,
-				Name = OrganizationManagement.ValidateName(request.Body.Name),
+				Name = request.Body.Name.Trim(),
 				IsActive = true,
 			}, token: token);
 

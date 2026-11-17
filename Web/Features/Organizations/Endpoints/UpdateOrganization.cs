@@ -56,7 +56,7 @@ public sealed partial class UpdateOrganization(
 
 		var count = await context.Organizations
 			.Where(o => o.OrganizationId == request.OrganizationId)
-			.Set(o => o.Name, OrganizationManagement.ValidateName(request.Body.Name))
+			.Set(o => o.Name, request.Body.Name.Trim())
 			.Set(o => o.IsActive, request.Body.IsActive)
 			.UpdateAsync(token);
 

@@ -7,7 +7,6 @@ using LinqToDB.Async;
 using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.AccessControl.Exceptions;
 using VsaTemplate.Web.Features.AccessControl.Models;
-using VsaTemplate.Web.Features.AccessControl.Validators;
 using VsaTemplate.Web.Infrastructure.Emails;
 
 namespace VsaTemplate.Web.Features.AccessControl.Services;
@@ -24,17 +23,17 @@ public sealed class EmailLoginService(
 	private static readonly TimeSpan RequestCooldown = TimeSpan.FromMinutes(1);
 	private const int MaximumAttempts = 5;
 
-	public async Task<DateTimeOffset> RequestAsync(string? emailAddress, string? sessionId, CancellationToken token)
+	public async Task<DateTimeOffset> RequestAsync(string emailAddress, string sessionId, CancellationToken token)
 	{
-		var email = EmailLoginValidation.NormalizeEmail(emailAddress);
-		var session = EmailLoginValidation.NormalizeSession(sessionId);
+		var email = EmailLoginNormalization.NormalizeEmail(emailAddress);
+		var session = EmailLoginNormalization.NormalizeSession(sessionId);
 
 		var sessionHash = HashSession(session);
 
 		var now = timeProvider.GetUtcNow();
 		var expiresAt = now.Add(Lifetime);
 
-		var code = tokenGenerator.GenerateToken();
+		var code = GenerateToken();
 		var codeHash = HashCode(session, email, code);
 
 		await using (var transaction = await context.BeginTransactionAsync(IsolationLevel.Serializable, token))
@@ -69,7 +68,7 @@ public sealed class EmailLoginService(
 				if (attempt >= 10)
 					throw new InvalidOperationException("The sign-in code generator repeatedly returned the previous code.");
 
-				code = tokenGenerator.GenerateToken();
+				code = GenerateToken();
 				codeHash = HashCode(session, email, code);
 			}
 
@@ -190,17 +189,17 @@ public sealed class EmailLoginService(
 	}
 
 	public async Task<EmailLoginUser> VerifyAsync(
-		string? emailAddress,
-		string? sessionId,
-		string? code,
+		string emailAddress,
+		string sessionId,
+		string code,
 		CancellationToken token
 	)
 	{
-		var email = EmailLoginValidation.NormalizeEmail(emailAddress);
-		var session = EmailLoginValidation.NormalizeSession(sessionId);
+		var email = EmailLoginNormalization.NormalizeEmail(emailAddress);
+		var session = EmailLoginNormalization.NormalizeSession(sessionId);
 
 		var sessionHash = HashSession(session);
-		var codeHash = HashCode(session, email, code!);
+		var codeHash = HashCode(session, email, code);
 
 		await using var transaction = await context.BeginTransactionAsync(token);
 
@@ -245,6 +244,16 @@ public sealed class EmailLoginService(
 		await transaction.CommitAsync(CancellationToken.None);
 
 		return user ?? throw new EmailLoginException();
+	}
+
+	private string GenerateToken()
+	{
+		var code = tokenGenerator.GenerateToken();
+
+		if (code is not { Length: 6 } || !code.All(char.IsAsciiDigit))
+			throw new InvalidOperationException("The sign-in code generator did not return six decimal digits.");
+
+		return code;
 	}
 
 	private static byte[] HashSession(string sessionId) =>

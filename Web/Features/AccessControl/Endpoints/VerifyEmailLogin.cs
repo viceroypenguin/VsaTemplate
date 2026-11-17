@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using VsaTemplate.Web.Infrastructure.Logging;
 using VsaTemplate.Web.Features.AccessControl.Services;
+using VsaTemplate.Web.Features.AccessControl.Validators;
+using VsaTemplate.Web.Features.Shared.Validators;
 using Immediate.Validations.Shared;
 
 namespace VsaTemplate.Web.Features.AccessControl.Endpoints;
@@ -24,12 +26,15 @@ public sealed partial class VerifyEmailLogin(
 	public sealed partial record Request : ISensitiveRequest, IValidationTarget<Request>
 	{
 		[NotEmpty]
+		[TrimmedMaxLength(500)]
+		[BareEmailAddress]
 		public required string EmailAddress { get; init; }
 
 		[NotEmpty]
+		[LoginSessionId]
 		public required string SessionId { get; init; }
 
-		[Match(expr: @"^\d{6}$")]
+		[Match(expr: @"^[0-9]{6}$")]
 		public required string Token { get; init; }
 	}
 
