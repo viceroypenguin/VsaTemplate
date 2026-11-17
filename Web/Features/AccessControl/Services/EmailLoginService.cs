@@ -33,7 +33,7 @@ public sealed class EmailLoginService(
 		var now = timeProvider.GetUtcNow();
 		var expiresAt = now.Add(Lifetime);
 
-		var code = GenerateToken();
+		var code = tokenGenerator.GenerateToken();
 		var codeHash = HashCode(session, email, code);
 
 		await using (var transaction = await context.BeginTransactionAsync(IsolationLevel.Serializable, token))
@@ -68,7 +68,7 @@ public sealed class EmailLoginService(
 				if (attempt >= 10)
 					throw new InvalidOperationException("The sign-in code generator repeatedly returned the previous code.");
 
-				code = GenerateToken();
+				code = tokenGenerator.GenerateToken();
 				codeHash = HashCode(session, email, code);
 			}
 
@@ -244,16 +244,6 @@ public sealed class EmailLoginService(
 		await transaction.CommitAsync(CancellationToken.None);
 
 		return user ?? throw new EmailLoginException();
-	}
-
-	private string GenerateToken()
-	{
-		var code = tokenGenerator.GenerateToken();
-
-		if (code is not { Length: 6 } || !code.All(char.IsAsciiDigit))
-			throw new InvalidOperationException("The sign-in code generator did not return six decimal digits.");
-
-		return code;
 	}
 
 	private static byte[] HashSession(string sessionId) =>
