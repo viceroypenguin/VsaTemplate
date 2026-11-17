@@ -1,7 +1,3 @@
-drop index [UK_User_Auth0UserId] on [AccessControl].[User];
-alter table [AccessControl].[User] drop column [Auth0UserId];
-go
-
 create table [AccessControl].[EmailLoginChallenge]
 (
 	[SessionIdHash] binary(32) not null

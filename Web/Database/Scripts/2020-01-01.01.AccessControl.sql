@@ -7,7 +7,6 @@ create table [AccessControl].[User]
 		constraint [PK_User]
 		primary key,
 
-	Auth0UserId nvarchar(100) null,
 	EmailAddress nvarchar(500) not null
 		constraint [UK_User_EmailAddress] unique,
 
@@ -15,10 +14,6 @@ create table [AccessControl].[User]
 	IsActive bit not null,
 	LastLogin datetimeoffset null,
 );
-
-create unique index [UK_User_Auth0UserId]
-on [AccessControl].[User](Auth0UserId)
-where Auth0UserId is not null;
 
 set identity_insert [AccessControl].[User] on;
 
