@@ -5,7 +5,6 @@ using Immediate.Injections.Shared;
 using LinqToDB;
 using LinqToDB.Async;
 using VsaTemplate.Web.Database;
-using VsaTemplate.Web.Features.AccessControl.Commands;
 using VsaTemplate.Web.Features.AccessControl.Exceptions;
 using VsaTemplate.Web.Features.AccessControl.Models;
 using VsaTemplate.Web.Features.AccessControl.Validators;
@@ -126,6 +125,73 @@ public sealed class EmailLoginService(
 		return expiresAt;
 	}
 
+	private sealed record EmailUser
+	{
+		public string EmailAddress { get; init; } = null!;
+		public bool IsActive { get; init; }
+		public DateTimeOffset? LastLogin { get; init; }
+		public string? Name { get; init; }
+		public UserId UserId { get; init; }
+		public bool IsApiKey { get; init; }
+	}
+
+	public async Task<EmailLoginUser?> EnsureAsync(
+		string email,
+		DateTimeOffset? loginAt,
+		CancellationToken token
+	)
+	{
+		var output = await context.AccessControl.Users
+			.Where(u => u.EmailAddress == email)
+			.Select(u => new EmailUser
+			{
+				UserId = u.UserId,
+				EmailAddress = u.EmailAddress,
+				Name = u.Name,
+				LastLogin = u.LastLogin,
+				IsActive = u.IsActive,
+				IsApiKey = context.AccessControl.ApiKeys.Any(ak => ak.ApiKeyId == u.UserId),
+			})
+			.AsCte()
+			.Merge().Using([new { EmailAddress = email, LoginTime = loginAt }])
+			.On((dst, src) => dst.EmailAddress == src.EmailAddress)
+			.InsertWhenNotMatched(src => new()
+			{
+				EmailAddress = src.EmailAddress,
+				IsActive = true,
+				LastLogin = src.LoginTime,
+			})
+			.UpdateWhenMatchedAnd(
+				(dst, src) => src.LoginTime != null,
+				(dst, src) => new() { LastLogin = src.LoginTime!.Value }
+			)
+			.MergeWithOutputAsync(
+				(a, del, ins, src) => new
+				{
+					Action = a,
+					ins.UserId,
+					ins.EmailAddress,
+					ins.Name,
+					ins.IsActive,
+					ins.IsApiKey,
+				}
+			)
+			.ToListAsync(token);
+
+		if (output is not [{ } existing])
+			throw new InvalidOperationException("Exactly one row should be returned by the merge.");
+
+		if (existing is { IsActive: false } or { IsApiKey: true })
+			return null;
+
+		return new()
+		{
+			UserId = existing.UserId,
+			Name = existing.Name,
+			EmailAddress = existing.EmailAddress,
+		};
+	}
+
 	public async Task<EmailLoginUser> VerifyAsync(
 		string? emailAddress,
 		string? sessionId,
@@ -178,7 +244,7 @@ public sealed class EmailLoginService(
 			.Set(c => c.IsConsumed, value: true)
 			.UpdateAsync(CancellationToken.None);
 
-		var user = await EnsureEmailUser.EnsureAsync(context, email, now, CancellationToken.None);
+		var user = await EnsureAsync(email, now, CancellationToken.None);
 		await transaction.CommitAsync(CancellationToken.None);
 
 		return user ?? throw new EmailLoginException();
