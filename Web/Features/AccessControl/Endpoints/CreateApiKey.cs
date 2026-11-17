@@ -8,7 +8,6 @@ using LinqToDB.Async;
 using SimpleBase;
 using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.AccessControl.Authorization;
-using VsaTemplate.Web.Features.AccessControl.Exceptions;
 using VsaTemplate.Web.Features.AccessControl.Models;
 using VsaTemplate.Web.Features.AccessControl.Services;
 using VsaTemplate.Web.Features.Shared.Exceptions;
@@ -28,6 +27,7 @@ public sealed partial class CreateApiKey(
 	{
 		public required IReadOnlyList<Permission> Permissions { get; init; }
 
+		[GreaterThan(nameof(TimeSpan.Zero), Message = "API key lifetime must be positive.")]
 		[LessThan(nameof(MaxLifetime), Message = "Api Key cannot be have a lifetime longer than one year.")]
 		public required TimeSpan Lifetime { get; init; }
 
@@ -50,15 +50,11 @@ public sealed partial class CreateApiKey(
 		if (await context.AccessControl.ApiKeys.AnyAsync(k => k.ApiKeyId == userId, token))
 			throw new UnauthorizedException("API keys cannot create other API keys.");
 
-		if (request.Lifetime <= TimeSpan.Zero || request.Lifetime >= TimeSpan.FromDays(366))
-			throw new InvalidApiKeyInputException("API key lifetime must be positive and shorter than one year.");
-
-		if (request.Permissions is null || request.Permissions.Any(p => !Enum.IsDefined(p)))
-			throw new InvalidApiKeyInputException("Select valid API key permissions.");
-
 		if (!currentUserPermissions.Contains(Permission.Admin)
 			&& request.Permissions.Any(p => p is not Permission.None && !currentUserPermissions.Contains(p)))
+		{
 			throw new UnauthorizedException("Unable to create an API key with additional permissions.");
+		}
 
 		var key = GenerateApiKey();
 		var now = timeProvider.GetUtcNow();
@@ -84,9 +80,9 @@ public sealed partial class CreateApiKey(
 				OwnerUserId = userId,
 				CreatedDateTime = now,
 				ExpirationDateTime = now.Add(request.Lifetime),
-				PermissionsJson = JsonSerializer.Serialize(request.Permissions
-					.Distinct()
-					.ToArray()),
+				PermissionsJson = JsonSerializer.Serialize(
+					request.Permissions.Distinct()
+				),
 			},
 			token: token
 		);

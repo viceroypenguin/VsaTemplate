@@ -28,15 +28,14 @@ public sealed class EmailLoginService(
 	{
 		var email = EmailLoginValidation.NormalizeEmail(emailAddress);
 		var session = EmailLoginValidation.NormalizeSession(sessionId);
+
 		var sessionHash = HashSession(session);
+
 		var now = timeProvider.GetUtcNow();
-		var code = tokenGenerator.GenerateToken();
-
-		if (!EmailLoginValidation.IsCode(code))
-			throw new InvalidOperationException("The sign-in code generator did not return six decimal digits.");
-
-		var codeHash = HashCode(session, email, code);
 		var expiresAt = now.Add(Lifetime);
+
+		var code = tokenGenerator.GenerateToken();
+		var codeHash = HashCode(session, email, code);
 
 		await using (var transaction = await context.BeginTransactionAsync(IsolationLevel.Serializable, token))
 		{
@@ -71,10 +70,6 @@ public sealed class EmailLoginService(
 					throw new InvalidOperationException("The sign-in code generator repeatedly returned the previous code.");
 
 				code = tokenGenerator.GenerateToken();
-
-				if (!EmailLoginValidation.IsCode(code))
-					throw new InvalidOperationException("The sign-in code generator did not return six decimal digits.");
-
 				codeHash = HashCode(session, email, code);
 			}
 
@@ -202,12 +197,10 @@ public sealed class EmailLoginService(
 		var email = EmailLoginValidation.NormalizeEmail(emailAddress);
 		var session = EmailLoginValidation.NormalizeSession(sessionId);
 
-		if (!EmailLoginValidation.IsCode(code))
-			throw new EmailLoginException();
-
 		var sessionHash = HashSession(session);
 		var codeHash = HashCode(session, email, code!);
-		await using var transaction = await context.BeginTransactionAsync(IsolationLevel.Serializable, token);
+
+		await using var transaction = await context.BeginTransactionAsync(token);
 
 		var challenge = await context.AccessControl.EmailLoginChallenges
 			.TableHint("UPDLOCK")
@@ -236,6 +229,7 @@ public sealed class EmailLoginService(
 
 			// Failed attempts must survive the error response and a client disconnect.
 			await transaction.CommitAsync(CancellationToken.None);
+
 			throw new EmailLoginException();
 		}
 
@@ -245,6 +239,7 @@ public sealed class EmailLoginService(
 			.UpdateAsync(CancellationToken.None);
 
 		var user = await EnsureAsync(email, now, CancellationToken.None);
+
 		await transaction.CommitAsync(CancellationToken.None);
 
 		return user ?? throw new EmailLoginException();

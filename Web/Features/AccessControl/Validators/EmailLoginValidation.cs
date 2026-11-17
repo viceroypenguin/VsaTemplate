@@ -29,9 +29,4 @@ internal static class EmailLoginValidation
 
 		return session.ToString("D");
 	}
-
-	public static bool IsCode(string? code) =>
-		code is { Length: 6 }
-		&& code
-			.All(char.IsAsciiDigit);
 }
