@@ -156,9 +156,11 @@ public sealed class EmailLoginService(
 				IsActive = true,
 				LastLogin = src.LoginTime,
 			})
-			.UpdateWhenMatchedAnd(
-				(dst, src) => src.LoginTime != null,
-				(dst, src) => new() { LastLogin = src.LoginTime!.Value }
+			.UpdateWhenMatched(
+				(dst, src) => new()
+				{
+					LastLogin = src.LoginTime ?? dst.LastLogin,
+				}
 			)
 			.MergeWithOutputAsync(
 				(a, del, ins, src) => new

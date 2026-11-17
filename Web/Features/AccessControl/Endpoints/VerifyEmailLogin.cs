@@ -29,7 +29,7 @@ public sealed partial class VerifyEmailLogin(
 		[NotEmpty]
 		public required string SessionId { get; init; }
 
-		[Match(expr: @"\d{6}")]
+		[Match(expr: @"^\d{6}$")]
 		public required string Token { get; init; }
 	}
 
