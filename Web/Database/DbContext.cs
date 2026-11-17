@@ -22,7 +22,7 @@ public sealed partial class DbContextOptions : IValidationTarget<DbContextOption
 
 [RegisterTransient]
 public sealed partial class DbContext(
-	IOptions<DbContextOptions> options,
+	IOptionsSnapshot<DbContextOptions> options,
 	ILogger<DbContext> logger,
 	TimeProvider timeProvider,
 	DatabaseInitializationState initialization
