@@ -26,8 +26,12 @@ public sealed partial class AddRoleToTenant(
 	public sealed partial record Request : IAuthorizedRequest, ITenantRequest, IValidationTarget<Request>
 	{
 		public static TenantPermission TenantPermission => TenantPermission.UserManagement;
-		[FromRoute] public required TenantId TenantId { get; init; }
-		[FromBody] public required RequestBody RequestBody { get; init; }
+
+		[FromRoute]
+		public required TenantId TenantId { get; init; }
+
+		[FromBody]
+		public required RequestBody RequestBody { get; init; }
 	}
 
 	[Validate]

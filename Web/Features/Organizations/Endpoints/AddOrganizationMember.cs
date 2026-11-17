@@ -45,6 +45,7 @@ public sealed partial class AddOrganizationMember(
 		[MaxLength(500)]
 		[BareEmailAddress]
 		public required string EmailAddress { get; init; }
+
 		public required OrganizationRoleId RoleId { get; init; }
 	}
 

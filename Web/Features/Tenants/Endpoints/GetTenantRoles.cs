@@ -17,7 +17,9 @@ public sealed partial class GetTenantRoles(DbContext context)
 	public sealed record Query : IAuthorizedRequest, ITenantRequest
 	{
 		public static TenantPermission TenantPermission => TenantPermission.UserManagement;
-		[FromRoute] public required TenantId TenantId { get; init; }
+
+		[FromRoute]
+		public required TenantId TenantId { get; init; }
 	}
 
 	public sealed record Response
@@ -28,7 +30,9 @@ public sealed partial class GetTenantRoles(DbContext context)
 	public sealed record Role
 	{
 		public required TenantRoleId RoleId { get; init; }
+
 		public required string Name { get; init; }
+
 		public required IReadOnlyList<TenantPermission> Permissions { get; init; }
 	}
 

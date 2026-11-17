@@ -37,6 +37,7 @@ public sealed partial class UpdateOrganization(
 		[NotEmpty]
 		[MaxLength(200)]
 		public required string Name { get; init; }
+
 		public required bool IsActive { get; init; }
 	}
 

@@ -188,15 +188,20 @@ public sealed partial class DbGenerator : IIncrementalGenerator
 	private sealed record MappedType
 	{
 		public required EquatableReadOnlyList<string> ColumnNames { get; init; }
+
 		public required string TypeName { get; init; }
+
 		public required string UnderlyingTypeName { get; init; }
+
 		public required bool IsEnum { get; init; }
 	}
 
 	private sealed record ContextProperty
 	{
 		public required string PropertyName { get; init; }
+
 		public required string? SchemaName { get; init; }
+
 		public required string TypeName { get; init; }
 	}
 }

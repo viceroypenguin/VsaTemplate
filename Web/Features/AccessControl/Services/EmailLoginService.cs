@@ -122,10 +122,15 @@ public sealed class EmailLoginService(
 	private sealed record EmailUser
 	{
 		public string EmailAddress { get; init; } = null!;
+
 		public bool IsActive { get; init; }
+
 		public DateTimeOffset? LastLogin { get; init; }
+
 		public string? Name { get; init; }
+
 		public UserId UserId { get; init; }
+
 		public bool IsApiKey { get; init; }
 	}
 

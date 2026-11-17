@@ -11,6 +11,7 @@ public sealed partial class GetOrganizationAdministrationPermissions(Organizatio
 	public sealed record Query
 	{
 		public required UserId UserId { get; init; }
+
 		public required OrganizationId OrganizationId { get; init; }
 	}
 

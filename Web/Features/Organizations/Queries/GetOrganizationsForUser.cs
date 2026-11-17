@@ -19,9 +19,13 @@ public sealed partial class GetOrganizationsForUser(DbContext context, TimeProvi
 	public sealed record Organization
 	{
 		public required OrganizationId OrganizationId { get; init; }
+
 		public required TenantId TenantId { get; init; }
+
 		public required string Name { get; init; }
+
 		public required bool IsActive { get; init; }
+
 		public required IReadOnlyList<OrganizationPermission> Permissions { get; init; }
 	}
 

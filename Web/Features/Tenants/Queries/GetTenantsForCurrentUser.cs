@@ -25,8 +25,11 @@ public sealed partial class GetTenantsForCurrentUser(
 	public sealed record Tenant
 	{
 		public required TenantId TenantId { get; init; }
+
 		public required string Name { get; init; }
+
 		public required bool IsActive { get; init; }
+
 		public required IReadOnlyList<TenantPermission> Permissions { get; init; }
 	}
 

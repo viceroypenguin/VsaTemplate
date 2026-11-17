@@ -32,6 +32,7 @@ public sealed partial class CreateTenant(
 	public sealed record Response
 	{
 		public required TenantId TenantId { get; init; }
+
 		public required IReadOnlyList<string> RecoveryKeys { get; init; }
 	}
 

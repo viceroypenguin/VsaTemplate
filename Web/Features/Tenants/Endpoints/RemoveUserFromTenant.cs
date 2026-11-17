@@ -26,8 +26,12 @@ public sealed partial class RemoveUserFromTenant(
 	public sealed record Request : IAuthorizedRequest, ITenantRequest
 	{
 		public static TenantPermission TenantPermission => TenantPermission.UserManagement;
-		[FromRoute] public required TenantId TenantId { get; init; }
-		[FromRoute] public required UserId UserId { get; init; }
+
+		[FromRoute]
+		public required TenantId TenantId { get; init; }
+
+		[FromRoute]
+		public required UserId UserId { get; init; }
 	}
 
 	private async ValueTask HandleAsync([AsParameters] Request request, CancellationToken token)

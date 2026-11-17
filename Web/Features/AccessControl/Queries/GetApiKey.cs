@@ -16,6 +16,7 @@ public sealed partial class GetApiKey(DbContext context, TimeProvider timeProvid
 	public sealed record Response
 	{
 		public required bool IsValid { get; init; }
+
 		public required UserId? UserId { get; init; }
 	}
 

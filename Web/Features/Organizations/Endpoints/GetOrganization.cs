@@ -24,8 +24,11 @@ public sealed partial class GetOrganization(DbContext context)
 	public sealed record Response
 	{
 		public required OrganizationId OrganizationId { get; init; }
+
 		public required TenantId TenantId { get; init; }
+
 		public required string Name { get; init; }
+
 		public required bool IsActive { get; init; }
 	}
 

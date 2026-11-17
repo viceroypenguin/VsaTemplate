@@ -104,6 +104,24 @@ Prefer request and response records with named properties over positional record
 explicitly qualified as `Database.Models` types. Use typed IDs consistently rather than weakening a feature contract to a
 primitive integer for convenience.
 
+In record bodies, put attributes on their own lines immediately above the member they describe. Separate members with one
+blank line, including between a permission declaration and the next property. Apply this layout to requests, request bodies,
+responses, and other records. For example:
+
+```csharp
+[Validate]
+public sealed partial record Request : IAuthorizedRequest, ITenantRequest, IValidationTarget<Request>
+{
+    public static TenantPermission TenantPermission => TenantPermission.UserManagement;
+
+    [FromRoute]
+    public required TenantId TenantId { get; init; }
+
+    [FromBody]
+    public required RequestBody RequestBody { get; init; }
+}
+```
+
 Use `async` and `await` in every `ValueTask`-returning implementation rather than returning a `ValueTask` directly. The
 wrapper is intentional for error stack reporting with runtime-async; do not remove it as a simplification. Keep genuinely
 synchronous methods synchronous and return their values without an asynchronous wrapper.

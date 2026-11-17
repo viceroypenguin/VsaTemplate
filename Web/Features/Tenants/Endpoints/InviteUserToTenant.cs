@@ -30,8 +30,12 @@ public sealed partial class InviteUserToTenant(
 	public sealed partial record Request : IAuthorizedRequest, ITenantRequest, IValidationTarget<Request>
 	{
 		public static TenantPermission TenantPermission => TenantPermission.UserManagement;
-		[FromRoute] public required TenantId TenantId { get; init; }
-		[FromBody] public required RequestBody Body { get; init; }
+
+		[FromRoute]
+		public required TenantId TenantId { get; init; }
+
+		[FromBody]
+		public required RequestBody Body { get; init; }
 	}
 
 	[Validate]
@@ -41,6 +45,7 @@ public sealed partial class InviteUserToTenant(
 		[TrimmedMaxLength(500)]
 		[BareEmailAddress]
 		public required string EmailAddress { get; init; }
+
 		public required TenantRoleId RoleId { get; init; }
 	}
 

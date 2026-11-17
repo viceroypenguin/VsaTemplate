@@ -271,6 +271,8 @@ internal static class StartupExtensions
 internal sealed record SessionUser
 {
 	public required UserId UserId { get; init; }
+
 	public required string? Name { get; init; }
+
 	public required string EmailAddress { get; init; }
 }

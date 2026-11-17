@@ -13,9 +13,13 @@ public sealed partial class DbGenerator
 	private sealed record SyncEnum
 	{
 		public required bool DeleteUnknown { get; init; }
+
 		public required string Table { get; init; }
+
 		public required string Name { get; init; }
+
 		public required string TypeName { get; init; }
+
 		public required EquatableReadOnlyList<(string, int?)> Values { get; init; }
 	}
 

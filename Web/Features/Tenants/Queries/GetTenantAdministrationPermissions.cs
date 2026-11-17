@@ -11,6 +11,7 @@ public sealed partial class GetTenantAdministrationPermissions(TenantPermissionR
 	public sealed record Query
 	{
 		public required UserId UserId { get; init; }
+
 		public required TenantId TenantId { get; init; }
 	}
 

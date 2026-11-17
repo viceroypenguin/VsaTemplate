@@ -25,8 +25,11 @@ public sealed partial class UpdateTenant(
 	[Validate]
 	public sealed partial record Request : IAuthorizedRequest, IValidationTarget<Request>
 	{
-		[FromRoute] public required TenantId TenantId { get; init; }
-		[FromBody] public required RequestBody Body { get; init; }
+		[FromRoute]
+		public required TenantId TenantId { get; init; }
+
+		[FromBody]
+		public required RequestBody Body { get; init; }
 	}
 
 	[Validate]
@@ -35,6 +38,7 @@ public sealed partial class UpdateTenant(
 		[NotEmpty]
 		[TrimmedMaxLength(200)]
 		public required string Name { get; init; }
+
 		public required bool IsActive { get; init; }
 	}
 
