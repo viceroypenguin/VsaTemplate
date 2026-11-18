@@ -1,7 +1,5 @@
 using System.Security.Claims;
 using Immediate.Injections.Shared;
-using LinqToDB.Async;
-using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.AccessControl.Models;
 using VsaTemplate.Web.Features.Shared.Exceptions;
 using VsaTemplate.Web.Features.Shared.Extensions;
@@ -11,7 +9,6 @@ namespace VsaTemplate.Web.Features.AccessControl.Services;
 [RegisterScoped]
 public sealed class CurrentUserService(
 	IHttpContextAccessor httpContextAccessor,
-	DbContext context,
 	UserPermissionCache userPermissionCache
 )
 {
@@ -35,7 +32,7 @@ public sealed class CurrentUserService(
 		if (user?.Identity?.IsAuthenticated != true)
 			return null;
 
-		var claim = user?.FindFirstValue("vsa-id") ?? "";
+		var claim = user.FindFirstValue("vsa-id") ?? "";
 
 		if (!UserId.TryParse(claim, provider: null, out var userId))
 			return null;
@@ -48,19 +45,17 @@ public sealed class CurrentUserService(
 
 	// Memberships belong to a human owner; audit fields retain the authenticated
 	// API-key principal so callers can distinguish actions performed by a key.
-	public async ValueTask<UserId> GetMembershipUserId()
+	public UserId GetMembershipUserId()
 	{
 		var actorId = GetLoggedInUserId();
 
-		var apiKey = await context.AccessControl.ApiKeys
-			.FirstOrDefaultAsync(k => k.ApiKeyId == actorId);
+		var user = httpContextAccessor.HttpContext?.User;
+		var claim = user?.FindFirstValue("owner-id") ?? "";
 
-		if (apiKey is null)
-			return actorId;
-
-		if (!await context.AccessControl.Users.AnyAsync(u => u.UserId == apiKey.OwnerUserId && u.IsActive && u.ApiKey == null))
-			UnauthorizedException.ThrowUnauthorizedException("The API key owner is unavailable.");
-
-		return apiKey.OwnerUserId;
+		return UserId.TryParse(claim, provider: null, out var ownerId) switch
+		{
+			true => ownerId,
+			false => actorId,
+		};
 	}
 }

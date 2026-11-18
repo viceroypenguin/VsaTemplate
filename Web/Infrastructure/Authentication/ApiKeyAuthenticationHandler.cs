@@ -1,10 +1,10 @@
 using System.Security.Claims;
 using System.Text.Encodings.Web;
+using Immediate.Injections.Shared;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.Options;
-using VsaTemplate.Web.Features.AccessControl.Queries;
-using Immediate.Injections.Shared;
+using VsaTemplate.Web.Features.AccessControl.Services;
 
 namespace VsaTemplate.Web.Infrastructure.Authentication;
 
@@ -15,7 +15,8 @@ public sealed class ApiKeyAuthenticationHandler(
 	IOptionsMonitor<ApiKeyAuthenticationSchemeOptions> options,
 	ILoggerFactory logger,
 	UrlEncoder encoder,
-	GetApiKey.Handler getApiKey
+	ValidApiKeyCache validApiKeyCache,
+	TimeProvider timeProvider
 ) : AuthenticationHandler<ApiKeyAuthenticationSchemeOptions>(
 	options,
 	logger,
@@ -45,11 +46,15 @@ public sealed class ApiKeyAuthenticationHandler(
 		// Check account state and expiration on each request. A cached Boolean
 		// otherwise keeps disabled or expired keys authenticated.
 
-		if (await getApiKey.HandleAsync(new() { ApiKey = key }, Context.RequestAborted) is not
+		if (
+			await validApiKeyCache.GetValue(new() { ApiKey = key }, Context.RequestAborted) is not
 			{
 				IsValid: true,
 				UserId: { } userId,
-			})
+				OwnerUserId: { } ownerUserId,
+				Expiration: { } expiration,
+			}
+			|| expiration < timeProvider.GetUtcNow())
 		{
 			return AuthenticateResult.NoResult();
 		}
@@ -60,6 +65,7 @@ public sealed class ApiKeyAuthenticationHandler(
 					new ClaimsIdentity(
 						[
 							new Claim("vsa-id", string.Create(provider: null, $"{userId}")),
+							new Claim("owner-id", string.Create(provider: null, $"{ownerUserId}")),
 							new Claim(ClaimTypes.NameIdentifier, "Api Key"),
 						],
 						AuthenticationScheme

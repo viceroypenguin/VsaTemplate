@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using Immediate.Handlers.Shared;
-using VsaTemplate.Web.Features.AccessControl.Queries;
 
 namespace VsaTemplate.Web.Infrastructure.Logging;
 
@@ -18,14 +17,14 @@ public sealed partial class LoggingBehavior<TRequest, TResponse>(
 		{
 			["@RequestData"] = request switch
 			{
-				GetApiKey.Request or ISensitiveRequest => "[Authentication request redacted]",
+				ISensitiveRequest => "[Authentication request redacted]",
 				_ => request,
 			},
 		};
 
 		var httpContext = _httpContextAccessor.HttpContext;
 
-		if (httpContext is not null)
+		if (httpContext is { })
 		{
 			properties["User"] = httpContext.User?.Identity?.Name;
 			properties["RemoteIP"] = httpContext.Connection.RemoteIpAddress;
@@ -61,7 +60,8 @@ public sealed partial class LoggingBehavior<TRequest, TResponse>(
 	)]
 	private partial void LogSuccess(
 		Type type,
-		double elapsed);
+		double elapsed
+	);
 
 	[LoggerMessage(
 		Level = LogLevel.Error,
@@ -69,5 +69,6 @@ public sealed partial class LoggingBehavior<TRequest, TResponse>(
 	)]
 	private partial void LogException(
 		Type type,
-		Exception exception);
+		Exception exception
+	);
 }

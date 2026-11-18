@@ -42,7 +42,7 @@ public sealed partial class CreateTenant(
 	)
 	{
 		var userId = currentUserService.GetLoggedInUserId();
-		var ownerId = await currentUserService.GetMembershipUserId();
+		var ownerId = currentUserService.GetMembershipUserId();
 		var name = request.Name.Trim();
 		var recoveryKeys = BuildRecoveryKeys();
 
@@ -82,7 +82,7 @@ public sealed partial class CreateTenant(
 		);
 
 		await transaction.CommitAsync(token);
-		await cacheInvalidator.InvalidateUser(ownerId, CancellationToken.None);
+		await cacheInvalidator.InvalidateUser(ownerId);
 
 		return new()
 		{

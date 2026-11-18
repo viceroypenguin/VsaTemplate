@@ -69,7 +69,7 @@ public sealed partial class RemoveUserFromTenant(
 			.DeleteAsync(token);
 
 		await transaction.CommitAsync(token);
-		await cacheInvalidator.InvalidateUser(request.UserId, CancellationToken.None);
-		await cacheInvalidator.InvalidateTenant(request.TenantId, CancellationToken.None);
+		await cacheInvalidator.InvalidateUser(request.UserId);
+		await cacheInvalidator.InvalidateTenant(request.TenantId);
 	}
 }

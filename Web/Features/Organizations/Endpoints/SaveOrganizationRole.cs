@@ -65,6 +65,6 @@ public sealed partial class SaveOrganizationRole(
 			.UpdateAsync(token);
 
 		await transaction.CommitAsync(token);
-		await permissionCacheInvalidator.InvalidateOrganization(request.OrganizationId, CancellationToken.None);
+		await permissionCacheInvalidator.InvalidateOrganization(request.OrganizationId);
 	}
 }

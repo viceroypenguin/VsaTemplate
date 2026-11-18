@@ -84,6 +84,6 @@ public sealed partial class SaveTenantRole(
 			.UpdateAsync(token);
 
 		await transaction.CommitAsync(token);
-		await cacheInvalidator.InvalidateTenant(request.TenantId, CancellationToken.None);
+		await cacheInvalidator.InvalidateTenant(request.TenantId);
 	}
 }

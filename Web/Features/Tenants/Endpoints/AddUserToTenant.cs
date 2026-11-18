@@ -69,6 +69,6 @@ public sealed partial class AddUserToTenant(
 			.MergeAsync(token);
 
 		await transaction.CommitAsync(token);
-		await cacheInvalidator.InvalidateUser(request.UserId, CancellationToken.None);
+		await cacheInvalidator.InvalidateUser(request.UserId);
 	}
 }

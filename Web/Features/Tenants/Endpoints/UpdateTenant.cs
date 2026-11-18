@@ -67,6 +67,6 @@ public sealed partial class UpdateTenant(
 		if (count == 0)
 			throw new NotFoundException(nameof(Database.Models.Tenant));
 
-		await cacheInvalidator.InvalidateTenant(request.TenantId, CancellationToken.None);
+		await cacheInvalidator.InvalidateTenant(request.TenantId);
 	}
 }

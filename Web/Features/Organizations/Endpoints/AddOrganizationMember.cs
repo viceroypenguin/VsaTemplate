@@ -90,7 +90,7 @@ public sealed partial class AddOrganizationMember(
 			.MergeAsync(token);
 
 		await transaction.CommitAsync(token);
-		await permissionCacheInvalidator.InvalidateOrganization(request.OrganizationId, CancellationToken.None);
+		await permissionCacheInvalidator.InvalidateOrganization(request.OrganizationId);
 		return new() { UserId = userId };
 	}
 }

@@ -67,7 +67,7 @@ public sealed partial class RemoveUserFromOrganization(
 			.DeleteAsync(token);
 
 		await transaction.CommitAsync(token);
-		await permissionCacheInvalidator.InvalidateOrganization(request.OrganizationId, CancellationToken.None);
-		await permissionCacheInvalidator.InvalidateUser(request.UserId, CancellationToken.None);
+		await permissionCacheInvalidator.InvalidateOrganization(request.OrganizationId);
+		await permissionCacheInvalidator.InvalidateUser(request.UserId);
 	}
 }

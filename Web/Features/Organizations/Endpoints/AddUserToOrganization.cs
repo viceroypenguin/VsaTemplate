@@ -60,6 +60,6 @@ public sealed partial class AddUserToOrganization(
 			.MergeAsync(token);
 
 		await transaction.CommitAsync(token);
-		await permissionCacheInvalidator.InvalidateOrganization(request.OrganizationId, CancellationToken.None);
+		await permissionCacheInvalidator.InvalidateOrganization(request.OrganizationId);
 	}
 }

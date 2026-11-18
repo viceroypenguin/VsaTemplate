@@ -17,16 +17,15 @@ public sealed partial class AuthorizationBehavior<TRequest, TResponse>(
 		var permissions = await currentUserService.GetLoggedInUserPermissions();
 		var permission = TRequest.Permission;
 
-		if (permissions.Count == 0
-			|| (permission is not Permission.None && !permissions.HasPermission(permission)))
+		if (permissions.HasPermission(permission))
 		{
-			var userId = currentUserService.GetCurrentUserId();
-
-			LogUnauthorizedAccess(logger, userId, HandlerType.FullName, permission);
-			UnauthorizedException.ThrowUnauthorizedException();
+			return await Next(request, cancellationToken);
 		}
 
-		return await Next(request, cancellationToken);
+		var userId = currentUserService.GetCurrentUserId();
+
+		LogUnauthorizedAccess(logger, userId, HandlerType.FullName, permission);
+		return UnauthorizedException.ThrowUnauthorizedException<TResponse>();
 	}
 
 	[LoggerMessage(

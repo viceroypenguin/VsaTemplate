@@ -49,7 +49,7 @@ public sealed partial class CreateOrganization(
 	private async ValueTask<Response> HandleAsync([AsParameters] Request request, CancellationToken token)
 	{
 		var userId = currentUserService.GetLoggedInUserId();
-		var memberUserId = await currentUserService.GetMembershipUserId();
+		var memberUserId = currentUserService.GetMembershipUserId();
 		await using var transaction = await context.BeginTransactionAsync(token);
 
 		var organizationId = (OrganizationId)await context.InsertWithInt32IdentityAsync(
@@ -77,7 +77,7 @@ public sealed partial class CreateOrganization(
 		}, token: token);
 
 		await transaction.CommitAsync(token);
-		await permissionCacheInvalidator.InvalidateOrganization(organizationId, CancellationToken.None);
+		await permissionCacheInvalidator.InvalidateOrganization(organizationId);
 		return new() { OrganizationId = organizationId };
 	}
 }

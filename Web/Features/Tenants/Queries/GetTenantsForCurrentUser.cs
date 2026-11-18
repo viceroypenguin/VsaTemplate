@@ -38,7 +38,7 @@ public sealed partial class GetTenantsForCurrentUser(
 		if (currentUserService.GetCurrentUserId() is null)
 			return new() { Tenants = [] };
 
-		var userId = await currentUserService.GetMembershipUserId();
+		var userId = currentUserService.GetMembershipUserId();
 
 		var roles = await context.TenantRoleUsers
 			.Where(u => u.UserId == userId && u.User.IsActive)

@@ -69,7 +69,7 @@ public sealed partial class AddOrganizationRole(
 				EditedUserId = currentUserService.GetLoggedInUserId(),
 			}, token: token);
 
-		await permissionCacheInvalidator.InvalidateOrganization(request.OrganizationId, CancellationToken.None);
+		await permissionCacheInvalidator.InvalidateOrganization(request.OrganizationId);
 		return new() { RoleId = roleId };
 	}
 }

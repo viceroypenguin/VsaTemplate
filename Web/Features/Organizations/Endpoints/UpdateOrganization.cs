@@ -64,6 +64,6 @@ public sealed partial class UpdateOrganization(
 		if (count == 0)
 			NotFoundException.ThrowNotFoundException(nameof(Database.Models.Organization));
 
-		await permissionCacheInvalidator.InvalidateOrganization(request.OrganizationId, CancellationToken.None);
+		await permissionCacheInvalidator.InvalidateOrganization(request.OrganizationId);
 	}
 }
