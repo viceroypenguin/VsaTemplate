@@ -4,13 +4,13 @@ using Immediate.Apis.Shared;
 using Immediate.Handlers.Shared;
 using Immediate.Validations.Shared;
 using LinqToDB;
-using LinqToDB.Async;
 using SimpleBase;
 using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.AccessControl.Authorization;
 using VsaTemplate.Web.Features.AccessControl.Models;
 using VsaTemplate.Web.Features.AccessControl.Services;
 using VsaTemplate.Web.Features.Shared.Exceptions;
+using VsaTemplate.Web.Features.Shared.Validators;
 
 namespace VsaTemplate.Web.Features.AccessControl.Endpoints;
 
@@ -28,8 +28,11 @@ public sealed partial class CreateApiKey(
 		public required IReadOnlyList<Permission> Permissions { get; init; }
 
 		[GreaterThan(nameof(TimeSpan.Zero), Message = "API key lifetime must be positive.")]
-		[LessThan(nameof(MaxLifetime), Message = "Api Key cannot be have a lifetime longer than one year.")]
+		[LessThan(nameof(MaxLifetime), Message = "API key lifetime cannot exceed one year.")]
 		public required TimeSpan Lifetime { get; init; }
+
+		[TrimmedMaxLength(200)]
+		public string? Note { get; init; }
 
 		private static readonly TimeSpan MaxLifetime = TimeSpan.FromDays(366);
 	}
@@ -44,11 +47,8 @@ public sealed partial class CreateApiKey(
 		CancellationToken token
 	)
 	{
-		var userId = currentUserService.GetLoggedInUserId();
+		var userId = currentUserService.GetLoggedInHumanUserId();
 		var currentUserPermissions = await currentUserService.GetLoggedInUserPermissions();
-
-		if (await context.AccessControl.ApiKeys.AnyAsync(k => k.ApiKeyId == userId, token))
-			throw new UnauthorizedException("API keys cannot create other API keys.");
 
 		if (!currentUserPermissions.Contains(Permission.Admin)
 			&& request.Permissions.Any(p => p is not Permission.None && !currentUserPermissions.Contains(p)))
@@ -58,6 +58,7 @@ public sealed partial class CreateApiKey(
 
 		var key = GenerateApiKey();
 		var now = timeProvider.GetUtcNow();
+		var note = request.Note?.Trim();
 
 		await using var transaction = await context.BeginTransactionAsync(token);
 
@@ -78,6 +79,7 @@ public sealed partial class CreateApiKey(
 			{
 				ApiKeyId = newUserId,
 				OwnerUserId = userId,
+				Note = string.IsNullOrEmpty(note) ? null : note,
 				CreatedDateTime = now,
 				ExpirationDateTime = now.Add(request.Lifetime),
 				PermissionsJson = JsonSerializer.Serialize(

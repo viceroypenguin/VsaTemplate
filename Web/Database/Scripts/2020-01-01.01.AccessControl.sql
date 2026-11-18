@@ -91,11 +91,12 @@ create table [AccessControl].[ApiKey]
 		constraint [FK_ApiKey_Owner]
 		foreign key references [AccessControl].[User],
 
+	[Note] nvarchar(200) null,
 	[PermissionsJson] json not null,
 
 	[CreatedDateTime] datetimeoffset not null,
 	[ExpirationDateTime] datetimeoffset not null,
 );
 
-create unique index [IX_ApiKey_OwnerUserId]
+create index [IX_ApiKey_OwnerUserId]
 on [AccessControl].[ApiKey](OwnerUserId);

@@ -3,6 +3,7 @@ using Immediate.Injections.Shared;
 using VsaTemplate.Web.Features.AccessControl.Models;
 using VsaTemplate.Web.Features.Shared.Exceptions;
 using VsaTemplate.Web.Features.Shared.Extensions;
+using VsaTemplate.Web.Infrastructure.Authentication;
 
 namespace VsaTemplate.Web.Features.AccessControl.Services;
 
@@ -42,6 +43,18 @@ public sealed class CurrentUserService(
 
 	public UserId GetLoggedInUserId() =>
 		GetCurrentUserId() ?? UnauthorizedException.ThrowUnauthorizedException<UserId>();
+
+	public UserId GetLoggedInHumanUserId()
+	{
+		if (httpContextAccessor.HttpContext?.User.Identities.Any(
+			identity => identity.AuthenticationType == ApiKeyAuthenticationHandler.AuthenticationScheme
+		) == true)
+		{
+			throw new UnauthorizedException("API keys cannot manage API keys.");
+		}
+
+		return GetLoggedInUserId();
+	}
 
 	// Memberships belong to a human owner; audit fields retain the authenticated
 	// API-key principal so callers can distinguish actions performed by a key.

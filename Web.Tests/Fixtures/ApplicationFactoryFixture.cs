@@ -12,6 +12,7 @@ using LinqToDB;
 using LinqToDB.Async;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
@@ -164,6 +165,25 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime
 		return JsonSerializer.Deserialize<Permission[]>(json)!;
 	}
 
+	public async Task AddApiKeyScopePermissionsAsync(UserId keyId)
+	{
+		await using var scope = GetFactory().Services.CreateAsyncScope();
+		var context = scope.ServiceProvider.GetRequiredService<DbContext>();
+		var token = TestContext.Current.CancellationToken;
+
+		await context.InsertAsync(new Database.Models.TenantApiKey
+		{
+			TenantApiKeyId = keyId,
+			PermissionsJson = "[0]",
+		}, token: token);
+
+		await context.InsertAsync(new Database.Models.OrganizationApiKey
+		{
+			OrganizationApiKeyId = keyId,
+			PermissionsJson = "[0]",
+		}, token: token);
+	}
+
 	public async Task<UserId> ReadApiKeyUserIdAsync(string key)
 	{
 		await using var scope = GetFactory().Services.CreateAsyncScope();
@@ -175,15 +195,17 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime
 			.SingleAsync(TestContext.Current.CancellationToken);
 	}
 
-	public async Task ExpireApiKeyAsync(string key)
+	public async Task<(bool HasApiKey, bool IsActive, string EmailAddress)> ReadApiKeyStateAsync(UserId keyId)
 	{
 		await using var scope = GetFactory().Services.CreateAsyncScope();
 		var context = scope.ServiceProvider.GetRequiredService<DbContext>();
 
-		await context.AccessControl.ApiKeys
-			.Where(k => k.User.EmailAddress == key)
-			.Set(k => k.ExpirationDateTime, DateTimeOffset.UtcNow.AddMinutes(-1))
-			.UpdateAsync(TestContext.Current.CancellationToken);
+		var user = await context.AccessControl.Users
+			.Where(u => u.UserId == keyId)
+			.Select(u => new { HasApiKey = u.ApiKey != null, u.IsActive, u.EmailAddress })
+			.SingleAsync(TestContext.Current.CancellationToken);
+
+		return (user.HasApiKey, user.IsActive, user.EmailAddress);
 	}
 
 	public HttpClient CreateAnonymousClient()
@@ -326,6 +348,8 @@ file sealed class TestWebApplicationFactory(string connectionString, CapturingEm
 			services.AddSingleton<IEmailSender>(emails);
 			services.RemoveAll<ILoginTokenGenerator>();
 			services.AddSingleton<ILoginTokenGenerator, TestLoginTokenGenerator>();
+			services.RemoveAll<TimeProvider>();
+			services.AddSingleton<TimeProvider, RequestTimeProvider>();
 
 			services
 				.AddAuthentication(options =>
@@ -335,6 +359,17 @@ file sealed class TestWebApplicationFactory(string connectionString, CapturingEm
 				})
 				.AddScheme<AuthenticationSchemeOptions, TestAuthenticationHandler>(TestAuthenticationHandler.Scheme, _ => { });
 		});
+}
+
+file sealed class RequestTimeProvider(IHttpContextAccessor httpContextAccessor) : TimeProvider
+{
+	public override DateTimeOffset GetUtcNow()
+	{
+		var header = httpContextAccessor.HttpContext?.Request.Headers["X-Test-Utc-Now"].ToString();
+		return DateTimeOffset.TryParseExact(header, "O", CultureInfo.InvariantCulture, DateTimeStyles.None, out var now)
+			? now
+			: System.GetUtcNow();
+	}
 }
 
 file sealed class TestAuthenticationHandler(

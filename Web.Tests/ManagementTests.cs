@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 using System.Text.Json;
 using VsaTemplate.Web.Features.AccessControl.Models;
@@ -99,13 +100,89 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 	}
 
 	[Fact]
-	public async Task CachedApiKeysAreRejectedAfterTheirExpiryChanges()
+	public async Task CachedApiKeysExpireAtTheirOriginalDeadline()
 	{
-		var key = await fixture.CreateApiKeyAsync(await fixture.CreateUserAsync(), DateTimeOffset.UtcNow.AddHours(1));
+		var expiresAt = DateTimeOffset.UtcNow.AddHours(1);
+		var key = await fixture.CreateApiKeyAsync(await fixture.CreateUserAsync(), expiresAt);
 		using var client = fixture.CreateApiKeyClient(key);
 		Assert.True((await GetAsync(client, "/api/session")).GetProperty("isAuthenticated").GetBoolean());
-		await fixture.ExpireApiKeyAsync(key);
+
+		client.DefaultRequestHeaders.Add("X-Test-Utc-Now", expiresAt.ToString("O", CultureInfo.InvariantCulture));
 		await AssertStatusAsync(client, HttpMethod.Get, "/api/tenants", HttpStatusCode.Unauthorized);
+	}
+
+	[Fact]
+	public async Task ApiKeyListsContainOnlyOwnedActiveKeysAndNeverReturnFullCredentials()
+	{
+		var ownerId = await fixture.CreateUserAsync(isAdministrator: true);
+		using var owner = await fixture.CreateClientAsync(ownerId);
+		var named = await PostAsync(owner, "/api/users/apikey/create",
+			new { permissions = AdministratorPermissions, lifetime = "01:00:00", note = "  Release automation  " });
+		var unnamed = await PostAsync(owner, "/api/users/apikey/create",
+			new { permissions = ReadOnlyPermissions, lifetime = "01:00:00" });
+		var namedKey = named.GetProperty("apiKey").GetString()!;
+		var unnamedKey = unnamed.GetProperty("apiKey").GetString()!;
+		var expired = await fixture.CreateApiKeyAsync(ownerId, DateTimeOffset.UtcNow.AddMinutes(-1));
+		var unrelated = await fixture.CreateApiKeyAsync(await fixture.CreateUserAsync(), DateTimeOffset.UtcNow.AddHours(1));
+
+		await AssertStatusAsync(owner, HttpMethod.Post, "/api/users/apikey/create", HttpStatusCode.BadRequest,
+			new { permissions = ReadOnlyPermissions, lifetime = "01:00:00", note = new string('a', 201) });
+
+		var listing = await GetAsync(owner, "/api/users/apikey");
+		var keys = listing.GetProperty("apiKeys").EnumerateArray().ToArray();
+		Assert.True(listing.GetProperty("canCreateAdminKey").GetBoolean());
+		Assert.Equal(2, keys.Length);
+
+		var namedRow = Assert.Single(keys, k => k.GetProperty("note").GetString() == "Release automation");
+		Assert.Equal(namedKey[^3..], namedRow.GetProperty("keySuffix").GetString());
+		Assert.Equal("Admin", Assert.Single(Strings(namedRow.GetProperty("permissions"))));
+
+		var unnamedRow = Assert.Single(keys, k => k.GetProperty("note").ValueKind == JsonValueKind.Null);
+		Assert.Equal(unnamedKey[^3..], unnamedRow.GetProperty("keySuffix").GetString());
+		Assert.Equal("None", Assert.Single(Strings(unnamedRow.GetProperty("permissions"))));
+
+		foreach (var secret in new[] { namedKey, unnamedKey, expired, unrelated })
+			Assert.DoesNotContain(secret, listing.GetRawText(), StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public async Task OnlyOwnersCanInvalidateCachedApiKeys()
+	{
+		var ownerId = await fixture.CreateUserAsync();
+		using var owner = await fixture.CreateClientAsync(ownerId);
+		using var ownerWithoutToken = await fixture.CreateClientAsync(ownerId, includeAntiforgeryToken: false);
+		using var otherUser = await fixture.CreateClientAsync(await fixture.CreateUserAsync(isAdministrator: true));
+		var expiresAt = DateTimeOffset.UtcNow.AddHours(1);
+		var key = await fixture.CreateApiKeyAsync(ownerId, expiresAt);
+		var retainedKey = await fixture.CreateApiKeyAsync(ownerId, expiresAt);
+		var keyId = await fixture.ReadApiKeyUserIdAsync(key);
+		await fixture.AddApiKeyScopePermissionsAsync(keyId);
+		var path = $"/api/users/apikey/{keyId.Value}";
+		using var keyClient = fixture.CreateApiKeyClient(key);
+		using var caseVariantClient = fixture.CreateApiKeyClient("T" + key[1..]);
+
+		Assert.True((await GetAsync(keyClient, "/api/session")).GetProperty("isAuthenticated").GetBoolean());
+		await AssertStatusAsync(caseVariantClient, HttpMethod.Get, "/api/tenants", HttpStatusCode.Unauthorized);
+		await AssertStatusAsync(keyClient, HttpMethod.Get, "/api/users/apikey", HttpStatusCode.Forbidden);
+		await AssertStatusAsync(keyClient, HttpMethod.Delete, path, HttpStatusCode.Forbidden);
+		await AssertStatusAsync(otherUser, HttpMethod.Delete, path, HttpStatusCode.NotFound);
+		await AssertStatusAsync(ownerWithoutToken, HttpMethod.Delete, path, HttpStatusCode.BadRequest);
+		// Rejected attempts leave the key valid.
+		await AssertStatusAsync(keyClient, HttpMethod.Get, "/api/tenants", HttpStatusCode.OK);
+
+		await AssertStatusAsync(owner, HttpMethod.Delete, path, HttpStatusCode.OK);
+		await AssertStatusAsync(owner, HttpMethod.Delete, path, HttpStatusCode.NotFound);
+		await AssertStatusAsync(keyClient, HttpMethod.Get, "/api/tenants", HttpStatusCode.Unauthorized);
+
+		var (hasApiKey, isActive, emailAddress) = await fixture.ReadApiKeyStateAsync(keyId);
+		Assert.False(hasApiKey);
+		Assert.False(isActive);
+		Assert.NotEqual(key, emailAddress, StringComparer.Ordinal);
+
+		var remaining = Assert.Single((await GetAsync(owner, "/api/users/apikey")).GetProperty("apiKeys").EnumerateArray());
+		Assert.Equal(retainedKey[^3..], remaining.GetProperty("keySuffix").GetString());
+		using var retainedKeyClient = fixture.CreateApiKeyClient(retainedKey);
+		Assert.True((await GetAsync(retainedKeyClient, "/api/session")).GetProperty("isAuthenticated").GetBoolean());
 	}
 
 	[Fact]

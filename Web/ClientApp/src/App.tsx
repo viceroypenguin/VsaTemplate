@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList } from '@/components/ui/navigation-menu';
 import { getSession, request } from './api';
+import { ApiKeys } from './ApiKeys';
 import { AccountAvatar, Brand, Empty, Icon, Loading, PageHeading, Permissions, Retry, Status } from './components';
 import { useResource, useRoute } from './hooks';
 import { TenantList } from './TenantList';
@@ -40,6 +41,8 @@ function Workspace({ session, themeControl }: { session: Session; themeControl: 
   let content;
   if (route === '/tenants' || route === '/') {
     content = <TenantList resource={tenants} onCreated={(name, keys) => { setRecovery({ name, keys }); refresh(); }} />;
+  } else if (route === '/api-keys') {
+    content = <ApiKeys />;
   } else if (route === '/organizations') {
     content = <>
       <PageHeading eyebrow="Your workspace" title="Organizations">The teams and organizations you belong to, across your tenants.</PageHeading>
@@ -70,6 +73,11 @@ function Workspace({ session, themeControl }: { session: Session; themeControl: 
           <NavigationMenuItem>
             <NavigationMenuLink href="#/organizations" active={/^\/organizations(?:\/|$)/.test(route)}>
               <Icon name="teams" />Organizations<span className="nav-count">{organizationItems.length}</span>
+            </NavigationMenuLink>
+          </NavigationMenuItem>
+          <NavigationMenuItem>
+            <NavigationMenuLink href="#/api-keys" active={route === '/api-keys'}>
+              <Icon name="key" />API keys
             </NavigationMenuLink>
           </NavigationMenuItem>
         </NavigationMenuList>

@@ -43,18 +43,27 @@ public sealed class ApiKeyAuthenticationHandler(
 		if (apiKey is not [{ Length: > 0 } key])
 			return AuthenticateResult.NoResult();
 
-		// Check account state and expiration on each request. A cached Boolean
-		// otherwise keeps disabled or expired keys authenticated.
+		GetApiKey.Response result;
 
-		if (
-			await validApiKeyCache.GetValue(new() { ApiKey = key }, Context.RequestAborted) is not
+		try
+		{
+			result = await validApiKeyCache.GetValue(new() { ApiKey = key }, Context.RequestAborted);
+		}
+		catch (OperationCanceledException) when (!Context.RequestAborted.IsCancellationRequested)
+		{
+			// Cache invalidation can cancel an in-flight lookup.
+			return AuthenticateResult.NoResult();
+		}
+
+		// Check the issued expiration even when the credential was found in cache.
+		if (result is not
 			{
 				IsValid: true,
 				UserId: { } userId,
 				OwnerUserId: { } ownerUserId,
 				Expiration: { } expiration,
 			}
-			|| expiration < timeProvider.GetUtcNow())
+			|| expiration <= timeProvider.GetUtcNow())
 		{
 			return AuthenticateResult.NoResult();
 		}

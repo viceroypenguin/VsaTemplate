@@ -11,6 +11,20 @@ The public homepage is application content with a login entry point. Keep the lo
 that page without moving authentication into the authenticated workspace. API-key clients keep their separate authentication
 path and do not exchange email codes for cookies.
 
+## Managing API keys
+
+The **API keys** page lists the signed-in user's active, unexpired keys. It shows each key's purpose note, granted
+permissions, and last three characters. The full credential is available in the creation response, so users copy it
+when they create the key.
+
+`POST /api/users/apikey/create` accepts an optional `note` of up to 200 characters after trimming. A user can issue
+multiple keys. `GET /api/users/apikey` lists their active keys, and `DELETE /api/users/apikey/{apiKeyId}` invalidates
+one they own. Users manage keys through their browser session with antiforgery protection on creation and revocation.
+
+Revocation deletes the credential and its scope assignments in one database transaction, then evicts the in-process
+authentication and permission caches. Instances that share a database need shared cache invalidation for immediate
+revocation across instances.
+
 ## Request and verify protocol
 
 1. The client obtains an anonymous session response from `GET /api/session`, including a request-verification token.

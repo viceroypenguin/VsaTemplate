@@ -1,6 +1,6 @@
-using LinqToDB.Async;
 using Immediate.Cache.Shared;
 using Immediate.Handlers.Shared;
+using LinqToDB.Async;
 using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.AccessControl.Models;
 using VsaTemplate.Web.Infrastructure.Logging;
@@ -50,11 +50,16 @@ public sealed partial class GetApiKey(DbContext context, TimeProvider timeProvid
 				select new
 				{
 					u.UserId,
+					u.EmailAddress,
 					ak.ExpirationDateTime,
 					ak.OwnerUserId,
 				}
 			)
 			.FirstOrDefaultAsync(token);
+
+		// Use the same exact credential for database lookups, caching, and revocation.
+		if (!string.Equals(apiKey?.EmailAddress, request.ApiKey, StringComparison.Ordinal))
+			apiKey = null;
 
 		return new()
 		{

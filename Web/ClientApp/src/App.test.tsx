@@ -20,6 +20,64 @@ describe('workspace flows', () => {
     expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/session');
   });
 
+  it('creates a named API key, masks it in the list, and invalidates it after confirmation', async () => {
+    const user = userEvent.setup();
+    const secret = 'test-key-released-xyz';
+    let issued = false;
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, options?: RequestInit) => {
+      const path = String(input);
+      if (path === '/api/session') return json({ isAuthenticated: true, user: { userId: 1, name: 'Alex', emailAddress: 'alex@example.com' }, requestToken: 'csrf-token' });
+      if (path === '/api/tenants') return json({ tenants: [] });
+      if (path === '/api/organizations') return json({ organizations: [] });
+      if (path === '/api/users/apikey/create' && options?.method === 'POST') {
+        issued = true;
+        return json({ apiKey: secret });
+      }
+      if (path === '/api/users/apikey/5' && options?.method === 'DELETE') {
+        issued = false;
+        return new Response(null, { status: 200 });
+      }
+      if (path === '/api/users/apikey') return json({
+        apiKeys: issued ? [{ apiKeyId: 5, note: 'Release automation', permissions: ['Admin'], keySuffix: 'xyz' }] : [],
+        canCreateAdminKey: true,
+      });
+      throw new Error(`Unexpected request ${path}`);
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    render(<App />);
+
+    await user.click(await screen.findByRole('link', { name: 'API keys' }));
+    await screen.findByRole('heading', { name: 'No active API keys' });
+    await user.click(screen.getByRole('button', { name: 'Create API key' }));
+    await user.type(screen.getByRole('textbox', { name: 'Purpose note (optional)' }), ' Release automation ');
+    await user.click(screen.getByRole('checkbox', { name: 'Grant administrator permissions' }));
+    await user.click(screen.getByRole('button', { name: 'Create key' }));
+
+    const disclosure = await screen.findByRole('region', { name: 'New API key' });
+    expect(within(disclosure).getByText(secret)).toBeInTheDocument();
+    const table = await screen.findByRole('table', { name: 'Issued API keys' });
+    expect(within(table).getByText('****xyz')).toBeInTheDocument();
+    expect(within(table).getByText('Administrator')).toBeInTheDocument();
+    expect(within(table).queryByText(secret)).not.toBeInTheDocument();
+    const creation = fetchMock.mock.calls.find(([path]) => path === '/api/users/apikey/create');
+    expect(creation?.[1]?.body).toBe('{"note":"Release automation","permissions":["Admin"],"lifetime":"30.00:00:00"}');
+    await user.click(within(disclosure).getByRole('button', { name: 'Done' }));
+    expect(screen.queryByText(secret)).not.toBeInTheDocument();
+
+    const invalidate = within(table).getByRole('button', { name: 'Invalidate Release automation (****xyz)' });
+    await user.click(invalidate);
+    await user.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Cancel' }));
+    expect(fetchMock.mock.calls.filter(([, options]) => options?.method === 'DELETE')).toHaveLength(0);
+
+    await user.click(invalidate);
+    await user.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Invalidate key' }));
+    await screen.findByRole('heading', { name: 'No active API keys' });
+    expect(screen.getByText('API key invalidated.')).toBeInTheDocument();
+    const deletion = fetchMock.mock.calls.find(([, options]) => options?.method === 'DELETE');
+    expect(deletion?.[0]).toBe('/api/users/apikey/5');
+    expect(new Headers(deletion?.[1]?.headers).get('X-CSRF-TOKEN')).toBe('csrf-token');
+  });
+
   it('creates a tenant and requires acknowledgment before dismissing its recovery keys', async () => {
     const user = userEvent.setup();
     let created = false;

@@ -46,6 +46,19 @@
           "SkipOnUpdate": false
         },
         {
+          "TypeName": "string",
+          "PropertyName": "Note",
+          "ColumnName": "Note",
+          "IsNullable": true,
+          "DataType": "nvarchar(200)",
+          "ForceNotNull": false,
+          "IsPrimaryKey": false,
+          "PrimaryKeyOrder": null,
+          "IsIdentity": false,
+          "SkipOnInsert": false,
+          "SkipOnUpdate": false
+        },
+        {
           "TypeName": "int",
           "PropertyName": "OwnerUserId",
           "ColumnName": "OwnerUserId",
@@ -72,7 +85,7 @@
           "SkipOnUpdate": false
         }
       ],
-      "Count": 5
+      "Count": 6
     },
     "Associations": {
       "Collection": [
