@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace VsaTemplate.Web.Database;
 
-[RegisterOptions(nameof(DbContextOptions), ValidateOnStart = true)]
+[RegisterOptions(ValidateOnStart = true)]
 [Validate]
 public sealed partial class DbContextOptions : IValidationTarget<DbContextOptions>
 {

@@ -3,7 +3,7 @@ using Immediate.Validations.Shared;
 
 namespace VsaTemplate.Web.Infrastructure.Authentication;
 
-[RegisterOptions(nameof(EmailLoginOptions), ValidateOnStart = true)]
+[RegisterOptions(ValidateOnStart = true)]
 [Validate]
 public sealed partial class EmailLoginOptions : IValidationTarget<EmailLoginOptions>
 {

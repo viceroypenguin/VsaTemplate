@@ -328,13 +328,13 @@ file sealed class TestWebApplicationFactory(string connectionString, CapturingEm
 			.ConfigureAppConfiguration(cb => cb.AddInMemoryCollection(
 				new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
 				{
-					["DbContextOptions:ConnectionString"] = connectionString,
-					["DbContextOptions:ConnectionStringInit"] = connectionString,
-					["EmailLoginOptions:RequestsPerMinute"] = "1000",
-					["EmailLoginOptions:VerificationsPerMinute"] = "1000",
-					["EmailServiceOptions:ServerType"] = "Disabled",
-					["EmailServiceOptions:FromEmailAddress"] = "Tests <tests@example.test>",
-					["EmailServiceOptions:AdminEmailAddresses:0"] = "admin@example.test",
+					["DbContext:ConnectionString"] = connectionString,
+					["DbContext:ConnectionStringInit"] = connectionString,
+					["EmailLogin:RequestsPerMinute"] = "1000",
+					["EmailLogin:VerificationsPerMinute"] = "1000",
+					["EmailService:ServerType"] = "Disabled",
+					["EmailService:FromEmailAddress"] = "Tests <tests@example.test>",
+					["EmailService:AdminEmailAddresses:0"] = "admin@example.test",
 				}
 			));
 

@@ -12,7 +12,7 @@ public enum EmailServerType
 	Disabled = -1,
 }
 
-[RegisterOptions(nameof(EmailServiceOptions), ValidateOnStart = true)]
+[RegisterOptions(ValidateOnStart = true)]
 [Validate]
 public sealed partial class EmailServiceOptions : IValidationTarget<EmailServiceOptions>
 {
