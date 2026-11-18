@@ -1,17 +1,16 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList } from '@/components/ui/navigation-menu';
 import { getSession, request } from './api';
 import { ApiKeys } from './ApiKeys';
-import { AccountAvatar, Brand, Empty, Icon, Loading, PageHeading, Permissions, Retry, Status } from './components';
+import { Brand, Empty, Icon, Loading, PageHeading, Permissions, Retry, Status } from './components';
 import { useResource, useRoute } from './hooks';
 import { TenantList } from './TenantList';
 import { ScopePage } from './ScopePage';
 import { RecoveryKeys } from './RecoveryKeys';
 import { PublicHome } from './PublicHome';
 import { ThemeControl, useTheme } from './ThemeControl';
+import { WorkspaceHeader } from './WorkspaceHeader';
 import type { Organization, Session, Tenant } from './types';
 
 export function App() {
@@ -29,7 +28,6 @@ function Workspace({ session, themeControl }: { session: Session; themeControl: 
   const tenants = useResource((signal) => request<{ tenants: Tenant[] }>('/api/tenants', { signal }), []);
   const organizations = useResource((signal) => request<{ organizations: Organization[] }>('/api/organizations', { signal }), []);
   const [recovery, setRecovery] = useState<{ name: string; keys: string[] } | null>(null);
-  const userName = session.user?.name || session.user?.emailAddress || 'Your account';
   const tenantRoute = /^\/tenants\/(\d+)(?:\/(\w+))?$/.exec(route);
   const organizationRoute = /^\/organizations\/(\d+)(?:\/(\w+))?$/.exec(route);
   const tenant = tenants.data?.tenants.find((item) => item.tenantId === Number(tenantRoute?.[1]));
@@ -39,7 +37,15 @@ function Workspace({ session, themeControl }: { session: Session; themeControl: 
   const organizationItems = organizations.data?.organizations ?? [];
 
   let content;
-  if (route === '/tenants' || route === '/') {
+  if (route === '/') {
+    content = <section aria-labelledby="workspace-title">
+      <h1 id="workspace-title">Your Workspace</h1>
+      <Card className="panel workspace-empty">
+        <span className="empty-icon"><Icon name="grid" size={26} /></span>
+        <p>Future features will appear here.</p>
+      </Card>
+    </section>;
+  } else if (route === '/tenants') {
     content = <TenantList resource={tenants} onCreated={(name, keys) => { setRecovery({ name, keys }); refresh(); }} />;
   } else if (route === '/api-keys') {
     content = <ApiKeys />;
@@ -53,47 +59,19 @@ function Workspace({ session, themeControl }: { session: Session; themeControl: 
     const entity = tenantRoute ? tenant : organization;
     if (resource.loading) content = <Loading />;
     else if (resource.error) content = <Retry error={resource.error} retry={resource.refresh} />;
-    else if (!entity) content = <Card className="panel"><Empty title="Workspace unavailable">You may no longer have access to this workspace. <a href="#/tenants">Return to your tenants.</a></Empty></Card>;
+    else if (!entity) content = <Card className="panel"><Empty title="Workspace unavailable">You may no longer have access to this workspace. <a href="#/">Return to your workspace.</a></Empty></Card>;
     else content = <ScopePage key={`${tenantRoute ? 'tenants' : 'organizations'}-${tenantRoute?.[1] ?? organizationRoute?.[1]}`} scope={{ kind: tenantRoute ? 'tenants' : 'organizations', id: tenantRoute ? Number(tenantRoute[1]) : Number(organizationRoute?.[1]), ...entity }} tab={(tenantRoute ?? organizationRoute)?.[2] ?? 'overview'} onChanged={refresh} tenantName={organization ? tenantItems.find((tenant) => tenant.tenantId === organization.tenantId)?.name : undefined} />;
   } else {
-    content = <Card className="panel"><Empty title="Page not found">This page is unavailable. <a href="#/tenants">Go to your tenants.</a></Empty></Card>;
+    content = <Card className="panel"><Empty title="Page not found">This page is unavailable. <a href="#/">Return to your workspace.</a></Empty></Card>;
   }
 
   return <div className="app-shell">
-    <aside className="sidebar">
-      <Brand />
-      <div className="nav-caption">YOUR WORKSPACE</div>
-      <NavigationMenu className="sidebar-navigation" orientation="vertical" viewport={false} aria-label="Main navigation">
-        <NavigationMenuList className="primary-nav">
-          <NavigationMenuItem>
-            <NavigationMenuLink href="#/tenants" active={/^\/tenants(?:\/|$)/.test(route) || route === '/'}>
-              <Icon name="building" />Tenants<span className="nav-count">{tenantItems.length}</span>
-            </NavigationMenuLink>
-          </NavigationMenuItem>
-          <NavigationMenuItem>
-            <NavigationMenuLink href="#/organizations" active={/^\/organizations(?:\/|$)/.test(route)}>
-              <Icon name="teams" />Organizations<span className="nav-count">{organizationItems.length}</span>
-            </NavigationMenuLink>
-          </NavigationMenuItem>
-          <NavigationMenuItem>
-            <NavigationMenuLink href="#/api-keys" active={route === '/api-keys'}>
-              <Icon name="key" />API keys
-            </NavigationMenuLink>
-          </NavigationMenuItem>
-        </NavigationMenuList>
-      </NavigationMenu>
-      <div className="sidebar-note"><Icon name="shield" /><p>A clear place for people,<br />teams, and access.</p></div>
-      {themeControl}
-      <div className="sidebar-account"><AccountAvatar name={userName} /><div><strong>{userName}</strong><span>{session.user?.emailAddress}</span></div></div>
-    </aside>
-    <div className="workspace-body">
-      <header className="topbar"><span className="topbar-label"><span className="live-dot" /> Workspace console</span><div className="topbar-actions"><span className="account-name">{userName}</span><form method="post" action="/Logout"><input type="hidden" name="__RequestVerificationToken" value={session.requestToken ?? ''} /><Button variant="ghost" className="text-action" type="submit"><Icon name="logout" size={17} />Sign out</Button></form></div></header>
-      <main id="main-content" className="main-content">
-        {recovery && <RecoveryKeys name={recovery.name} keys={recovery.keys} onClose={() => setRecovery(null)} />}
-        {content}
-      </main>
-      <footer className="app-footer"><span>Workspace / VSA Template</span><span>Made for your teams.</span></footer>
-    </div>
+    <WorkspaceHeader session={session} scope={tenant ?? organization} route={route} />
+    <main id="main-content" className="main-content">
+      {recovery && <RecoveryKeys name={recovery.name} keys={recovery.keys} onClose={() => setRecovery(null)} />}
+      {content}
+    </main>
+    <footer className="app-footer">{themeControl}</footer>
   </div>;
 }
 

@@ -14,6 +14,7 @@ using Scalar.AspNetCore;
 using Serilog;
 using VsaTemplate.Web;
 using VsaTemplate.Web.Database;
+using VsaTemplate.Web.Features.AccessControl.Extensions;
 using VsaTemplate.Web.Features.AccessControl.Services;
 using VsaTemplate.Web.Features.AccessControl.Models;
 using LinqToDB.Async;
@@ -281,6 +282,7 @@ internal static class StartupExtensions
 						new
 						{
 							IsAuthenticated = user is not null,
+							IsAdmin = user is not null && await currentUser.GetCurrentUserPermissions().IsAdmin(),
 							User = user,
 							antiforgery.GetAndStoreTokens(context).RequestToken,
 						}

@@ -28,7 +28,7 @@ export function useResource<T>(load: (signal: AbortSignal) => Promise<T>, depend
 }
 
 export function useRoute(): string {
-  const getRoute = () => window.location.hash.slice(1).split('?')[0] || '/tenants';
+  const getRoute = () => window.location.hash.slice(1).split('?')[0] || '/';
   const [route, setRoute] = useState(getRoute);
   useEffect(() => {
     const onHashChange = () => { setRoute(getRoute()); window.scrollTo(0, 0); };

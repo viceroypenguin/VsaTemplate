@@ -11,7 +11,7 @@ const json = (value: unknown, status = 200) => new Response(JSON.stringify(value
 
 describe('workspace flows', () => {
   it('shows a public sign-in page without fetching private workspace data', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(json({ isAuthenticated: false, user: null, requestToken: null }));
+    const fetchMock = vi.fn().mockResolvedValue(json({ isAuthenticated: false, isAdmin: false, user: null, requestToken: null }));
     vi.stubGlobal('fetch', fetchMock);
     render(<App />);
     expect(await screen.findByRole('button', { name: 'Log in to your workspace' })).toBeInTheDocument();
@@ -20,13 +20,45 @@ describe('workspace flows', () => {
     expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/session');
   });
 
+  it.each([true, false])('opens the workspace and shows account actions for isAdmin=%s', async (isAdmin) => {
+    const user = userEvent.setup();
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+      const path = String(input);
+      if (path === '/api/session') return json({ isAuthenticated: true, isAdmin, user: { userId: 1, name: 'Alex', emailAddress: 'alex@example.com' }, requestToken: 'csrf-token' });
+      if (path === '/api/tenants') return json({ tenants: [] });
+      if (path === '/api/organizations') return json({ organizations: [] });
+      throw new Error(`Unexpected request ${path}`);
+    }));
+    render(<App />);
+
+    expect(await screen.findByRole('heading', { name: 'Your Workspace' })).toBeInTheDocument();
+    expect(screen.getByText('Future features will appear here.')).toBeInTheDocument();
+    expect(screen.getAllByText('Alex')).toHaveLength(1);
+    expect(screen.queryByRole('link', { name: 'Manage tenants' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Alex' }));
+    expect(await screen.findByRole('link', { name: 'API keys' })).toHaveAttribute('href', '#/api-keys');
+    const dashboard = screen.queryByRole('link', { name: /Immediate\.Jobs dashboard/ });
+    if (isAdmin) {
+      expect(dashboard).toHaveAttribute('href', '/jobs');
+      expect(dashboard).toHaveAttribute('aria-disabled', 'true');
+    } else {
+      expect(dashboard).not.toBeInTheDocument();
+    }
+    const signOut = screen.getByRole('button', { name: 'Sign out' });
+    const form = signOut.closest('form')!;
+    expect(form).toHaveAttribute('method', 'post');
+    expect(form).toHaveAttribute('action', '/Logout');
+    expect(new FormData(form).get('__RequestVerificationToken')).toBe('csrf-token');
+  });
+
   it('creates a named API key, masks it in the list, and invalidates it after confirmation', async () => {
     const user = userEvent.setup();
     const secret = 'test-key-released-xyz';
     let issued = false;
     const fetchMock = vi.fn(async (input: RequestInfo | URL, options?: RequestInit) => {
       const path = String(input);
-      if (path === '/api/session') return json({ isAuthenticated: true, user: { userId: 1, name: 'Alex', emailAddress: 'alex@example.com' }, requestToken: 'csrf-token' });
+      if (path === '/api/session') return json({ isAuthenticated: true, isAdmin: true, user: { userId: 1, name: 'Alex', emailAddress: 'alex@example.com' }, requestToken: 'csrf-token' });
       if (path === '/api/tenants') return json({ tenants: [] });
       if (path === '/api/organizations') return json({ organizations: [] });
       if (path === '/api/users/apikey/create' && options?.method === 'POST') {
@@ -46,6 +78,7 @@ describe('workspace flows', () => {
     vi.stubGlobal('fetch', fetchMock);
     render(<App />);
 
+    await user.click(await screen.findByRole('button', { name: 'Alex' }));
     await user.click(await screen.findByRole('link', { name: 'API keys' }));
     await screen.findByRole('heading', { name: 'No active API keys' });
     await user.click(screen.getByRole('button', { name: 'Create API key' }));
@@ -83,7 +116,7 @@ describe('workspace flows', () => {
     let created = false;
     const fetchMock = vi.fn(async (input: RequestInfo | URL, options?: RequestInit) => {
       const path = String(input);
-      if (path === '/api/session') return json({ isAuthenticated: true, user: { userId: 1, name: 'Alex', emailAddress: 'alex@example.com' }, requestToken: 'csrf-token' });
+      if (path === '/api/session') return json({ isAuthenticated: true, isAdmin: false, user: { userId: 1, name: 'Alex', emailAddress: 'alex@example.com' }, requestToken: 'csrf-token' });
       if (path === '/api/tenants/create' && options?.method === 'POST') { created = true; return json({ tenantId: 1, recoveryKeys: ['first-recovery-key', 'second-recovery-key'] }); }
       if (path === '/api/tenants') return json({ tenants: created ? [{ tenantId: 1, name: 'Acme', isActive: true, permissions: ['Admin'] }] : [] });
       if (path.endsWith('/organizations')) return json({ organizations: [] });
@@ -91,6 +124,8 @@ describe('workspace flows', () => {
     });
     vi.stubGlobal('fetch', fetchMock);
     render(<App />);
+    await user.click(await screen.findByRole('button', { name: 'Workspaces' }));
+    await user.click(await screen.findByRole('link', { name: 'Manage tenants' }));
     await user.click(await screen.findByRole('button', { name: 'Create tenant' }));
     const name = screen.getByRole('textbox', { name: 'Tenant name' });
     await user.type(name, '  Acme  ');
@@ -103,6 +138,7 @@ describe('workspace flows', () => {
     expect(continueButton).toBeEnabled();
     await user.click(continueButton);
     expect(screen.queryByRole('heading', { name: 'Save your recovery keys' })).not.toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Acme' })).toBeInTheDocument();
     const creation = fetchMock.mock.calls.find(([path]) => path === '/api/tenants/create');
     expect(creation?.[1]?.body).toBe('{"name":"Acme"}');
     expect(new Headers(creation?.[1]?.headers).get('X-CSRF-TOKEN')).toBe('csrf-token');

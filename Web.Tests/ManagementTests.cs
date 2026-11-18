@@ -70,6 +70,20 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 	}
 
 	[Fact]
+	public async Task SessionReportsGlobalAdministratorAccess()
+	{
+		using var anonymous = fixture.CreateAnonymousClient();
+		Assert.False((await GetAsync(anonymous, "/api/session")).GetProperty("isAdmin").GetBoolean());
+
+		using var tenantOwner = await fixture.CreateClientAsync(await fixture.CreateUserAsync());
+		await CreateTenantAsync(tenantOwner);
+		Assert.False((await GetAsync(tenantOwner, "/api/session")).GetProperty("isAdmin").GetBoolean());
+
+		using var administrator = await fixture.CreateClientAsync(await fixture.CreateUserAsync(isAdministrator: true));
+		Assert.True((await GetAsync(administrator, "/api/session")).GetProperty("isAdmin").GetBoolean());
+	}
+
+	[Fact]
 	public async Task MutationsRequireAnAntiforgeryToken()
 	{
 		using var client = await fixture.CreateClientAsync(

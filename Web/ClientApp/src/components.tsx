@@ -37,7 +37,7 @@ export function Icon({ name, size = 20 }: { name: keyof typeof paths; size?: num
 }
 
 export function Brand() {
-  return <a className="brand" href="#/tenants" aria-label="Workspace home"><span className="brand-mark"><Icon name="grid" /></span><span>Workspace<span className="brand-subtitle">VSA TEMPLATE</span></span></a>;
+  return <a className="brand" href="#/" aria-label="Workspace home"><span className="brand-mark"><Icon name="grid" /></span><span>Workspace<span className="brand-subtitle">VSA TEMPLATE</span></span></a>;
 }
 
 export function AccountAvatar({ name }: { name: string }) {

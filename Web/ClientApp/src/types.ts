@@ -2,6 +2,7 @@ export type Permission = 'None' | 'Admin' | 'UserManagement' | 'OrganizationMana
 
 export interface Session {
   isAuthenticated: boolean;
+  isAdmin: boolean;
   user: { userId: number; name: string | null; emailAddress: string } | null;
   requestToken: string | null;
 }
