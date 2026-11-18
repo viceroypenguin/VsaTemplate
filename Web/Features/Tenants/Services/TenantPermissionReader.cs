@@ -25,7 +25,8 @@ public sealed class TenantPermissionReader(DbContext context, TimeProvider timeP
 
 		var apiKey = await context.AccessControl.ApiKeys
 			.Where(k => k.ApiKeyId == userId)
-			.Select(k => new
+			.Select(
+				k => new
 				{
 					k.OwnerUserId,
 					k.ExpirationDateTime,
@@ -61,8 +62,10 @@ public sealed class TenantPermissionReader(DbContext context, TimeProvider timeP
 			return [];
 
 		return (JsonSerializer.Deserialize<List<TenantPermission>>(grants) ?? [])
-			.Where(p => p == TenantPermission.None || ownerPermissions.Contains(TenantPermission.Admin) ||
-				ownerPermissions.Contains(p)
+			.Where(
+				p => p == TenantPermission.None
+					|| ownerPermissions.Contains(TenantPermission.Admin)
+					|| ownerPermissions.Contains(p)
 			)
 			.Distinct()
 			.ToList();

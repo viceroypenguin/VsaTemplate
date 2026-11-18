@@ -17,7 +17,8 @@ public sealed partial class GetTenant(DbContext context)
 	private async ValueTask<Response> HandleAsync([AsParameters] Query query, CancellationToken token) =>
 		await context.Tenants
 			.Where(t => t.TenantId == query.TenantId)
-			.Select(t => new Response
+			.Select(
+				t => new Response
 				{
 					TenantId = t.TenantId,
 					Name = t.Name,

@@ -40,7 +40,8 @@ public sealed partial class GetUserPermissions(
 						await context.AccessControl.RoleUsers
 							.Where(u => u.UserId == query.UserId)
 							.Select(u => u.Role)
-							.Select(r => JsonSerializer.Deserialize<List<Permission>>(
+							.Select(
+								r => JsonSerializer.Deserialize<List<Permission>>(
 									r.PermissionsJson,
 									default(JsonSerializerOptions)
 								)!
@@ -62,8 +63,10 @@ public sealed partial class GetUserPermissions(
 		return new()
 		{
 			Permissions = JsonSerializer.Deserialize<List<Permission>>(apiKey.PermissionsJson)!
-				.Where(p => p == Permission.None || parentPermissions.Permissions.Contains(Permission.Admin) ||
-					parentPermissions.Permissions.Contains(p)
+				.Where(
+					p => p == Permission.None
+						|| parentPermissions.Permissions.Contains(Permission.Admin)
+						|| parentPermissions.Permissions.Contains(p)
 				)
 				.DefaultIfEmpty(Permission.None)
 				.Distinct()

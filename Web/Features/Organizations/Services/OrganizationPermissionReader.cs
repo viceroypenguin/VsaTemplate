@@ -30,7 +30,8 @@ public sealed class OrganizationPermissionReader(DbContext context, TimeProvider
 		var apiKey = await context.AccessControl.ApiKeys
 			.Where(k => k.ApiKeyId == userId && k.User.IsActive)
 			.Where(k => k.OwnerUser.IsActive && k.OwnerUser.ApiKey == null && k.ExpirationDateTime > now)
-			.Select(k => new
+			.Select(
+				k => new
 				{
 					k.OwnerUserId,
 					PermissionsJson = k.OrganizationApiKey == null ? null : k.OrganizationApiKey.PermissionsJson,
@@ -58,9 +59,10 @@ public sealed class OrganizationPermissionReader(DbContext context, TimeProvider
 			return [];
 
 		return (JsonSerializer.Deserialize<OrganizationPermission[]>(apiKey.PermissionsJson) ?? [])
-			.Where(p => p is OrganizationPermission.None
-				|| permissions.Contains(OrganizationPermission.Admin)
-				|| permissions.Contains(p)
+			.Where(
+				p => p is OrganizationPermission.None
+					|| permissions.Contains(OrganizationPermission.Admin)
+					|| permissions.Contains(p)
 			)
 			.Distinct()
 			.ToArray();

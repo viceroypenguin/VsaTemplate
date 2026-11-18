@@ -10,12 +10,16 @@ public static class IQueryableExtensions
 		this IQueryable<T> query,
 		string entityName,
 		CancellationToken token
-	) =>
-		await query
-				.Take(1)
-				.ToListAsync(token) switch
-			{
-				[var item] => item,
-				_ => NotFoundException.ThrowNotFoundException<T>(entityName),
-			};
+	)
+	{
+		var items = await query
+			.Take(1)
+			.ToListAsync(token);
+
+		return items switch
+		{
+			[var item] => item,
+			_ => NotFoundException.ThrowNotFoundException<T>(entityName),
+		};
+	}
 }

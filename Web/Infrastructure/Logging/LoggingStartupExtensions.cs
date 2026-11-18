@@ -14,35 +14,40 @@ public static class LoggingStartupExtensions
 {
 	public static void ConfigureSerilog(this WebApplicationBuilder builder) =>
 		builder.Host
-			.UseSerilog((_, sp, lc) => lc
-				.MinimumLevel.Information()
-				.MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-				.MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
-				.MinimumLevel.Override("System.Net.Http.HttpClient.Refit.Implementation", LogEventLevel.Warning)
-				.Enrich.FromLogContext()
-				.Enrich.WithProperty("EnvironmentName", builder.Environment.EnvironmentName)
-				.Enrich.WithThreadId()
-				.Enrich.WithProperty("ExecutionId", Guid.NewGuid())
-				.Enrich.WithProperty("Commit", ThisAssembly.RevisionId)
-				.Enrich.WithExceptionDetails(
-					new DestructuringOptionsBuilder()
-						.WithDefaultDestructurers()
-						.WithDestructurers(
-							[
-								new SqlExceptionDestructurer(),
-								new ApiExceptionDestructurer(),
-							]
+			.UseSerilog(
+				(_, sp, lc) => lc
+					.MinimumLevel.Information()
+					.MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+					.MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
+					.MinimumLevel.Override("System.Net.Http.HttpClient.Refit.Implementation", LogEventLevel.Warning)
+					.Enrich.FromLogContext()
+					.Enrich.WithProperty("EnvironmentName", builder.Environment.EnvironmentName)
+					.Enrich.WithThreadId()
+					.Enrich.WithProperty("ExecutionId", Guid.NewGuid())
+					.Enrich.WithProperty("Commit", ThisAssembly.RevisionId)
+					.Enrich.WithExceptionDetails(
+						new DestructuringOptionsBuilder()
+							.WithDefaultDestructurers()
+							.WithDestructurers(
+								[
+									new SqlExceptionDestructurer(),
+									new ApiExceptionDestructurer(),
+								]
+							)
+					)
+					.WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
+					.ApplyIfNotNull(
+						sp.GetRequiredService<IOptions<LoggingOptions>>().Value.SeqUrl,
+						(url, x) => x.WriteTo.Seq(
+							serverUrl: url.ToString(),
+							formatProvider: CultureInfo.InvariantCulture
 						)
-				)
-				.WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
-				.ApplyIfNotNull(
-					sp.GetRequiredService<IOptions<LoggingOptions>>().Value.SeqUrl,
-					(url, x) => x.WriteTo.Seq(serverUrl: url.ToString(), formatProvider: CultureInfo.InvariantCulture)
-				)
+					)
 			);
 
 	public static IApplicationBuilder UseLogging(this IApplicationBuilder app) =>
-		app.UseSerilogRequestLogging(o =>
+		app.UseSerilogRequestLogging(
+			o =>
 			{
 				o.GetLevel = static (httpContext, _, _) =>
 					httpContext.Response.StatusCode >= 500 ? LogEventLevel.Error :

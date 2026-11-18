@@ -23,7 +23,8 @@ public sealed partial class DbGenerator
 	)
 	{
 		var properties = entity.Properties.Collection
-			.Select(p =>
+			.Select(
+				p =>
 				{
 					var name = p.TypeName;
 					var forceNotNull = p.ForceNotNull;
@@ -107,7 +108,8 @@ public sealed partial class DbGenerator
 	{
 		var types = context
 			.Where(x => !x.IsEnum)
-			.Select(x => new
+			.Select(
+				x => new
 				{
 					SqlDataType = x.UnderlyingTypeName switch
 					{

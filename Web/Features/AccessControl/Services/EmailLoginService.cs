@@ -134,7 +134,8 @@ public sealed class EmailLoginService(
 	{
 		var output = await context.AccessControl.Users
 			.Where(u => u.EmailAddress == email)
-			.Select(u => new EmailUser
+			.Select(
+				u => new EmailUser
 				{
 					UserId = u.UserId,
 					EmailAddress = u.EmailAddress,
@@ -148,19 +149,22 @@ public sealed class EmailLoginService(
 			.Merge()
 			.Using([new { EmailAddress = email, LoginTime = loginAt }])
 			.On((dst, src) => dst.EmailAddress == src.EmailAddress)
-			.InsertWhenNotMatched(src => new()
+			.InsertWhenNotMatched(
+				src => new()
 				{
 					EmailAddress = src.EmailAddress,
 					IsActive = true,
 					LastLogin = src.LoginTime,
 				}
 			)
-			.UpdateWhenMatched((dst, src) => new()
+			.UpdateWhenMatched(
+				(dst, src) => new()
 				{
 					LastLogin = src.LoginTime ?? dst.LastLogin,
 				}
 			)
-			.MergeWithOutputAsync((a, del, ins, src) => new
+			.MergeWithOutputAsync(
+				(a, del, ins, src) => new
 				{
 					Action = a,
 					ins.UserId,

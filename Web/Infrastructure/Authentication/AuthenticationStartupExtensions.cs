@@ -12,14 +12,16 @@ public static class AuthenticationStartupExtensions
 	public static void AddWebAuthentication(this IServiceCollection services)
 	{
 		services
-			.AddAuthentication(o =>
+			.AddAuthentication(
+				o =>
 				{
 					o.DefaultAuthenticateScheme = ApiKeyAuthenticationHandler.AuthenticationScheme;
 					o.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
 					o.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
 				}
 			)
-			.AddCookie(o =>
+			.AddCookie(
+				o =>
 				{
 					o.LoginPath = "/";
 					o.AccessDeniedPath = "/";
@@ -53,8 +55,9 @@ public static class AuthenticationStartupExtensions
 						var db = context.HttpContext.RequestServices.GetRequiredService<DbContext>();
 
 						if (UserId.TryParse(value ?? "", CultureInfo.InvariantCulture, out var userId)
-							&& await db.AccessControl.Users.AnyAsync(u =>
-								u.UserId == userId && u.IsActive && u.ApiKey == null
+							&& await db.AccessControl.Users.AnyAsync(
+								u =>
+									u.UserId == userId && u.IsActive && u.ApiKey == null
 							))
 						{
 							return;

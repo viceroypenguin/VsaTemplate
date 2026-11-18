@@ -47,8 +47,8 @@ public sealed partial class SaveOrganizationRole(
 			permissions
 		);
 
-		if (oldPermissions.Contains(OrganizationPermission.Admin) &&
-			!permissions.Contains(OrganizationPermission.Admin))
+		if (oldPermissions.Contains(OrganizationPermission.Admin)
+			&& !permissions.Contains(OrganizationPermission.Admin))
 		{
 			await OrganizationManagement.EnsureAdministratorRemains(
 				context,

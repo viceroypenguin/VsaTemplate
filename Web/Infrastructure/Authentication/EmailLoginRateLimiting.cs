@@ -10,7 +10,8 @@ public static class EmailLoginRateLimiting
 	[RegisterServices]
 	public static void AddEmailLoginRateLimiting(IServiceCollection services)
 	{
-		services.AddRateLimiter(options =>
+		services.AddRateLimiter(
+			options =>
 			{
 				options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
@@ -29,7 +30,8 @@ public static class EmailLoginRateLimiting
 						.ExecuteAsync(context.HttpContext);
 				};
 
-				options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+				options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(
+					context =>
 					{
 						var path = context.Request.Path.Value?.TrimEnd('/');
 

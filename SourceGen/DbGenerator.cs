@@ -8,10 +8,11 @@ public sealed partial class DbGenerator : IIncrementalGenerator
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
 		var rootNamespace = context.AnalyzerConfigOptionsProvider
-			.Select((p, _) =>
-				p.GlobalOptions.TryGetValue("build_property.RootNamespace", out var ns)
-					? ns
-					: ""
+			.Select(
+				(p, _) =>
+					p.GlobalOptions.TryGetValue("build_property.RootNamespace", out var ns)
+						? ns
+						: ""
 			);
 
 		var valueTypes = context.SyntaxProvider
@@ -43,20 +44,23 @@ public sealed partial class DbGenerator : IIncrementalGenerator
 		var allTypes = valueTTypes.Collect()
 			.Combine(valueTypes.Collect())
 			.Combine(enumIds.Collect())
-			.SelectMany((x, _) =>
-				x.Left.Left
-					.Concat(x.Left.Right)
-					.Concat(x.Right)
+			.SelectMany(
+				(x, _) =>
+					x.Left.Left
+						.Concat(x.Left.Right)
+						.Concat(x.Right)
 			)
 			.Collect();
 
 		var map = allTypes
-			.Select((x, _) => x
-				.SelectMany(x => x.ColumnNames.Collection
-					.Select(cn => (ColumnName: cn, x.TypeName, x.IsEnum))
-				)
-				.ToDictionary(x => x.ColumnName, x => (x.TypeName, x.IsEnum), StringComparer.Ordinal)
-				.ToEquatableDictionary()
+			.Select(
+				(x, _) => x
+					.SelectMany(
+						x => x.ColumnNames.Collection
+							.Select(cn => (ColumnName: cn, x.TypeName, x.IsEnum))
+					)
+					.ToDictionary(x => x.ColumnName, x => (x.TypeName, x.IsEnum), StringComparer.Ordinal)
+					.ToEquatableDictionary()
 			);
 
 		var scaffold = context.AdditionalTextsProvider
@@ -67,10 +71,11 @@ public sealed partial class DbGenerator : IIncrementalGenerator
 			.Select((x, _) => x.SchemaName)
 			.Where(x => x is not null)
 			.Collect()
-			.Select((x, _) => x
-				.Distinct(StringComparer.Ordinal)
-				.OrderBy(x => x, StringComparer.Ordinal)
-				.ToEquatableReadOnlyList()
+			.Select(
+				(x, _) => x
+					.Distinct(StringComparer.Ordinal)
+					.Order(StringComparer.Ordinal)
+					.ToEquatableReadOnlyList()
 			);
 
 		var entityTemplate = Utility.GetScribanTemplate("DbScaffold.Entity");
@@ -91,7 +96,8 @@ public sealed partial class DbGenerator : IIncrementalGenerator
 
 		context.RegisterSourceOutput(
 			scaffold
-				.Select((x, _) => new ContextProperty
+				.Select(
+					(x, _) => new ContextProperty
 					{
 						PropertyName = x.PropertyName,
 						TypeName = x.TypeName,
@@ -139,13 +145,11 @@ public sealed partial class DbGenerator : IIncrementalGenerator
 		var name = symbol.Name;
 
 		var otherNamesAttribute = symbol.GetAttributes()
-			.FirstOrDefault(a => a is
+			.FirstOrDefault(
+				a => a is
 				{
 					AttributeClass.Name: "AlternativeColumnNamesAttribute",
-					ConstructorArguments:
-					[
-						{ Kind: TypedConstantKind.Array },
-					],
+					ConstructorArguments: [{ Kind: TypedConstantKind.Array }],
 				}
 			);
 

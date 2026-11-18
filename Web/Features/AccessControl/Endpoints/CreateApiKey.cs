@@ -62,9 +62,7 @@ public sealed partial class CreateApiKey(
 				Note = string.IsNullOrEmpty(note) ? null : note,
 				CreatedDateTime = now,
 				ExpirationDateTime = now.Add(request.Lifetime),
-				PermissionsJson = JsonSerializer.Serialize(
-					request.Permissions.Distinct()
-				),
+				PermissionsJson = JsonSerializer.Serialize(request.Permissions.Distinct()),
 			},
 			token: token
 		);

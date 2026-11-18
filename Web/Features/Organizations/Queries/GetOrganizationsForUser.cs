@@ -18,7 +18,8 @@ public sealed partial class GetOrganizationsForUser(DbContext context, TimeProvi
 		var apiKey = await context.AccessControl.ApiKeys
 			.Where(k => k.ApiKeyId == query.UserId && k.User.IsActive)
 			.Where(k => k.OwnerUser.IsActive && k.OwnerUser.ApiKey == null && k.ExpirationDateTime > now)
-			.Select(k => new
+			.Select(
+				k => new
 				{
 					k.OwnerUserId,
 					PermissionsJson = k.OrganizationApiKey == null ? null : k.OrganizationApiKey.PermissionsJson,
@@ -34,7 +35,8 @@ public sealed partial class GetOrganizationsForUser(DbContext context, TimeProvi
 		var roles = await context.OrganizationRoleUsers
 			.Where(u => u.UserId == memberUserId && u.User.IsActive && u.User.ApiKey == null)
 			.Select(u => u.OrganizationRole)
-			.Select(r => new
+			.Select(
+				r => new
 				{
 					r.OrganizationId,
 					r.Organization.TenantId,
@@ -61,9 +63,10 @@ public sealed partial class GetOrganizationsForUser(DbContext context, TimeProvi
 			var permissions = keyPermissions is null
 				? membershipPermissions
 				: keyPermissions
-					.Where(p => p is OrganizationPermission.None
-						|| membershipPermissions.Contains(OrganizationPermission.Admin)
-						|| membershipPermissions.Contains(p)
+					.Where(
+						p => p is OrganizationPermission.None
+							|| membershipPermissions.Contains(OrganizationPermission.Admin)
+							|| membershipPermissions.Contains(p)
 					)
 					.Distinct()
 					.ToArray();

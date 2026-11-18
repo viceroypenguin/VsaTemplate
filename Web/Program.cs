@@ -55,13 +55,15 @@ try
 
 	app.UseAntiforgery();
 
-	app.Use(async (context, next) =>
+	app.Use(
+		async (context, next) =>
 		{
 			if (
 				(context.User.Identity?.IsAuthenticated == true
 					|| context.Request.Path.StartsWithSegments("/api/auth/email", StringComparison.OrdinalIgnoreCase))
-				&& !context.User.Identities.Any(i =>
-					i.AuthenticationType is ApiKeyAuthenticationHandler.AuthenticationScheme
+				&& !context.User.Identities.Any(
+					i =>
+						i.AuthenticationType is ApiKeyAuthenticationHandler.AuthenticationScheme
 				)
 				&& !HttpMethods.IsGet(context.Request.Method)
 				&& !HttpMethods.IsHead(context.Request.Method)
@@ -125,18 +127,16 @@ internal static class StartupExtensions
 	[RegisterServices]
 	public static void ConfigureWebOptions(IServiceCollection services)
 	{
-		services.Configure<ApiBehaviorOptions>(o => o.SuppressInferBindingSourcesForParameters = true
+		services.Configure<ApiBehaviorOptions>(o => o.SuppressInferBindingSourcesForParameters = true);
+
+		services.Configure<RouteHandlerOptions>(o => o.ThrowOnBadRequest = true);
+
+		services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(
+			o =>
+				o.SerializerOptions.Converters.Add(new JsonStringEnumConverter())
 		);
 
-		services.Configure<RouteHandlerOptions>(o => o.ThrowOnBadRequest = true
-		);
-
-		services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(o =>
-			o.SerializerOptions.Converters.Add(new JsonStringEnumConverter())
-		);
-
-		services.AddResponseCompression(options => options.EnableForHttps = true
-		);
+		services.AddResponseCompression(options => options.EnableForHttps = true);
 	}
 
 	[RegisterServices]
@@ -144,7 +144,8 @@ internal static class StartupExtensions
 	{
 		services
 			.AddOptions<ResendClientOptions>()
-			.Configure<IOptions<EmailServiceOptions>>((o, eso) => o.ApiToken = eso.Value.ResendApiToken ?? string.Empty
+			.Configure<IOptions<EmailServiceOptions>>(
+				(o, eso) => o.ApiToken = eso.Value.ResendApiToken ?? string.Empty
 			);
 
 		services.AddHttpClient<ResendClient>();
@@ -178,17 +179,20 @@ internal static class StartupExtensions
 	{
 		services.AddDataProtection();
 
-		services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(sp =>
-			new ConfigureOptions<KeyManagementOptions>(options =>
-				options.XmlRepository = sp.GetRequiredService<LinqToDBXmlRepository>()
-			)
+		services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(
+			sp =>
+				new ConfigureOptions<KeyManagementOptions>(
+					options =>
+						options.XmlRepository = sp.GetRequiredService<LinqToDBXmlRepository>()
+				)
 		);
 	}
 
 	[RegisterServices]
 	public static void AddWebOpenApi(this IServiceCollection services)
 	{
-		services.AddOpenApi(o =>
+		services.AddOpenApi(
+			o =>
 			{
 				o.CreateSchemaReferenceId = t =>
 					t.Type.IsNested
@@ -197,7 +201,8 @@ internal static class StartupExtensions
 
 				o.MapVogenTypesInVsaTemplate_Web();
 
-				o.AddDocumentTransformer((document, context, cancellationToken) =>
+				o.AddDocumentTransformer(
+					(document, context, cancellationToken) =>
 					{
 						var key = new OpenApiSecurityScheme
 						{
@@ -218,7 +223,8 @@ internal static class StartupExtensions
 					}
 				);
 
-				o.AddOperationTransformer((operation, context, cancellationToken) =>
+				o.AddOperationTransformer(
+					(operation, context, cancellationToken) =>
 					{
 						if (context.Description.RelativePath?.Split(
 								"/",
@@ -260,7 +266,8 @@ internal static class StartupExtensions
 					var user = userId is { } id
 						? await db.AccessControl.Users
 							.Where(u => u.UserId == id && u.IsActive)
-							.Select(u => new SessionUser
+							.Select(
+								u => new SessionUser
 								{
 									UserId = u.UserId,
 									Name = u.ApiKey == null ? u.Name : "API key",

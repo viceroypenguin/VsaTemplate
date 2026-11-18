@@ -47,8 +47,9 @@ internal static class OrganizationManagement
 			.ToListAsync(token);
 
 		var adminRoleIds = roles
-			.Where(r => (changingRoleId is null || r.OrganizationRoleId != changingRoleId.Value)
-				&& ReadPermissions(r.PermissionsJson).Contains(OrganizationPermission.Admin)
+			.Where(
+				r => (changingRoleId is null || r.OrganizationRoleId != changingRoleId.Value)
+					&& ReadPermissions(r.PermissionsJson).Contains(OrganizationPermission.Admin)
 			)
 			.Select(r => r.OrganizationRoleId)
 			.ToArray();

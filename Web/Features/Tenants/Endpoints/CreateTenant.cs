@@ -79,10 +79,9 @@ public sealed partial class CreateTenant(
 	private static List<string> BuildRecoveryKeys()
 	{
 		return Enumerable.Range(0, 12)
-			.Select(_ =>
-				Base58.Bitcoin.Encode(
-					RandomNumberGenerator.GetBytes(16)
-				)
+			.Select(
+				_ =>
+					Base58.Bitcoin.Encode(RandomNumberGenerator.GetBytes(16))
 			)
 			.ToList();
 	}

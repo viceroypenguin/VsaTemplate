@@ -19,7 +19,8 @@ public sealed partial class GetOrganization(DbContext context)
 	{
 		return await context.Organizations
 				.Where(o => o.OrganizationId == query.OrganizationId)
-				.Select(o => new Response
+				.Select(
+					o => new Response
 					{
 						OrganizationId = o.OrganizationId,
 						TenantId = o.TenantId,

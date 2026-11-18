@@ -25,7 +25,8 @@ public sealed partial class GetOrganizationRoles(DbContext context)
 		return new()
 		{
 			Roles = roles
-				.Select(r => new OrganizationRoleDetails
+				.Select(
+					r => new OrganizationRoleDetails
 					{
 						RoleId = r.OrganizationRoleId,
 						Name = r.Name,

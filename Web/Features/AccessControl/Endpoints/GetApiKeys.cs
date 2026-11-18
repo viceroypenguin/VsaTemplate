@@ -27,7 +27,8 @@ public sealed partial class GetApiKeys(
 			.Where(k => k.OwnerUserId == userId && k.User.IsActive && k.ExpirationDateTime > now)
 			.OrderByDescending(k => k.CreatedDateTime)
 			.ThenByDescending(k => k.ApiKeyId)
-			.Select(k => new
+			.Select(
+				k => new
 				{
 					k.ApiKeyId,
 					k.Note,
@@ -42,7 +43,8 @@ public sealed partial class GetApiKeys(
 		return new()
 		{
 			ApiKeys = keys
-				.Select(k => new ApiKey
+				.Select(
+					k => new ApiKey
 					{
 						ApiKeyId = k.ApiKeyId,
 						Note = k.Note,

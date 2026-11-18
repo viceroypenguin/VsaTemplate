@@ -43,16 +43,17 @@ public sealed partial class AddOrganizationMember(
 			.FirstOrDefaultAsync(u => u.EmailAddress == email, token);
 
 		if (user is { IsActive: false }
-			|| (user is not null &&
-				await context.AccessControl.ApiKeys.AnyAsync(k => k.ApiKeyId == user.UserId, token)))
+			|| (user is not null
+				&& await context.AccessControl.ApiKeys.AnyAsync(k => k.ApiKeyId == user.UserId, token)))
 			throw new ConflictException("This email address is unavailable for membership.");
 
-		var userId = user?.UserId ?? UserId.From(
-			await context.InsertWithInt32IdentityAsync(
-				new Database.Models.AccessControl.User { EmailAddress = email, IsActive = true },
-				token: token
-			)
-		);
+		var userId = user?.UserId
+			?? UserId.From(
+				await context.InsertWithInt32IdentityAsync(
+					new Database.Models.AccessControl.User { EmailAddress = email, IsActive = true },
+					token: token
+				)
+			);
 
 		await context.OrganizationRoleUsers
 			.Merge()

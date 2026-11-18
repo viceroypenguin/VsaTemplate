@@ -59,7 +59,8 @@ internal sealed partial class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Set
 			var schema = provider.GetSchema(conn);
 
 			var entities = schema.Tables
-				.Select(t => new DbEntity
+				.Select(
+					t => new DbEntity
 					{
 						PropertyName = Pluralize(t.TypeName),
 						TypeName = t.TypeName,
@@ -67,14 +68,15 @@ internal sealed partial class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Set
 						SchemaName = t.SchemaName is "dbo" ? null : t.SchemaName,
 
 						Properties = t.Columns
-							.Select(c => new Property
+							.Select(
+								c => new Property
 								{
 									PropertyName = c.MemberName,
 									ColumnName = c.ColumnName,
 									TypeName = GetPropertyType(c.DataType, c.Length),
 									IsNullable = c.IsNullable,
-									DataType = c.ColumnType ??
-										throw new InvalidOperationException("Unknown column type"),
+									DataType = c.ColumnType
+										?? throw new InvalidOperationException("Unknown column type"),
 									ForceNotNull = c.SystemType!.IsClass && !c.IsNullable,
 									IsPrimaryKey = c.IsPrimaryKey,
 									PrimaryKeyOrder = c.IsPrimaryKey && t.Columns.Exists(c => c.PrimaryKeyOrder > 1)
@@ -89,7 +91,8 @@ internal sealed partial class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Set
 							.ToEquatableReadOnlyList(),
 
 						Associations = t.ForeignKeys
-							.Select(fk => new Association
+							.Select(
+								fk => new Association
 								{
 									Name = fk.KeyName,
 									CanBeNull = fk.CanBeNull,
@@ -106,16 +109,21 @@ internal sealed partial class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Set
 								}
 							)
 							.GroupBy(x => x.OtherName, StringComparer.Ordinal)
-							.SelectMany(g =>
-								g
-									.Index()
-									.Select(x => x.Index > 0
-										? x.Item with
-										{
-											OtherName = string.Create(provider: null, $"{x.Item.OtherName}{x.Index}"),
-										}
-										: x.Item
-									)
+							.SelectMany(
+								g =>
+									g
+										.Index()
+										.Select(
+											x => x.Index > 0
+												? x.Item with
+												{
+													OtherName = string.Create(
+														provider: null,
+														$"{x.Item.OtherName}{x.Index}"
+													),
+												}
+												: x.Item
+										)
 							)
 							.OrderBy(x => x.OtherName, StringComparer.Ordinal)
 							.ToEquatableReadOnlyList(),
@@ -159,10 +167,11 @@ internal sealed partial class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Set
 		string.Concat(
 			typeName
 				.Segment(char.IsUpper)
-				.TagFirstLast((str, _, isLast) =>
-					isLast
-						? string.Concat(str).Pluralize()
-						: string.Concat(str)
+				.TagFirstLast(
+					(str, _, isLast) =>
+						isLast
+							? string.Concat(str).Pluralize()
+							: string.Concat(str)
 				)
 		);
 

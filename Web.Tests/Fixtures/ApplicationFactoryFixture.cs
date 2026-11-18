@@ -356,7 +356,8 @@ file sealed class TestWebApplicationFactory(string connectionString, CapturingEm
 	{
 		builder
 			.UseEnvironment("Testing")
-			.ConfigureAppConfiguration(cb => cb.AddInMemoryCollection(
+			.ConfigureAppConfiguration(
+				cb => cb.AddInMemoryCollection(
 					new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
 					{
 						["DbContext:ConnectionString"] = connectionString,
@@ -374,7 +375,8 @@ file sealed class TestWebApplicationFactory(string connectionString, CapturingEm
 	}
 
 	protected override void ConfigureWebHost(IWebHostBuilder builder) =>
-		builder.ConfigureTestServices(services =>
+		builder.ConfigureTestServices(
+			services =>
 			{
 				services.RemoveAll<IEmailSender>();
 				services.AddSingleton<IEmailSender>(emails);
@@ -384,7 +386,8 @@ file sealed class TestWebApplicationFactory(string connectionString, CapturingEm
 				services.AddSingleton<TimeProvider, RequestTimeProvider>();
 
 				services
-					.AddAuthentication(options =>
+					.AddAuthentication(
+						options =>
 						{
 							options.DefaultAuthenticateScheme = TestAuthenticationHandler.Scheme;
 							options.DefaultChallengeScheme = TestAuthenticationHandler.Scheme;

@@ -78,20 +78,14 @@ public sealed class PermissionCacheInvalidator(
 			{
 				tenantPermissions.RemoveValue(new() { UserId = id, TenantId = tenantId });
 
-				tenantAdministration.RemoveValue(
-					new() { UserId = id, TenantId = tenantId }
-				);
+				tenantAdministration.RemoveValue(new() { UserId = id, TenantId = tenantId });
 			}
 
 			foreach (var organizationId in organizationIds)
 			{
-				organizationPermissions.RemoveValue(
-					new() { UserId = id, OrganizationId = organizationId }
-				);
+				organizationPermissions.RemoveValue(new() { UserId = id, OrganizationId = organizationId });
 
-				organizationAdministration.RemoveValue(
-					new() { UserId = id, OrganizationId = organizationId }
-				);
+				organizationAdministration.RemoveValue(new() { UserId = id, OrganizationId = organizationId });
 			}
 		}
 	}

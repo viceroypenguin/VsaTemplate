@@ -24,7 +24,8 @@ public sealed partial class GetTenantsForCurrentUser(
 
 		var roles = await context.TenantRoleUsers
 			.Where(u => u.UserId == userId && u.User.IsActive)
-			.Select(u => new
+			.Select(
+				u => new
 				{
 					u.TenantRole.TenantId,
 					u.TenantRole.Tenant.Name,

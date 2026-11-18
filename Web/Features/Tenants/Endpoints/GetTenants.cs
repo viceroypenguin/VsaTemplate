@@ -19,16 +19,18 @@ public sealed partial class GetTenants(
 	) => new()
 	{
 		Tenants = await getTenantsForCurrentUser.HandleAsync(new(), token)
-			.Transform(x => x.Tenants
-				.Select(t => new Tenant
-					{
-						TenantId = t.TenantId,
-						Name = t.Name,
-						IsActive = t.IsActive,
-						Permissions = t.Permissions,
-					}
-				)
-				.ToList()
+			.Transform(
+				x => x.Tenants
+					.Select(
+						t => new Tenant
+						{
+							TenantId = t.TenantId,
+							Name = t.Name,
+							IsActive = t.IsActive,
+							Permissions = t.Permissions,
+						}
+					)
+					.ToList()
 			),
 	};
 

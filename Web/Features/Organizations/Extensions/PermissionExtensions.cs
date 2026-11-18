@@ -15,8 +15,8 @@ public static class PermissionExtensions
 		this IReadOnlyList<OrganizationPermission> permissions,
 		OrganizationPermission permission
 	) =>
-		permissions.Count > 0 && (permission is OrganizationPermission.None || permissions.IsAdmin() ||
-			permissions.Contains(permission));
+		permissions.Count > 0
+		&& (permission is OrganizationPermission.None || permissions.IsAdmin() || permissions.Contains(permission));
 
 	public static async ValueTask<bool> HasPermission(
 		this ValueTask<IReadOnlyList<OrganizationPermission>> permissions,

@@ -171,11 +171,13 @@ resharper_csharp_align_multiline_calls_chain = false
 resharper_csharp_align_multiline_argument = false
 resharper_csharp_align_multiline_parameter = false
 resharper_csharp_align_multiline_binary_expressions_chain = false
+resharper_csharp_wrap_chained_binary_expressions = chop_if_long
 resharper_csharp_outdent_binary_ops = false
 resharper_csharp_wrap_before_binary_opsign = true
 resharper_csharp_keep_existing_initializer_arrangement = true
 resharper_csharp_wrap_object_and_collection_initializer_style = chop_if_long
 resharper_csharp_alignment_tab_fill_style = optimal_fill
+resharper_csharp_place_single_method_argument_lambda_on_same_line = false
 
 # Use separate lines for multiline argument and parameter lists.
 resharper_csharp_keep_existing_invocation_parens_arrangement = true

@@ -18,7 +18,8 @@ public sealed partial class GetUsersByTenant(DbContext context)
 	{
 		var memberships = await context.TenantRoleUsers
 			.Where(u => u.TenantRole.TenantId == query.TenantId && u.User.ApiKey == null)
-			.Select(u => new
+			.Select(
+				u => new
 				{
 					u.UserId,
 					u.User.Name,
@@ -33,7 +34,8 @@ public sealed partial class GetUsersByTenant(DbContext context)
 		{
 			Users = memberships
 				.GroupBy(u => (u.UserId, u.Name, u.EmailAddress))
-				.Select(g => new User
+				.Select(
+					g => new User
 					{
 						UserId = g.Key.UserId,
 						Name = g.Key.Name,

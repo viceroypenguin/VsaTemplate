@@ -18,8 +18,9 @@ internal static class TenantManagement
 	)
 	{
 		if (!actorPermissions.Contains(TenantPermission.Admin)
-			&& permissions.Any(p =>
-				p is TenantPermission.Admin || (p is not TenantPermission.None && !actorPermissions.Contains(p))
+			&& permissions.Any(
+				p =>
+					p is TenantPermission.Admin || (p is not TenantPermission.None && !actorPermissions.Contains(p))
 			))
 			throw new UnauthorizedException("You cannot manage permissions beyond your own tenant permissions.");
 	}
@@ -37,8 +38,9 @@ internal static class TenantManagement
 			.ToListAsync(token);
 
 		var administratorRoleIds = roles
-			.Where(r => (excludedRoleId is null || r.TenantRoleId != excludedRoleId.Value)
-				&& ReadPermissions(r.PermissionsJson).Contains(TenantPermission.Admin)
+			.Where(
+				r => (excludedRoleId is null || r.TenantRoleId != excludedRoleId.Value)
+					&& ReadPermissions(r.PermissionsJson).Contains(TenantPermission.Admin)
 			)
 			.Select(r => r.TenantRoleId)
 			.ToList();

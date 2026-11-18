@@ -36,9 +36,10 @@ public readonly struct EquatableDictionary<TValue>(
 		|| (GetHashCode() == other.GetHashCode()
 			&& _dictionary.Count == other._dictionary.Count
 			&& _dictionary
-				.All(kvp =>
-					other._dictionary.TryGetValue(kvp.Key, out var oValue)
-					&& EqualityComparer<TValue>.Default.Equals(kvp.Value, oValue)
+				.All(
+					kvp =>
+						other._dictionary.TryGetValue(kvp.Key, out var oValue)
+						&& EqualityComparer<TValue>.Default.Equals(kvp.Value, oValue)
 				)
 		);
 

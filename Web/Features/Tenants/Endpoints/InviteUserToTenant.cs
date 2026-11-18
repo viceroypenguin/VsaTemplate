@@ -48,16 +48,17 @@ public sealed partial class InviteUserToTenant(
 			.FirstOrDefaultAsync(u => u.EmailAddress == emailAddress, token);
 
 		if (user is { IsActive: false }
-			|| (user is not null &&
-				await context.AccessControl.ApiKeys.AnyAsync(k => k.ApiKeyId == user.UserId, token)))
+			|| (user is not null
+				&& await context.AccessControl.ApiKeys.AnyAsync(k => k.ApiKeyId == user.UserId, token)))
 			throw new ConflictException("This email address is unavailable for membership.");
 
-		var userId = user?.UserId ?? UserId.From(
-			await context.InsertWithInt32IdentityAsync(
-				new Database.Models.AccessControl.User { EmailAddress = emailAddress, IsActive = true },
-				token: token
-			)
-		);
+		var userId = user?.UserId
+			?? UserId.From(
+				await context.InsertWithInt32IdentityAsync(
+					new Database.Models.AccessControl.User { EmailAddress = emailAddress, IsActive = true },
+					token: token
+				)
+			);
 
 		await context.TenantRoleUsers
 			.Merge()

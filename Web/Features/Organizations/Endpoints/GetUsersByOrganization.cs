@@ -17,7 +17,8 @@ public sealed partial class GetUsersByOrganization(DbContext context)
 	{
 		var memberships = await context.OrganizationRoleUsers
 			.Where(u => u.OrganizationRole.OrganizationId == query.OrganizationId && u.User.ApiKey == null)
-			.Select(u => new
+			.Select(
+				u => new
 				{
 					u.UserId,
 					u.User.Name,
@@ -32,13 +33,15 @@ public sealed partial class GetUsersByOrganization(DbContext context)
 		{
 			Users = memberships
 				.GroupBy(u => (u.UserId, u.Name, u.EmailAddress))
-				.Select(g => new OrganizationMember
+				.Select(
+					g => new OrganizationMember
 					{
 						UserId = g.Key.UserId,
 						Name = g.Key.Name,
 						EmailAddress = g.Key.EmailAddress,
 						Roles = g
-							.Select(u => new OrganizationRoleAssignment
+							.Select(
+								u => new OrganizationRoleAssignment
 								{
 									RoleId = u.RoleId,
 									Name = u.RoleName,
