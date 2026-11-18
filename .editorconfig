@@ -159,6 +159,38 @@ csharp_new_line_before_members_in_object_initializers = true
 csharp_new_line_before_members_in_anonymous_types = true
 csharp_new_line_between_query_expression_clauses = true
 
+# ReSharper cleanup preserves authored breaks and keeps short expressions compact.
+max_line_length = 120
+resharper_keep_user_linebreaks = true
+resharper_wrap_lines = true
+resharper_csharp_wrap_arguments_style = chop_if_long
+resharper_csharp_wrap_parameters_style = chop_if_long
+resharper_csharp_wrap_chained_method_calls = chop_if_long
+resharper_csharp_wrap_before_first_method_call = false
+resharper_csharp_align_multiline_calls_chain = false
+resharper_csharp_align_multiline_argument = false
+resharper_csharp_align_multiline_parameter = false
+resharper_csharp_align_multiline_binary_expressions_chain = false
+resharper_csharp_keep_existing_initializer_arrangement = true
+resharper_csharp_wrap_object_and_collection_initializer_style = chop_if_long
+
+# Use separate lines for multiline argument and parameter lists.
+resharper_csharp_keep_existing_invocation_parens_arrangement = true
+resharper_csharp_wrap_after_invocation_lpar = true
+resharper_csharp_wrap_before_invocation_rpar = true
+resharper_csharp_wrap_after_declaration_lpar = true
+resharper_csharp_wrap_before_declaration_rpar = true
+resharper_csharp_wrap_after_primary_constructor_declaration_lpar = true
+resharper_csharp_wrap_before_primary_constructor_declaration_rpar = true
+
+# Separate multiline statements and record properties without padding block edges.
+resharper_csharp_blank_lines_before_multiline_statements = 1
+resharper_csharp_blank_lines_after_multiline_statements = 1
+resharper_csharp_remove_blank_lines_near_braces_in_code = true
+resharper_csharp_blank_lines_around_auto_property = 1
+resharper_csharp_blank_lines_around_single_line_auto_property = 1
+resharper_csharp_place_accessorholder_attribute_on_same_line = false
+
 # Indentation preferences
 csharp_indent_block_contents = true
 csharp_indent_braces = false
