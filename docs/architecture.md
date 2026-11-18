@@ -113,5 +113,11 @@ mutations use antiforgery protection, while API-key clients use their own authen
 roles that authorize an authenticated identity.
 
 Keep the public homepage capable of serving an application's public content independently of its authenticated workspace.
+The signed-in workspace uses `#/organizations/{organizationId}/workspace` as its starting point. Add organization-scoped
+features under an organization route and use the route's organization ID for each request. That lets different tabs work
+in different organizations. The switcher lists active memberships from `/api/organizations`, including memberships that
+grant no tenant access. The browser remembers the last workspace per user and checks it against that list before resuming.
+Tenant administration and account actions have their own routes.
+
 Frontend source, configuration, and tests live under `Web/ClientApp`; do not introduce a separate JavaScript project merely
 for Visual Studio source review. Preserve the npm lockfile and server build/publish integration when changing the frontend.

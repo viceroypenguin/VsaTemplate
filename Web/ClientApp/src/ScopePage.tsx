@@ -11,8 +11,8 @@ import { Switch } from '@/components/ui/switch';
 import { errorMessage, request } from './api';
 import { AccessPanel } from './access/AccessPanel';
 import { Alert, ConfirmAction, Empty, Field, Icon, Loading, PageHeading, Permissions, Retry, Status } from './components';
-import { OrganizationCard } from './App';
 import { useResource } from './hooks';
+import { canOpenOrganizationWorkspace, organizationWorkspaceHref } from './organizationWorkspace';
 import { hasPermission } from './types';
 import type { Organization, Scope } from './types';
 
@@ -37,7 +37,7 @@ export function ScopePage({ scope, tab, tenantName, onChanged }: { scope: Scope;
         <BreadcrumbItem className="min-w-0"><BreadcrumbPage className="wrap-anywhere">{scope.name}</BreadcrumbPage></BreadcrumbItem>
       </BreadcrumbList>
     </Breadcrumb>
-    <PageHeading eyebrow={tenant ? 'Tenant workspace' : `${tenantName ?? 'Team'} / Organization`} title={scope.name} action={<Status active={scope.isActive} />}>{tenant ? 'Your organizations, people, and access in one place.' : 'Manage this organization and the people who make it work.'}</PageHeading>
+    <PageHeading eyebrow={tenant ? 'Tenant administration' : 'Organization details'} title={scope.name} action={<Status active={scope.isActive} />} />
     {!scope.isActive && <Alert>This {tenant ? 'tenant' : 'organization'} is inactive. Administrators can reactivate it in Settings.</Alert>}
     <NavigationMenu className="scope-navigation" viewport={false} aria-label={`${tenant ? 'Tenant' : 'Organization'} sections`}>
       <NavigationMenuList className="tabs">
@@ -49,11 +49,10 @@ export function ScopePage({ scope, tab, tenantName, onChanged }: { scope: Scope;
     {selected === 'settings' && admin ? <Settings scope={scope} onChanged={onChanged} /> : selected === 'organizations' && manageOrganizations ? <Organizations scope={scope} onChanged={onChanged} /> : (selected === 'members' || selected === 'roles') && manageMembers ? scope.isActive ? <AccessPanel key={selected} scope={scope} view={selected} onChanged={onChanged} /> : <Card className="panel"><Empty title="Workspace is inactive">Reactivate this workspace in Settings before changing access.</Empty></Card> : <>
       <div className="overview-grid">
         <Card className="panel overview-details">
-          <div className="section-heading"><h2>Workspace details</h2><Icon name={tenant ? 'building' : 'teams'} /></div>
+          <div className="section-heading"><h2>Details</h2><Icon name={tenant ? 'building' : 'teams'} /></div>
           <dl className="detail-list">
             <div><dt>Name</dt><dd>{scope.name}</dd></div>
             <div><dt>Status</dt><dd><Status active={scope.isActive} /></dd></div>
-            <div><dt>Workspace type</dt><dd>{tenant ? 'Tenant' : 'Organization'}</dd></div>
             {tenantName && <div><dt>Tenant</dt><dd>{tenantName}</dd></div>}
           </dl>
         </Card>
@@ -69,6 +68,21 @@ export function ScopePage({ scope, tab, tenantName, onChanged }: { scope: Scope;
       {manageOrganizations && scope.isActive && <Organizations scope={scope} onChanged={onChanged} />}
     </>}
   </>;
+}
+
+export function OrganizationCard({ organization }: { organization: Organization }) {
+  const accessible = organization.permissions.length > 0;
+  const workspace = canOpenOrganizationWorkspace(organization);
+  const detailsHref = `#/organizations/${organization.organizationId}`;
+  return <Card className="entity-card" role="article">
+    <div className="entity-card-top"><span className="entity-icon"><Icon name="teams" size={23} /></span><Status active={organization.isActive} /></div>
+    <h2>{accessible ? <a href={detailsHref}>{organization.name}</a> : organization.name}</h2>
+    {accessible && <Permissions permissions={organization.permissions} />}
+    <div className="entity-card-footer">{accessible
+      ? <a href={workspace ? organizationWorkspaceHref(organization.organizationId) : detailsHref} className="card-link">{workspace ? 'Open workspace' : 'Organization details'} <Icon name="arrow" size={17} /></a>
+      : <span className="muted">Organization membership required to open</span>}
+    </div>
+  </Card>;
 }
 
 function Organizations({ scope, onChanged }: { scope: Scope; onChanged: () => void }) {
@@ -89,7 +103,7 @@ function Organizations({ scope, onChanged }: { scope: Scope; onChanged: () => vo
 
   return <section className="organization-collection"><div className="collection-heading"><div><h2>Organizations <Badge variant="outline">{resource.data?.organizations.length ?? 0}</Badge></h2><p>Bring your teams together inside {scope.name}.</p></div><Button disabled={!scope.isActive} onClick={() => setShowCreate(!showCreate)} aria-expanded={showCreate}><Icon name="plus" size={17} />Create organization</Button></div>
     {showCreate && <Card className="panel form-panel"><h3>Create an organization</h3>{error && <Alert>{error}</Alert>}<form className="inline-form" onSubmit={(event) => { void create(event); }}><Field label="Organization name" placeholder="e.g. Product team" value={name} onChange={(event) => setName(event.target.value)} required maxLength={200} autoFocus disabled={busy} /><div className="form-actions"><Button variant="outline" type="button" onClick={() => setShowCreate(false)} disabled={busy}>Cancel</Button><Button disabled={busy || !name.trim()}>{busy ? 'Creating…' : 'Create organization'}</Button></div></form></Card>}
-    {!scope.isActive ? <Card className="panel"><Empty title="Tenant is inactive">Reactivate this tenant in Settings to manage its organizations.</Empty></Card> : resource.loading ? <Loading label="Loading organizations…" /> : resource.error ? <Retry error={resource.error} retry={resource.refresh} /> : resource.data?.organizations.length ? <div className="entity-grid">{resource.data.organizations.map((organization) => <OrganizationCard organization={organization} tenantName={scope.name} key={organization.organizationId} />)}</div> : <Card className="panel"><Empty icon="teams" title="Make room for your first team">Create an organization to manage its own members and permissions.</Empty></Card>}
+    {!scope.isActive ? <Card className="panel"><Empty title="Tenant is inactive">Reactivate this tenant in Settings to manage its organizations.</Empty></Card> : resource.loading ? <Loading label="Loading organizations…" /> : resource.error ? <Retry error={resource.error} retry={resource.refresh} /> : resource.data?.organizations.length ? <div className="entity-grid">{resource.data.organizations.map((organization) => <OrganizationCard organization={organization} key={organization.organizationId} />)}</div> : <Card className="panel"><Empty icon="teams" title="No organizations yet">Create an organization to give it its own workspace, members, and permissions.</Empty></Card>}
   </section>;
 }
 

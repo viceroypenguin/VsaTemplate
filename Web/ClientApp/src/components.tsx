@@ -36,8 +36,8 @@ export function Icon({ name, size = 20 }: { name: keyof typeof paths; size?: num
   return <svg width={size} height={size} style={{ width: size, height: size }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name]} /></svg>;
 }
 
-export function Brand() {
-  return <a className="brand" href="#/" aria-label="Workspace home"><span className="brand-mark"><Icon name="grid" /></span><span>Workspace<span className="brand-subtitle">VSA TEMPLATE</span></span></a>;
+export function Brand({ href = '#/' }: { href?: string }) {
+  return <a className="brand" href={href} aria-label="Workspace home"><span className="brand-mark"><Icon name="grid" /></span><span>Workspace<span className="brand-subtitle">VSA TEMPLATE</span></span></a>;
 }
 
 export function AccountAvatar({ name }: { name: string }) {

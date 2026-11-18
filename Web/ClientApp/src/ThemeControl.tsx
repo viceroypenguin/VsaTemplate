@@ -1,6 +1,6 @@
 import { useLayoutEffect, useState } from 'react';
+import { MonitorIcon, MoonIcon, SunIcon } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Icon } from './components';
 
 type Theme = 'auto' | 'light' | 'dark';
 const storageKey = 'workspace-theme';
@@ -33,17 +33,18 @@ export function useTheme() {
 }
 
 export function ThemeControl({ theme, setTheme }: ReturnType<typeof useTheme>) {
-  return <div className="theme-control">
-    <Icon name="settings" size={15} />
-    <Select value={theme} onValueChange={(value) => {
-      if (value === 'auto' || value === 'light' || value === 'dark') setTheme(value);
-    }}>
-      <SelectTrigger size="sm" aria-label="Color theme"><SelectValue /></SelectTrigger>
-      <SelectContent position="popper">
-        <SelectItem value="auto">System</SelectItem>
-        <SelectItem value="light">Light</SelectItem>
-        <SelectItem value="dark">Dark</SelectItem>
-      </SelectContent>
-    </Select>
-  </div>;
+  const ThemeIcon = { auto: MonitorIcon, light: SunIcon, dark: MoonIcon }[theme];
+  return <Select value={theme} onValueChange={(value) => {
+    if (value === 'auto' || value === 'light' || value === 'dark') setTheme(value);
+  }}>
+    <SelectTrigger className="theme-control" size="sm" aria-label="Color theme" title="Color theme">
+      <ThemeIcon className="size-4" aria-hidden="true" />
+      <SelectValue />
+    </SelectTrigger>
+    <SelectContent position="popper" align="end">
+      <SelectItem value="auto">System</SelectItem>
+      <SelectItem value="light">Light</SelectItem>
+      <SelectItem value="dark">Dark</SelectItem>
+    </SelectContent>
+  </Select>;
 }

@@ -19,9 +19,12 @@ export function PublicHome({ onLoggedIn, themeControl }: { onLoggedIn: () => voi
       <header className="welcome-header">
         <Brand />
 
-        <Button variant="outline" onClick={openLogin} aria-expanded={showLogin} aria-controls="public-login">
-          Log in <Icon name="arrow" size={17} />
-        </Button>
+        <div className="header-actions">
+          {themeControl}
+          <Button variant="outline" onClick={openLogin} aria-expanded={showLogin} aria-controls="public-login">
+            Log in <Icon name="arrow" size={17} />
+          </Button>
+        </div>
       </header>
 
       <main className="welcome-content">
@@ -68,7 +71,6 @@ export function PublicHome({ onLoggedIn, themeControl }: { onLoggedIn: () => voi
       <footer className="welcome-footer">
         VSA Template
         <span className="welcome-footer-note">Built around your organization.</span>
-        {themeControl}
       </footer>
     </div>
   );

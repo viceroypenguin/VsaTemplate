@@ -1,13 +1,26 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { App, OrganizationCard } from './App';
+import { App } from './App';
 import { AccessPanel } from './access/AccessPanel';
-import { ScopePage } from './ScopePage';
-import type { Scope } from './types';
+import { OrganizationCard, ScopePage } from './ScopePage';
+import type { Organization, Scope, Tenant } from './types';
 
 const adminScope: Scope = { kind: 'tenants', id: 1, name: 'Acme', isActive: true, permissions: ['Admin'] };
 const json = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status, headers: { 'Content-Type': 'application/json' } });
+const externalOrganization: Organization = { organizationId: 2, tenantId: 9, name: 'Design team', isActive: true, permissions: ['None'] };
+const secondOrganization: Organization = { ...externalOrganization, organizationId: 3, tenantId: 1, name: 'Research team' };
+
+function mockMemberships(organizations: Organization[], tenants: Tenant[] = []) {
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+    switch (String(input)) {
+      case '/api/session': return json({ isAuthenticated: true, isAdmin: false, user: { userId: 1, name: 'Alex', emailAddress: 'alex@example.com' }, requestToken: 'csrf-token' });
+      case '/api/organizations': return json({ organizations });
+      case '/api/tenants': return json({ tenants });
+      default: throw new Error(`Unexpected request ${String(input)}`);
+    }
+  }));
+}
 
 describe('workspace flows', () => {
   it('shows a public sign-in page without fetching private workspace data', async () => {
@@ -15,6 +28,7 @@ describe('workspace flows', () => {
     vi.stubGlobal('fetch', fetchMock);
     render(<App />);
     expect(await screen.findByRole('button', { name: 'Log in to your workspace' })).toBeInTheDocument();
+    expect(within(screen.getByRole('banner')).getByRole('combobox', { name: 'Color theme' })).toBeInTheDocument();
     expect(screen.queryByRole('textbox', { name: 'Email address' })).not.toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/session');
@@ -32,7 +46,8 @@ describe('workspace flows', () => {
     render(<App />);
 
     expect(await screen.findByRole('heading', { name: 'Your Workspace' })).toBeInTheDocument();
-    expect(screen.getByText('Future features will appear here.')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'No organizations yet' })).toBeInTheDocument();
+    expect(within(screen.getByRole('banner')).getByRole('combobox', { name: 'Color theme' })).toBeInTheDocument();
     expect(screen.getAllByText('Alex')).toHaveLength(1);
     expect(screen.queryByRole('link', { name: 'Manage tenants' })).not.toBeInTheDocument();
 
@@ -50,6 +65,66 @@ describe('workspace flows', () => {
     expect(form).toHaveAttribute('method', 'post');
     expect(form).toHaveAttribute('action', '/Logout');
     expect(new FormData(form).get('__RequestVerificationToken')).toBe('csrf-token');
+  });
+
+  it('opens the only organization workspace even without tenant access', async () => {
+    mockMemberships([externalOrganization]);
+    render(<App />);
+
+    expect(await screen.findByText('Future features will appear here.')).toBeInTheDocument();
+    expect(window.location.hash).toBe('#/organizations/2/workspace');
+    expect(screen.getByRole('button', { name: 'Design team' })).toBeInTheDocument();
+    expect(screen.queryByText(/Tenant 9/)).not.toBeInTheDocument();
+  });
+
+  it('lets a first-time user find and switch organizations across tenants', async () => {
+    const user = userEvent.setup();
+    mockMemberships([externalOrganization, secondOrganization], [{ ...adminScope, tenantId: 1 }]);
+    render(<App />);
+
+    expect(await screen.findByText('Choose an organization to open its workspace.')).toBeInTheDocument();
+    await user.type(screen.getByRole('searchbox', { name: 'Search organizations' }), 'Acme');
+    expect(screen.queryByRole('link', { name: 'Design team' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('link', { name: 'Research team Acme' }));
+    expect(await screen.findByText('Future features will appear here.')).toBeInTheDocument();
+    expect(window.location.hash).toBe('#/organizations/3/workspace');
+
+    const switcher = screen.getByRole('navigation', { name: 'Organization' });
+    await user.click(within(switcher).getByRole('button', { name: 'Research team Acme' }));
+    expect(within(switcher).getByRole('link', { name: 'Research team Acme' })).toHaveAttribute('aria-current', 'page');
+    await user.click(within(switcher).getByRole('link', { name: 'Design team' }));
+    expect(await within(switcher).findByRole('button', { name: 'Design team' })).toBeInTheDocument();
+    expect(window.location.hash).toBe('#/organizations/2/workspace');
+    expect(localStorage.getItem('workspace-organization:1')).toBe('2');
+  });
+
+  it('resumes the remembered active workspace for the signed-in user', async () => {
+    localStorage.setItem('workspace-organization:1', '3');
+    localStorage.setItem('workspace-organization:2', '2');
+    mockMemberships([externalOrganization, secondOrganization]);
+    render(<App />);
+
+    expect(await screen.findByText('Future features will appear here.')).toBeInTheDocument();
+    expect(window.location.hash).toBe('#/organizations/3/workspace');
+  });
+
+  it('keeps inaccessible and inactive workspaces out of automatic selection', async () => {
+    localStorage.setItem('workspace-organization:1', '4');
+    mockMemberships([externalOrganization, secondOrganization, { ...externalOrganization, organizationId: 4, name: 'Archived team', isActive: false, permissions: ['Admin'] }]);
+    const user = userEvent.setup();
+    render(<App />);
+
+    expect(await screen.findByText('Choose an organization to open its workspace.')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Archived team Inactive' })).toHaveAttribute('href', '#/organizations/4/overview');
+    const switcher = screen.getByRole('navigation', { name: 'Organization' });
+    await user.click(within(switcher).getByRole('button', { name: 'Select organization' }));
+    expect(within(switcher).queryByRole('link', { name: 'Archived team' })).not.toBeInTheDocument();
+
+    window.location.hash = '#/organizations/4/workspace';
+    expect(await screen.findByRole('heading', { name: 'Organization is inactive' })).toBeInTheDocument();
+    window.location.hash = '#/organizations/5/workspace';
+    expect(await screen.findByRole('heading', { name: 'Workspace unavailable' })).toBeInTheDocument();
+    expect(screen.queryByText('Future features will appear here.')).not.toBeInTheDocument();
   });
 
   it('creates a named API key, masks it in the list, and invalidates it after confirmation', async () => {
@@ -124,7 +199,7 @@ describe('workspace flows', () => {
     });
     vi.stubGlobal('fetch', fetchMock);
     render(<App />);
-    await user.click(await screen.findByRole('button', { name: 'Workspaces' }));
+    await user.click(await screen.findByRole('button', { name: 'Alex' }));
     await user.click(await screen.findByRole('link', { name: 'Manage tenants' }));
     await user.click(await screen.findByRole('button', { name: 'Create tenant' }));
     const name = screen.getByRole('textbox', { name: 'Tenant name' });
@@ -138,7 +213,7 @@ describe('workspace flows', () => {
     expect(continueButton).toBeEnabled();
     await user.click(continueButton);
     expect(screen.queryByRole('heading', { name: 'Save your recovery keys' })).not.toBeInTheDocument();
-    expect(await screen.findByRole('button', { name: 'Acme' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Acme' })).toBeInTheDocument();
     const creation = fetchMock.mock.calls.find(([path]) => path === '/api/tenants/create');
     expect(creation?.[1]?.body).toBe('{"name":"Acme"}');
     expect(new Headers(creation?.[1]?.headers).get('X-CSRF-TOKEN')).toBe('csrf-token');
@@ -269,12 +344,12 @@ describe('workspace flows', () => {
     const fetchMock = vi.fn(); vi.stubGlobal('fetch', fetchMock);
     const organization = { organizationId: 2, tenantId: 1, name: 'Design team', isActive: true, permissions: ['None'] as const };
     render(<><OrganizationCard organization={{ ...organization, permissions: [...organization.permissions] }} /><ScopePage scope={{ kind: 'organizations', id: 2, name: organization.name, isActive: true, permissions: ['None'] }} tab="overview" onChanged={vi.fn()} /></>);
-    expect(screen.getByRole('link', { name: 'Open organization' })).toHaveAttribute('href', '#/organizations/2');
+    expect(screen.getByRole('link', { name: 'Open workspace' })).toHaveAttribute('href', '#/organizations/2/workspace');
     const navigation = screen.getByRole('navigation', { name: 'Organization sections' });
     expect(within(navigation).queryByRole('link', { name: 'Members' })).not.toBeInTheDocument();
     expect(within(navigation).queryByRole('link', { name: 'Roles' })).not.toBeInTheDocument();
     expect(within(navigation).queryByRole('link', { name: 'Settings' })).not.toBeInTheDocument();
     expect(fetchMock).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('link', { name: 'Open organization' }));
+    fireEvent.click(screen.getByRole('link', { name: 'Open workspace' }));
   });
 });
