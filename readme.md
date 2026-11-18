@@ -312,7 +312,9 @@ transaction boundaries, or database changes implement the intended behavior.
 
 ### A browser application alongside the API
 
-React and TypeScript provide the browser UI, with custom styles taking the Immediate.Jobs dashboard as a starting point.
+React and TypeScript provide the browser UI. The app uses shadcn/ui and Tailwind CSS, with a layout and light and dark
+palettes adapted from the Immediate.Jobs dashboard. System, Light, and Dark are available on the public and signed-in
+pages, and the preference is saved in the browser. See the [frontend contributor guide](docs/contributing.md#working-on-the-frontend).
 The frontend uses npm's committed lockfile and an ordinary Vite build. Keeping it under `Web` makes the server's build and
 publish responsible for the UI it serves, while Vite still provides its own development loop. Serving the production API
 and UI from one origin keeps deployment and cookie-based authentication straightforward.

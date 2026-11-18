@@ -6,6 +6,14 @@
     <meta name="theme-color" content="#113b38" />
     <meta name="description" content="Create tenants, organize your teams, and manage access in one place." />
     <title>Workspace · VSA Template</title>
+    <script>
+      // Apply the saved palette before the app renders.
+      let workspaceTheme;
+      try { workspaceTheme = localStorage.getItem('workspace-theme'); } catch {}
+      document.documentElement.dataset.theme = workspaceTheme === 'light' || workspaceTheme === 'dark'
+        ? workspaceTheme
+        : (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -115,6 +115,62 @@ describe('workspace flows', () => {
     expect(fetchMock).toHaveBeenCalledWith('/api/organizations/4/users', expect.objectContaining({ method: 'PUT', body: '{"emailAddress":"teammate@example.com","roleId":3}' }));
   });
 
+  it('removes only a delegable member and only after confirmation', async () => {
+    const user = userEvent.setup();
+    const onChanged = vi.fn();
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, options?: RequestInit) => {
+      if (options?.method === 'DELETE') return new Response(null, { status: 204 });
+      if (String(input).endsWith('/roles')) return json({ roles: [
+        { roleId: 1, name: 'Owner', permissions: ['Admin'] },
+        { roleId: 2, name: 'Member', permissions: ['None'] },
+      ] });
+      return json({ users: [
+        { userId: 1, name: 'Owner', emailAddress: 'owner@example.com', roles: [{ roleId: 1, name: 'Owner' }] },
+        { userId: 2, name: 'Member', emailAddress: 'member@example.com', roles: [{ roleId: 2, name: 'Member' }] },
+      ] });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    render(<AccessPanel scope={{ ...adminScope, permissions: ['UserManagement'] }} view="members" onChanged={onChanged} />);
+
+    expect(await screen.findByRole('button', { name: 'Remove access for owner@example.com' })).toBeDisabled();
+    const trigger = screen.getByRole('button', { name: 'Remove access for member@example.com' });
+    await user.click(trigger);
+    const dialog = screen.getByRole('alertdialog', { name: 'Remove member@example.com from Acme?' });
+    expect(within(dialog).getByRole('button', { name: 'Cancel' })).toHaveFocus();
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(trigger).toHaveFocus());
+    expect(fetchMock.mock.calls.filter(([, options]) => options?.method === 'DELETE')).toHaveLength(0);
+
+    await user.click(trigger);
+    await user.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Remove access' }));
+    await waitFor(() => expect(onChanged).toHaveBeenCalledOnce());
+    expect(fetchMock).toHaveBeenCalledWith('/api/tenants/1/users/2', expect.objectContaining({ method: 'DELETE' }));
+  });
+
+  it('confirms deactivation on keyboard form submission and restores focus on cancel', async () => {
+    const user = userEvent.setup();
+    const onChanged = vi.fn();
+    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
+    vi.stubGlobal('fetch', fetchMock);
+    render(<ScopePage scope={adminScope} tab="settings" onChanged={onChanged} />);
+
+    const settingsLink = screen.getByRole('link', { name: 'Settings' });
+    expect(settingsLink).toHaveAttribute('aria-current', 'page');
+    expect(settingsLink).toHaveAttribute('href', '#/tenants/1/settings');
+    await user.click(screen.getByRole('switch', { name: 'Active workspace' }));
+    await user.type(screen.getByRole('textbox', { name: 'Tenant name' }), '{Enter}');
+    const dialog = screen.getByRole('alertdialog', { name: 'Deactivate Acme?' });
+    await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    const save = screen.getByRole('button', { name: 'Save changes' });
+    await waitFor(() => expect(save).toHaveFocus());
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    await user.click(save);
+    await user.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Deactivate tenant' }));
+    await waitFor(() => expect(onChanged).toHaveBeenCalledOnce());
+    expect(fetchMock).toHaveBeenCalledWith('/api/tenants/1', expect.objectContaining({ method: 'PUT', body: '{"name":"Acme","isActive":false}' }));
+  });
+
   it('lets read-only members open their organization without exposing management controls', () => {
     const fetchMock = vi.fn(); vi.stubGlobal('fetch', fetchMock);
     const organization = { organizationId: 2, tenantId: 1, name: 'Design team', isActive: true, permissions: ['None'] as const };

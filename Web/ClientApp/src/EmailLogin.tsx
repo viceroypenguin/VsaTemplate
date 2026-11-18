@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { ApiError, errorMessage, request } from './api';
 import { Alert, Field, Icon } from './components';
 import {
@@ -106,7 +108,7 @@ export function EmailLogin({ onLoggedIn, session }: EmailLoginProps) {
   }
 
   return (
-    <section className="panel email-login" aria-labelledby="login-title">
+    <Card className="panel email-login" role="region" aria-labelledby="login-title">
       <div className="email-login-heading">
         <span className="entity-icon"><Icon name="key" size={22} /></span>
         <div>
@@ -134,10 +136,10 @@ export function EmailLogin({ onLoggedIn, session }: EmailLoginProps) {
             disabled={busy}
           />
 
-          <button className="button primary" disabled={busy || unavailable || !emailAddress.trim()}>
+          <Button disabled={busy || unavailable || !emailAddress.trim()}>
             {busy ? 'Sending code…' : 'Send login code'}
             <Icon name="arrow" size={17} />
-          </button>
+          </Button>
 
           <p className="form-hint">Keep this tab open. The code can only be used here and expires after 15 minutes.</p>
         </form>
@@ -173,27 +175,28 @@ export function EmailLogin({ onLoggedIn, session }: EmailLoginProps) {
             </p>
           )}
 
-          <button className="button primary" disabled={busy || unavailable || expired || token.length !== 6}>
+          <Button disabled={busy || unavailable || expired || token.length !== 6}>
             {busy ? 'Logging in…' : 'Log in'}
             <Icon name="arrow" size={17} />
-          </button>
+          </Button>
 
           <div className="email-login-secondary">
-            <button
-              className="text-button"
+            <Button
+              variant="ghost"
+              className="text-action"
               type="button"
               onClick={() => { void sendCode(); }}
               disabled={busy || unavailable || resendSeconds > 0}
             >
               Send a new code{resendSeconds > 0 ? ` (${resendSeconds}s)` : ''}
-            </button>
+            </Button>
 
-            <button className="text-button" type="button" onClick={changeEmail} disabled={busy}>
+            <Button variant="ghost" className="text-action" type="button" onClick={changeEmail} disabled={busy}>
               Use a different email
-            </button>
+            </Button>
           </div>
         </form>
       )}
-    </section>
+    </Card>
   );
 }

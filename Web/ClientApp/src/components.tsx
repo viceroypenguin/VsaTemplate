@@ -1,5 +1,21 @@
-import { useEffect, useId, useState } from 'react';
-import type { InputHTMLAttributes, ReactNode } from 'react';
+import { useId } from 'react';
+import type { ComponentProps, InputHTMLAttributes, ReactNode } from 'react';
+import { Alert as UiAlert, AlertDescription } from '@/components/ui/alert';
+import {
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Spinner } from '@/components/ui/spinner';
 import { permissionLabels } from './types';
 import type { Permission } from './types';
 
@@ -17,35 +33,27 @@ const paths = {
   logout: 'M9 5H5v14h4 M13 8l4 4-4 4 M8 12h13',
 };
 export function Icon({ name, size = 20 }: { name: keyof typeof paths; size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name]} /></svg>;
+  return <svg width={size} height={size} style={{ width: size, height: size }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name]} /></svg>;
 }
 
 export function Brand() {
   return <a className="brand" href="#/tenants" aria-label="Workspace home"><span className="brand-mark"><Icon name="grid" /></span><span>Workspace<span className="brand-subtitle">VSA TEMPLATE</span></span></a>;
 }
 
-export function ThemeControl() {
-  const [theme, setTheme] = useState(() => {
-    try { return localStorage.getItem('workspace-theme') ?? 'auto'; }
-    catch { return 'auto'; }
-  });
-  useEffect(() => {
-    const media = window.matchMedia('(prefers-color-scheme: dark)');
-    const apply = () => { document.documentElement.dataset.theme = theme === 'auto' ? media.matches ? 'dark' : 'light' : theme; };
-    apply();
-    media.addEventListener('change', apply);
-    try { localStorage.setItem('workspace-theme', theme); } catch { /* Storage may be unavailable in a private session. */ }
-    return () => media.removeEventListener('change', apply);
-  }, [theme]);
-  return <label className="theme-control"><Icon name="settings" size={15} /><span className="sr-only">Color theme</span><select aria-label="Color theme" value={theme} onChange={(event) => setTheme(event.target.value)}><option value="auto">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>;
+export function AccountAvatar({ name }: { name: string }) {
+  return <Avatar className="avatar" aria-hidden="true">
+    <AvatarFallback className="bg-primary-soft text-primary">{name.slice(0, 1).toUpperCase()}</AvatarFallback>
+  </Avatar>;
 }
 
 export function Alert({ children, success = false }: { children: ReactNode; success?: boolean }) {
-  return <div className={`alert ${success ? 'alert-success' : 'alert-error'}`} role={success ? 'status' : 'alert'}>{children}</div>;
+  return <UiAlert className={`notice ${success ? 'notice-success' : 'notice-error'}`} variant={success ? 'default' : 'destructive'} role={success ? 'status' : 'alert'}>
+    <AlertDescription className="block text-xs text-current">{children}</AlertDescription>
+  </UiAlert>;
 }
 
 export function Loading({ label = 'Loading workspace…' }: { label?: string }) {
-  return <div className="loading" role="status"><span className="spinner" />{label}</div>;
+  return <div className="loading" role="status"><Spinner className="text-primary" aria-hidden="true" />{label}</div>;
 }
 
 export function Empty({ icon = 'building', title, children }: { icon?: keyof typeof paths; title: string; children: ReactNode }) {
@@ -53,12 +61,19 @@ export function Empty({ icon = 'building', title, children }: { icon?: keyof typ
 }
 
 export function Status({ active }: { active: boolean }) {
-  return <span className={`status ${active ? 'status-active' : 'status-inactive'}`}><span />{active ? 'Active' : 'Inactive'}</span>;
+  return <Badge className={`status ${active ? 'status-active' : 'status-inactive'}`} variant="secondary">
+    <span aria-hidden="true" />{active ? 'Active' : 'Inactive'}
+  </Badge>;
 }
 
-export function Field({ label, hint, ...props }: InputHTMLAttributes<HTMLInputElement> & { label: string; hint?: string }) {
-  const id = useId();
-  return <label className="field" htmlFor={id}><span>{label}</span><input id={id} aria-describedby={hint ? `${id}-hint` : undefined} {...props} />{hint && <small id={`${id}-hint`}>{hint}</small>}</label>;
+export function Field({ label, hint, id, ...props }: InputHTMLAttributes<HTMLInputElement> & { label: string; hint?: string }) {
+  const generatedId = useId();
+  const inputId = id ?? generatedId;
+  return <div className="field">
+    <Label htmlFor={inputId} className="field-label">{label}</Label>
+    <Input id={inputId} aria-describedby={hint ? `${inputId}-hint` : undefined} {...props} />
+    {hint && <small id={`${inputId}-hint`}>{hint}</small>}
+  </div>;
 }
 
 export function PageHeading({ eyebrow, title, children, action }: { eyebrow: string; title: string; children?: ReactNode; action?: ReactNode }) {
@@ -66,9 +81,31 @@ export function PageHeading({ eyebrow, title, children, action }: { eyebrow: str
 }
 
 export function Permissions({ permissions }: { permissions: readonly Permission[] }) {
-  return <div className="pills">{permissions.filter((p) => p !== 'None').map((p) => <span className="pill" key={p}>{permissionLabels[p]}</span>)}{(!permissions.length || permissions.every((p) => p === 'None')) && <span className="pill">Member</span>}</div>;
+  const labels = permissions.filter((permission) => permission !== 'None').map((permission) => permissionLabels[permission]);
+  return <div className="pills">{(labels.length ? labels : ['Member']).map((label) => <Badge key={label} variant="outline" className="pill">{label}</Badge>)}</div>;
 }
 
 export function Retry({ error, retry }: { error: string; retry: () => void }) {
-  return <><Alert>{error}</Alert><button className="button secondary" onClick={retry}>Try again</button></>;
+  return <><Alert>{error}</Alert><Button variant="outline" onClick={retry}>Try again</Button></>;
+}
+
+export function ConfirmAction({
+  title, description, action, onConfirm, onCloseAutoFocus,
+}: {
+  title: string;
+  description: string;
+  action: string;
+  onConfirm: () => void;
+  onCloseAutoFocus?: ComponentProps<typeof AlertDialogContent>['onCloseAutoFocus'];
+}) {
+  return <AlertDialogContent className="bg-card" onCloseAutoFocus={onCloseAutoFocus}>
+    <AlertDialogHeader>
+      <AlertDialogTitle className="m-0 wrap-anywhere">{title}</AlertDialogTitle>
+      <AlertDialogDescription className="m-0">{description}</AlertDialogDescription>
+    </AlertDialogHeader>
+    <AlertDialogFooter>
+      <AlertDialogCancel>Cancel</AlertDialogCancel>
+      <AlertDialogAction className="confirmation-action" variant="destructive" onClick={onConfirm}>{action}</AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>;
 }

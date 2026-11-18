@@ -16,6 +16,11 @@ server build synchronizes them to generated `wwwroot` content. The publish outpu
 frontend source or npm dependencies. Design-time builds do not run npm. The frontend remains independently runnable with
 Vite's development server and backend proxy.
 
+The browser uses shadcn/ui primitives under `Web/ClientApp/src/components/ui` and Tailwind CSS v4 through the Vite
+plugin. Workspace layout and theme tokens live in `src/styles.css`. The theme control applies the selected palette
+to the document root so portaled select menus and dialogs share the page colors. Hash links continue to identify
+workspace routes and sections.
+
 `Web.Client` provides a foundation for typed Refit clients. `Web.Tests` hosts the application through ASP.NET Core's
 application factory and uses a real SQL Server Testcontainer for HTTP integration tests. Tests may use typed clients or
 `HttpClient` directly; choose the form that makes the behavior under test clear.

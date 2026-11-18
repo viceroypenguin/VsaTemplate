@@ -1,9 +1,12 @@
 import { useState } from 'react';
+import type { ReactNode } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Brand, Icon } from './components';
 import { EmailLogin } from './EmailLogin';
 import { readLoginChallenge, useLoginSession } from './loginSession';
 
-export function PublicHome({ onLoggedIn }: { onLoggedIn: () => void }) {
+export function PublicHome({ onLoggedIn, themeControl }: { onLoggedIn: () => void; themeControl: ReactNode }) {
   const [showLogin, setShowLogin] = useState(() => readLoginChallenge() !== null);
   const session = useLoginSession();
 
@@ -16,9 +19,9 @@ export function PublicHome({ onLoggedIn }: { onLoggedIn: () => void }) {
       <header className="welcome-header">
         <Brand />
 
-        <button className="button secondary" onClick={openLogin} aria-expanded={showLogin} aria-controls="public-login">
+        <Button variant="outline" onClick={openLogin} aria-expanded={showLogin} aria-controls="public-login">
           Log in <Icon name="arrow" size={17} />
-        </button>
+        </Button>
       </header>
 
       <main className="welcome-content">
@@ -29,9 +32,9 @@ export function PublicHome({ onLoggedIn }: { onLoggedIn: () => void }) {
           <p>Create a home for your business, bring your organizations together, and give people the access they need.</p>
 
           {!showLogin && (
-            <button className="button primary large" onClick={openLogin} aria-controls="public-login">
+            <Button size="lg" className="h-12 text-sm" onClick={openLogin} aria-controls="public-login">
               Log in to your workspace <Icon name="arrow" />
-            </button>
+            </Button>
           )}
         </section>
 
@@ -42,27 +45,31 @@ export function PublicHome({ onLoggedIn }: { onLoggedIn: () => void }) {
         )}
 
         <section className="welcome-features" aria-label="Workspace features">
-          <article>
+          <Card className="welcome-feature" role="article">
             <Icon name="building" />
             <h2>Start with a tenant</h2>
             <p>Keep each business and its organizations in a separate space.</p>
-          </article>
+          </Card>
 
-          <article>
+          <Card className="welcome-feature" role="article">
             <Icon name="teams" />
             <h2>Bring people together</h2>
             <p>Invite members and organize work around your teams.</p>
-          </article>
+          </Card>
 
-          <article>
+          <Card className="welcome-feature" role="article">
             <Icon name="shield" />
             <h2>Make access clear</h2>
             <p>Choose roles and permissions for each workspace.</p>
-          </article>
+          </Card>
         </section>
       </main>
 
-      <footer className="welcome-footer">VSA Template <span>Built around your organization.</span></footer>
+      <footer className="welcome-footer">
+        VSA Template
+        <span className="welcome-footer-note">Built around your organization.</span>
+        {themeControl}
+      </footer>
     </div>
   );
 }

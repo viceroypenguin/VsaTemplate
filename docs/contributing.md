@@ -126,6 +126,21 @@ Use `async` and `await` in every `ValueTask`-returning implementation rather tha
 wrapper is intentional for error stack reporting with runtime-async; do not remove it as a simplification. Keep genuinely
 synchronous methods synchronous and return their values without an asynchronous wrapper.
 
+## Working on the frontend
+
+Run frontend commands in `Web/ClientApp` using npm. To add an official shadcn/ui component, use the configured
+registry and commit the generated source, dependency changes, and npm lockfile together. This command adds the
+separator component.
+
+```sh
+npx shadcn@latest add separator
+```
+
+`components.json` configures the registry style and aliases. Use `@/components/ui` for primitives and keep
+workspace-specific behavior in the feature components. Set shared colors and radii in `src/styles.css`, where the
+Tailwind tokens use the Immediate.Jobs dashboard palette for both themes. When editing controls, check focus and
+keyboard behavior in both themes, including select menus and confirmation dialogs.
+
 ## Validating a change
 
 Choose checks that demonstrate the behavior affected by the change. Run frontend checks from `Web/ClientApp`:
