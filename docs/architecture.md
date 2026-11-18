@@ -32,15 +32,17 @@ Keep business operations within their feature under `Web/Features`. Feature subf
 | Folder | Contents |
 | --- | --- |
 | `Endpoints` | HTTP-mapped operations and the request/response contracts directly belonging to those operations. |
-| `Queries` | Internal read operations that are not themselves HTTP endpoints. |
+| `Queries` | Standalone internal read operations. |
 | `Models` | Feature models, typed IDs, enums, and contracts shared within the feature. |
-| `Services` | Reusable feature operations, cache declarations, and supporting coordination. |
+| `Services` | Reusable feature operations, cache declarations with their backing queries, and supporting coordination. |
 | `Authorization` | Scoped request contracts, authorization behaviors, and related access rules. |
 | `Validators` | Reusable validation rules when a feature needs a separate validation abstraction. |
 | `Exceptions` | Feature-specific exceptions when they are separate from an operation. |
 
 Do not put an ordinary helper in `Endpoints` because endpoints happen to call it. A folder's name is a contract with the
 reader. Introduce another appropriately named folder when its members warrant it rather than misclassifying the members.
+Keep the handler named by `[CacheFor<T>]` in the same file as its cache. A query shared by cached and uncached operations
+can remain in `Queries` and be called by the backing handler.
 
 `Web/Infrastructure` owns application mechanics such as authentication, email delivery, logging, and exception handling.
 `Web/Database` owns persistence setup, migrations, and schema input. `Features/Shared` holds feature code with actual shared
@@ -53,10 +55,10 @@ belongs in the query behind the relevant cache, including user or resource activ
 calculation. Do not add a separate database read in a behavior or hide the same eligibility check in another behavior
 dependency. Keeping eligibility in the cache query gives authorization a single definition.
 
-Current-user identifiers come from authenticated claims and are read synchronously, without an `async` or `ValueTask`
-wrapper. API-key membership-owner resolution and permission lookups remain asynchronous when they need database or cache
-data. Methods returning `ValueTask` use `async` and await their work, including cache forwarding, to preserve the method in
-exception stack traces with runtime-async. Never return a `ValueTask` directly or block it to make a caller synchronous.
+Current-user and membership-owner identifiers come from authenticated claims and are read synchronously. Permission
+lookups remain asynchronous when they need database or cache data. Methods returning `ValueTask` use `async` and await
+their work, including cache forwarding, to preserve the method in exception stack traces with runtime-async.
+Never return a `ValueTask` directly or block it to make a caller synchronous.
 
 The scoped request contracts expose **static virtual** permission demands. Their default `None` demand expresses base
 membership access; operations requiring management rights override the demand. Do not make the demand abstract merely to

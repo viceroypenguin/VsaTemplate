@@ -12,9 +12,10 @@ source generation, runtime initialization, and tests consistent when a schema ch
 
 ## Code placement and style
 
-A feature subfolder contains only the kind of item named by that folder. HTTP endpoints belong in `Endpoints`; reusable
-management or validation helpers belong in services or validators; standalone feature exceptions belong in exceptions.
-Keep related code within the feature unless it has a real cross-feature consumer.
+Use feature subfolders for the kind of item they name. Put HTTP endpoints in `Endpoints`, reusable management or
+validation helpers in services or validators, and standalone feature exceptions in exceptions. A cache and the handler
+named by its `[CacheFor<T>]` attribute belong in the same file. Keep related code within the feature unless it has a real
+cross-feature consumer.
 
 Keep short predicates, simple `foreach` sources, and small nested projections compact when they fit naturally in their
 surrounding statement:
@@ -125,6 +126,23 @@ public sealed partial record Request : IAuthorizedRequest, ITenantRequest, IVali
 Use `async` and `await` in every `ValueTask`-returning implementation rather than returning a `ValueTask` directly. The
 wrapper is intentional for error stack reporting with runtime-async; do not remove it as a simplification. Keep genuinely
 synchronous methods synchronous and return their values without an asynchronous wrapper.
+
+## Formatting C# with ReSharper
+
+Restore the pinned repository tool and run the formatting profile from the repository root.
+
+```sh
+dotnet tool restore
+dotnet jb cleanupcode VsaTemplate.slnx --profile="Built-in: Reformat Code" --no-build --include="**/*.cs"
+```
+
+The profile applies formatting. CleanupCode defaults to Full Cleanup when the profile is omitted. Cleanup writes
+files in place, so scope `--include` to the files you are editing and review the resulting diff. To exclude personal
+settings, add `--disable-settings-layers="GlobalAll;GlobalPerProduct;SolutionPersonal;ProjectPersonal"`.
+
+The ReSharper rules in `.editorconfig` use a 120-column wrapping target, preserve authored breaks and initializer
+layouts, and define spacing around multiline statements and properties. Review query and lambda layout against the
+examples above when the formatter's general wrapping rules produce a different result.
 
 ## Working on the frontend
 

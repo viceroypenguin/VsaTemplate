@@ -222,8 +222,8 @@ can follow one use case without moving through a repository-wide controller/serv
 
 Subfolders communicate what their members do. `Endpoints` contains HTTP-mapped operations; `Queries` contains internal
 reads; `Models` contains feature data and IDs; `Services` contains reusable operations; `Authorization` contains scoped
-request contracts and behaviors. A shared validation or management helper belongs with services or validators, rather
-than in `Endpoints` merely because endpoints call it.
+request contracts and behaviors. Keep a cache's direct backing query in the same file as the cache. A shared validation
+or management helper belongs with services or validators.
 
 `Web/Infrastructure` contains application mechanics such as authentication, email delivery, logging, and exception
 handling. `Web/Database` owns persistence setup and migrations. `Features/Shared` is for feature code used across slices;
