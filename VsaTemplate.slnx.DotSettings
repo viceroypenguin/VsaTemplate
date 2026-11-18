@@ -2,7 +2,7 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:s="clr-namespace:System;assembly=mscorlib">
 	<!-- Full Cleanup from JetBrains.ReSharper.GlobalTools 2026.3.0.1 with ArrangeArgumentsStyle disabled. -->
-	<s:String x:Key="/Default/CodeStyle/CodeCleanup/Profiles/=Full_0020Cleanup_0020_0028Preserve_0020Arguments_0029/@EntryIndexedValue">&lt;Profile name="Full Cleanup (Preserve Arguments)"&gt;
+	<s:String x:Key="/Default/CodeStyle/CodeCleanup/Profiles/=Full_0020Cleanup/@EntryIndexedValue">&lt;Profile name="Full Cleanup"&gt;
 		&lt;AspOptimizeRegisterDirectives&gt;True&lt;/AspOptimizeRegisterDirectives&gt;
 		&lt;CppAddTypenameTemplateKeywords&gt;True&lt;/CppAddTypenameTemplateKeywords&gt;
 		&lt;CppCStyleToStaticCastDescriptor&gt;True&lt;/CppCStyleToStaticCastDescriptor&gt;
@@ -57,9 +57,9 @@
 		&lt;VBOptimizeImports&gt;True&lt;/VBOptimizeImports&gt;
 		&lt;VBShortenReferences&gt;True&lt;/VBShortenReferences&gt;
 		&lt;CSOptimizeUsings&gt;
-			&lt;OptimizeUsings&gt;True&lt;/OptimizeUsings&gt;
+			&lt;OptimizeUsings&gt;False&lt;/OptimizeUsings&gt;
 		&lt;/CSOptimizeUsings&gt;
-		&lt;CSShortenReferences&gt;True&lt;/CSShortenReferences&gt;
+		&lt;CSShortenReferences&gt;False&lt;/CSShortenReferences&gt;
 		&lt;VBReformatCode&gt;True&lt;/VBReformatCode&gt;
 		&lt;VBFormatDocComments&gt;True&lt;/VBFormatDocComments&gt;
 		&lt;CSReformatCode&gt;True&lt;/CSReformatCode&gt;

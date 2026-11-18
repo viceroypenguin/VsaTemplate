@@ -20,12 +20,6 @@ public sealed partial class InvalidateApiKey(
 	PermissionCacheInvalidator permissionCacheInvalidator
 )
 {
-	public sealed record Request : IAuthorizedRequest
-	{
-		[FromRoute]
-		public required UserId ApiKeyId { get; init; }
-	}
-
 	private async ValueTask HandleAsync([AsParameters] Request request, CancellationToken token)
 	{
 		var ownerId = currentUserService.GetLoggedInHumanUserId();
@@ -33,6 +27,7 @@ public sealed partial class InvalidateApiKey(
 
 		var ownedKey = context.AccessControl.ApiKeys
 			.Where(k => k.ApiKeyId == request.ApiKeyId && k.OwnerUserId == ownerId);
+
 		var secret = await ownedKey
 			.Select(k => k.User.EmailAddress)
 			.SingleOrDefaultAsync(token);
@@ -54,12 +49,19 @@ public sealed partial class InvalidateApiKey(
 		// Preserve audit references to the synthetic user and erase its credential.
 		await context.AccessControl.Users
 			.Where(u => u.UserId == request.ApiKeyId)
-			.Set(u => u.IsActive, false)
+			.Set(u => u.IsActive, value: false)
 			.Set(u => u.EmailAddress, string.Create(provider: null, $"Revoked API key {request.ApiKeyId}"))
 			.UpdateAsync(token);
 
 		await transaction.CommitAsync(CancellationToken.None);
+
 		validApiKeyCache.RemoveValue(new() { ApiKey = secret });
 		await permissionCacheInvalidator.InvalidateUser(request.ApiKeyId);
+	}
+
+	public sealed record Request : IAuthorizedRequest
+	{
+		[FromRoute]
+		public required UserId ApiKeyId { get; init; }
 	}
 }

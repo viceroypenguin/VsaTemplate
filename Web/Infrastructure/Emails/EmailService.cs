@@ -17,13 +17,6 @@ public sealed class EmailService(
 {
 	private readonly EmailServiceOptions _options = options.Value;
 
-	public async Task SendAdminEmail(EmailMessage message, CancellationToken cancellationToken = default)
-	{
-		ArgumentNullException.ThrowIfNull(message);
-
-		await SendEmail(message with { To = _options.AdminEmailAddresses }, cancellationToken);
-	}
-
 	public async Task SendEmail(EmailMessage message, CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(message);
@@ -46,6 +39,13 @@ public sealed class EmailService(
 		await SendCore(message, cancellationToken);
 	}
 
+	public async Task SendAdminEmail(EmailMessage message, CancellationToken cancellationToken = default)
+	{
+		ArgumentNullException.ThrowIfNull(message);
+
+		await SendEmail(message with { To = _options.AdminEmailAddresses }, cancellationToken);
+	}
+
 	private async Task SendCore(EmailMessage message, CancellationToken cancellationToken)
 	{
 		switch (_options.ServerType)
@@ -61,7 +61,7 @@ public sealed class EmailService(
 					cancellationToken
 				);
 
-				using var mimeMessage = new MimeKit.MimeMessage()
+				using var mimeMessage = new MimeKit.MimeMessage
 				{
 					From = { MimeKit.MailboxAddress.Parse(_options.FromEmailAddress) },
 					To = { message.To },

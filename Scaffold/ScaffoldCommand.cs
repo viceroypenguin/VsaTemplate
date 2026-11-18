@@ -14,19 +14,14 @@ namespace VsaTemplate.Scaffold;
 
 internal sealed partial class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Settings>
 {
-	public sealed class Settings : CommandSettings
-	{
-		[CommandOption("--connection-string", isRequired: true)]
-		public required string ConnectionString { get; init; }
+	[GeneratedRegex(@"^go\r?$", RegexOptions.IgnoreCase | RegexOptions.Multiline, matchTimeoutMilliseconds: 1_000)]
+	private static partial Regex GoRegex { get; }
 
-		[CommandOption("--output-file", isRequired: true)]
-		public required string OutputFile { get; init; }
-
-		[CommandArgument(0, "<files>")]
-		public required string[] Files { get; init; }
-	}
-
-	public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
+	public override async Task<int> ExecuteAsync(
+		CommandContext context,
+		Settings settings,
+		CancellationToken cancellationToken
+	)
 	{
 #pragma warning disable CA1031 // Do not catch general exception types
 		try
@@ -65,58 +60,67 @@ internal sealed partial class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Set
 
 			var entities = schema.Tables
 				.Select(t => new DbEntity
-				{
-					PropertyName = Pluralize(t.TypeName),
-					TypeName = t.TypeName,
-					TableName = t.TableName!,
-					SchemaName = t.SchemaName is "dbo" ? null : t.SchemaName,
+					{
+						PropertyName = Pluralize(t.TypeName),
+						TypeName = t.TypeName,
+						TableName = t.TableName!,
+						SchemaName = t.SchemaName is "dbo" ? null : t.SchemaName,
 
-					Properties = t.Columns
-						.Select(c => new Property
-						{
-							PropertyName = c.MemberName,
-							ColumnName = c.ColumnName,
-							TypeName = GetPropertyType(c.DataType, c.Length),
-							IsNullable = c.IsNullable,
-							DataType = c.ColumnType ?? throw new InvalidOperationException("Unknown column type"),
-							ForceNotNull = c.SystemType!.IsClass && !c.IsNullable,
-							IsPrimaryKey = c.IsPrimaryKey,
-							PrimaryKeyOrder = c.IsPrimaryKey && t.Columns.Exists(c => c.PrimaryKeyOrder > 1) ? c.PrimaryKeyOrder : null,
-							IsIdentity = c.IsIdentity,
-							SkipOnInsert = c.SkipOnInsert,
-							SkipOnUpdate = c.SkipOnUpdate,
-						})
-						.OrderBy(x => x.PropertyName, StringComparer.Ordinal)
-						.ToEquatableReadOnlyList(),
+						Properties = t.Columns
+							.Select(c => new Property
+								{
+									PropertyName = c.MemberName,
+									ColumnName = c.ColumnName,
+									TypeName = GetPropertyType(c.DataType, c.Length),
+									IsNullable = c.IsNullable,
+									DataType = c.ColumnType ??
+										throw new InvalidOperationException("Unknown column type"),
+									ForceNotNull = c.SystemType!.IsClass && !c.IsNullable,
+									IsPrimaryKey = c.IsPrimaryKey,
+									PrimaryKeyOrder = c.IsPrimaryKey && t.Columns.Exists(c => c.PrimaryKeyOrder > 1)
+										? c.PrimaryKeyOrder
+										: null,
+									IsIdentity = c.IsIdentity,
+									SkipOnInsert = c.SkipOnInsert,
+									SkipOnUpdate = c.SkipOnUpdate,
+								}
+							)
+							.OrderBy(x => x.PropertyName, StringComparer.Ordinal)
+							.ToEquatableReadOnlyList(),
 
-					Associations = t.ForeignKeys
-						.Select(fk => new Association
-						{
-							Name = fk.KeyName,
-							CanBeNull = fk.CanBeNull,
-							ThisKeys = string.Join(',', fk.ThisColumns.Select(c => c.MemberName)),
-							OtherKeys = string.Join(',', fk.OtherColumns.Select(c => c.MemberName)),
-							OtherName = GetAssociationName(fk),
+						Associations = t.ForeignKeys
+							.Select(fk => new Association
+								{
+									Name = fk.KeyName,
+									CanBeNull = fk.CanBeNull,
+									ThisKeys = string.Join(',', fk.ThisColumns.Select(c => c.MemberName)),
+									OtherKeys = string.Join(',', fk.OtherColumns.Select(c => c.MemberName)),
+									OtherName = GetAssociationName(fk),
 
-							OtherType =
-								fk.AssociationType == AssociationType.OneToMany
-									? $"IEnumerable<{fk.OtherTable.TypeName}>" :
-								fk.CanBeNull
-									? $"{fk.OtherTable.TypeName}?" :
-									fk.OtherTable.TypeName,
-						})
-						.GroupBy(x => x.OtherName, StringComparer.Ordinal)
-						.SelectMany(g =>
-							g
-								.Index()
-								.Select(x => x.Index > 0
-									? x.Item with { OtherName = string.Create(provider: null, $"{x.Item.OtherName}{x.Index}") }
-									: x.Item
-								)
-						)
-						.OrderBy(x => x.OtherName, StringComparer.Ordinal)
-						.ToEquatableReadOnlyList(),
-				})
+									OtherType =
+										fk.AssociationType == AssociationType.OneToMany
+											? $"IEnumerable<{fk.OtherTable.TypeName}>"
+											: fk.CanBeNull
+												? $"{fk.OtherTable.TypeName}?"
+												: fk.OtherTable.TypeName,
+								}
+							)
+							.GroupBy(x => x.OtherName, StringComparer.Ordinal)
+							.SelectMany(g =>
+								g
+									.Index()
+									.Select(x => x.Index > 0
+										? x.Item with
+										{
+											OtherName = string.Create(provider: null, $"{x.Item.OtherName}{x.Index}"),
+										}
+										: x.Item
+									)
+							)
+							.OrderBy(x => x.OtherName, StringComparer.Ordinal)
+							.ToEquatableReadOnlyList(),
+					}
+				)
 				.OrderBy(x => x.TableName, StringComparer.Ordinal)
 				.ToList();
 
@@ -142,9 +146,8 @@ internal sealed partial class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Set
 			}
 
 #pragma warning disable CA1869 // Cache and reuse 'JsonSerializerOptions' instances
-			return JsonSerializer.Serialize(entities, new JsonSerializerOptions() { WriteIndented = true });
+			return JsonSerializer.Serialize(entities, new JsonSerializerOptions { WriteIndented = true });
 #pragma warning restore CA1869 // Cache and reuse 'JsonSerializerOptions' instances
-
 		}
 		finally
 		{
@@ -168,17 +171,17 @@ internal sealed partial class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Set
 		dataType switch
 		{
 			DataType.Char
-			or DataType.NChar => length > 1 ? "string" : "char",
+				or DataType.NChar => length > 1 ? "string" : "char",
 
 			DataType.VarChar
-			or DataType.Text
-			or DataType.NVarChar
-			or DataType.NText
-			or DataType.Json => "string",
+				or DataType.Text
+				or DataType.NVarChar
+				or DataType.NText
+				or DataType.Json => "string",
 
 			DataType.Binary
-			or DataType.VarBinary
-			or DataType.Blob => "byte[]",
+				or DataType.VarBinary
+				or DataType.Blob => "byte[]",
 
 			DataType.Guid => "global::System.Guid",
 
@@ -197,13 +200,13 @@ internal sealed partial class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Set
 			DataType.Double => "double",
 
 			DataType.Decimal
-			or DataType.Money => "decimal",
+				or DataType.Money => "decimal",
 
 			DataType.Date => "global::System.DateOnly",
 			DataType.Time => "global::System.TimeSpan",
 
 			DataType.DateTime
-			or DataType.DateTime2 => "global::System.DateTime",
+				or DataType.DateTime2 => "global::System.DateTime",
 
 			DataType.DateTimeOffset => "global::System.DateTimeOffset",
 
@@ -217,9 +220,6 @@ internal sealed partial class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Set
 
 		await conn.ExecuteAsync($"use master; create database {database};");
 	}
-
-	[GeneratedRegex(@"^go\r?$", RegexOptions.IgnoreCase | RegexOptions.Multiline, matchTimeoutMilliseconds: 1_000)]
-	private static partial Regex GoRegex { get; }
 
 	private static async Task LoadMigrationScripts(DataConnection conn, string dbName, IEnumerable<string> sqlFiles)
 	{
@@ -243,19 +243,18 @@ internal sealed partial class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Set
 
 		await conn.ExecuteAsync(
 			$"""
-			use master;
-			if exists (select * from sys.databases where name = '{database}')
-			begin
-				alter database {database} set single_user with rollback immediate;
-				drop database {database};
-			end
-			"""
+			 use master;
+			 if exists (select * from sys.databases where name = '{database}')
+			 begin
+			 	alter database {database} set single_user with rollback immediate;
+			 	drop database {database};
+			 end
+			 """
 		);
 	}
 
 	private static DataConnection GetSqlServerConnection(string connectionString, string database)
 	{
-
 		var builder = new SqlConnectionStringBuilder(connectionString)
 		{
 			InitialCatalog = database,
@@ -264,6 +263,19 @@ internal sealed partial class ScaffoldCommand : AsyncCommand<ScaffoldCommand.Set
 		return SqlServerTools.CreateDataConnection(
 			builder.ToString(),
 			SqlServerVersion.v2022,
-			SqlServerProvider.MicrosoftDataSqlClient);
+			SqlServerProvider.MicrosoftDataSqlClient
+		);
+	}
+
+	public sealed class Settings : CommandSettings
+	{
+		[CommandOption("--connection-string", isRequired: true)]
+		public required string ConnectionString { get; init; }
+
+		[CommandOption("--output-file", isRequired: true)]
+		public required string OutputFile { get; init; }
+
+		[CommandArgument(0, "<files>")]
+		public required string[] Files { get; init; }
 	}
 }

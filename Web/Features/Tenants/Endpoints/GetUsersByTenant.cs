@@ -14,6 +14,41 @@ namespace VsaTemplate.Web.Features.Tenants.Endpoints;
 [MapGet("/api/tenants/{tenantId}/users")]
 public sealed partial class GetUsersByTenant(DbContext context)
 {
+	private async ValueTask<Response> HandleAsync([AsParameters] Query query, CancellationToken token)
+	{
+		var memberships = await context.TenantRoleUsers
+			.Where(u => u.TenantRole.TenantId == query.TenantId && u.User.ApiKey == null)
+			.Select(u => new
+				{
+					u.UserId,
+					u.User.Name,
+					u.User.EmailAddress,
+					RoleId = u.TenantRoleId,
+					RoleName = u.TenantRole.Name,
+				}
+			)
+			.ToListAsync(token);
+
+		return new()
+		{
+			Users = memberships
+				.GroupBy(u => (u.UserId, u.Name, u.EmailAddress))
+				.Select(g => new User
+					{
+						UserId = g.Key.UserId,
+						Name = g.Key.Name,
+						EmailAddress = g.Key.EmailAddress,
+						Roles = g
+							.Select(u => new Role { RoleId = u.RoleId, Name = u.RoleName })
+							.OrderBy(r => r.Name, StringComparer.OrdinalIgnoreCase)
+							.ToList(),
+					}
+				)
+				.OrderBy(u => u.EmailAddress, StringComparer.OrdinalIgnoreCase)
+				.ToList(),
+		};
+	}
+
 	public sealed record Query : IAuthorizedRequest, ITenantRequest
 	{
 		public static TenantPermission TenantPermission => TenantPermission.UserManagement;
@@ -43,38 +78,5 @@ public sealed partial class GetUsersByTenant(DbContext context)
 		public required TenantRoleId RoleId { get; init; }
 
 		public required string Name { get; init; }
-	}
-
-	private async ValueTask<Response> HandleAsync([AsParameters] Query query, CancellationToken token)
-	{
-		var memberships = await context.TenantRoleUsers
-			.Where(u => u.TenantRole.TenantId == query.TenantId && u.User.ApiKey == null)
-			.Select(u => new
-			{
-				u.UserId,
-				u.User.Name,
-				u.User.EmailAddress,
-				RoleId = u.TenantRoleId,
-				RoleName = u.TenantRole.Name,
-			})
-			.ToListAsync(token);
-
-		return new()
-		{
-			Users = memberships
-				.GroupBy(u => (u.UserId, u.Name, u.EmailAddress))
-				.Select(g => new User
-				{
-					UserId = g.Key.UserId,
-					Name = g.Key.Name,
-					EmailAddress = g.Key.EmailAddress,
-					Roles = g
-						.Select(u => new Role { RoleId = u.RoleId, Name = u.RoleName })
-						.OrderBy(r => r.Name, StringComparer.OrdinalIgnoreCase)
-						.ToList(),
-				})
-				.OrderBy(u => u.EmailAddress, StringComparer.OrdinalIgnoreCase)
-				.ToList(),
-		};
 	}
 }

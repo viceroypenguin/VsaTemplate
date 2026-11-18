@@ -38,7 +38,7 @@ public sealed class LinqToDBXmlRepository(
 			await using var scope = ownedContext.GetScope(out var context);
 
 			await context.InsertAsync(
-				new Database.Models.DataProtectionKeys.DataProtectionKey()
+				new Database.Models.DataProtectionKeys.DataProtectionKey
 				{
 					FriendlyName = friendlyName,
 					Xml = element.ToString(SaveOptions.DisableFormatting),

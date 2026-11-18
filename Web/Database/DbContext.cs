@@ -41,6 +41,17 @@ public sealed partial class DbContext(
 	private static new readonly MappingSchema MappingSchema = BuildMappingSchema();
 	private readonly DbContextOptions _options = options.Value;
 
+	public ITable<Models.AccessControl.User>? SourceUsers =>
+		_options.UserSourceDatabase switch
+		{
+			null => null,
+
+			{ } db => this
+				.GetTable<Models.AccessControl.User>()
+				.SchemaName(name: null)
+				.DatabaseName(db),
+		};
+
 	private static string GetConnectionString(DbContextOptions options, DatabaseInitializationState initialization)
 	{
 		var conn = options.ConnectionString;
@@ -52,17 +63,6 @@ public sealed partial class DbContext(
 	}
 
 	private static partial MappingSchema BuildMappingSchema();
-
-	public ITable<Models.AccessControl.User>? SourceUsers =>
-		_options.UserSourceDatabase switch
-		{
-			null => null,
-
-			{ } db => this
-				.GetTable<Models.AccessControl.User>()
-				.SchemaName(name: null)
-				.DatabaseName(db),
-		};
 }
 
 [RegisterSingleton]

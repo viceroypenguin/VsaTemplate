@@ -23,21 +23,6 @@ public sealed partial class SaveOrganizationRole(
 	PermissionCacheInvalidator permissionCacheInvalidator
 )
 {
-	[Validate]
-	public sealed partial record Request : IAuthorizedRequest, IOrganizationRequest, IValidationTarget<Request>
-	{
-		public static OrganizationPermission OrganizationPermission => OrganizationPermission.UserManagement;
-
-		[FromRoute]
-		public required OrganizationId OrganizationId { get; init; }
-
-		[FromRoute]
-		public required OrganizationRoleId RoleId { get; init; }
-
-		[FromBody]
-		public required AddOrganizationRole.RequestBody Body { get; init; }
-	}
-
 	private async ValueTask HandleAsync([AsParameters] Request request, CancellationToken token)
 	{
 		var name = request.Body.Name.Trim();
@@ -49,11 +34,30 @@ public sealed partial class SaveOrganizationRole(
 		await using var transaction = await context.BeginTransactionAsync(IsolationLevel.Serializable, token);
 		var role = await OrganizationManagement.GetRole(context, request.OrganizationId, request.RoleId, token);
 		var oldPermissions = OrganizationManagement.ReadPermissions(role.PermissionsJson);
-		await OrganizationManagement.DemandDelegablePermissions(currentOrganizationUserService, request.OrganizationId, oldPermissions);
-		await OrganizationManagement.DemandDelegablePermissions(currentOrganizationUserService, request.OrganizationId, permissions);
 
-		if (oldPermissions.Contains(OrganizationPermission.Admin) && !permissions.Contains(OrganizationPermission.Admin))
-			await OrganizationManagement.EnsureAdministratorRemains(context, request.OrganizationId, removingUserId: null, request.RoleId, token);
+		await OrganizationManagement.DemandDelegablePermissions(
+			currentOrganizationUserService,
+			request.OrganizationId,
+			oldPermissions
+		);
+
+		await OrganizationManagement.DemandDelegablePermissions(
+			currentOrganizationUserService,
+			request.OrganizationId,
+			permissions
+		);
+
+		if (oldPermissions.Contains(OrganizationPermission.Admin) &&
+			!permissions.Contains(OrganizationPermission.Admin))
+		{
+			await OrganizationManagement.EnsureAdministratorRemains(
+				context,
+				request.OrganizationId,
+				removingUserId: null,
+				request.RoleId,
+				token
+			);
+		}
 
 		var userId = currentUserService.GetLoggedInUserId();
 
@@ -66,5 +70,20 @@ public sealed partial class SaveOrganizationRole(
 
 		await transaction.CommitAsync(token);
 		await permissionCacheInvalidator.InvalidateOrganization(request.OrganizationId);
+	}
+
+	[Validate]
+	public sealed partial record Request : IAuthorizedRequest, IOrganizationRequest, IValidationTarget<Request>
+	{
+		[FromRoute]
+		public required OrganizationRoleId RoleId { get; init; }
+
+		[FromBody]
+		public required AddOrganizationRole.RequestBody Body { get; init; }
+
+		public static OrganizationPermission OrganizationPermission => OrganizationPermission.UserManagement;
+
+		[FromRoute]
+		public required OrganizationId OrganizationId { get; init; }
 	}
 }

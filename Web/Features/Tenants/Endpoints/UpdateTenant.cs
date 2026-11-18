@@ -22,26 +22,6 @@ public sealed partial class UpdateTenant(
 	PermissionCacheInvalidator cacheInvalidator
 )
 {
-	[Validate]
-	public sealed partial record Request : IAuthorizedRequest, IValidationTarget<Request>
-	{
-		[FromRoute]
-		public required TenantId TenantId { get; init; }
-
-		[FromBody]
-		public required RequestBody Body { get; init; }
-	}
-
-	[Validate]
-	public sealed partial record RequestBody : IValidationTarget<RequestBody>
-	{
-		[NotEmpty]
-		[TrimmedMaxLength(200)]
-		public required string Name { get; init; }
-
-		public required bool IsActive { get; init; }
-	}
-
 	private async ValueTask HandleAsync([AsParameters] Request request, CancellationToken token)
 	{
 		var permissions = await administration.GetValue(
@@ -68,5 +48,25 @@ public sealed partial class UpdateTenant(
 			throw new NotFoundException(nameof(Database.Models.Tenant));
 
 		await cacheInvalidator.InvalidateTenant(request.TenantId);
+	}
+
+	[Validate]
+	public sealed partial record Request : IAuthorizedRequest, IValidationTarget<Request>
+	{
+		[FromRoute]
+		public required TenantId TenantId { get; init; }
+
+		[FromBody]
+		public required RequestBody Body { get; init; }
+	}
+
+	[Validate]
+	public sealed partial record RequestBody : IValidationTarget<RequestBody>
+	{
+		[NotEmpty]
+		[TrimmedMaxLength(200)]
+		public required string Name { get; init; }
+
+		public required bool IsActive { get; init; }
 	}
 }

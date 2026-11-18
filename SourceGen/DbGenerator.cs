@@ -51,12 +51,12 @@ public sealed partial class DbGenerator : IIncrementalGenerator
 			.Collect();
 
 		var map = allTypes
-			.Select(
-				(x, _) => x
-					.SelectMany(x => x.ColumnNames.Collection
-						.Select(cn => (ColumnName: cn, x.TypeName, x.IsEnum)))
-					.ToDictionary(x => x.ColumnName, x => (x.TypeName, x.IsEnum), StringComparer.Ordinal)
-					.ToEquatableDictionary()
+			.Select((x, _) => x
+				.SelectMany(x => x.ColumnNames.Collection
+					.Select(cn => (ColumnName: cn, x.TypeName, x.IsEnum))
+				)
+				.ToDictionary(x => x.ColumnName, x => (x.TypeName, x.IsEnum), StringComparer.Ordinal)
+				.ToEquatableDictionary()
 			);
 
 		var scaffold = context.AdditionalTextsProvider
@@ -77,7 +77,14 @@ public sealed partial class DbGenerator : IIncrementalGenerator
 
 		context.RegisterSourceOutput(
 			scaffold.Combine(map).Combine(rootNamespace.Combine(schemas)),
-			(spc, entity) => RenderEntity(spc, entity.Left.Left, entity.Left.Right, entity.Right.Left, entity.Right.Right, entityTemplate)
+			(spc, entity) => RenderEntity(
+				spc,
+				entity.Left.Left,
+				entity.Left.Right,
+				entity.Right.Left,
+				entity.Right.Right,
+				entityTemplate
+			)
 		);
 
 		var contextTemplate = Utility.GetScribanTemplate("DbScaffold.Context");
@@ -85,11 +92,12 @@ public sealed partial class DbGenerator : IIncrementalGenerator
 		context.RegisterSourceOutput(
 			scaffold
 				.Select((x, _) => new ContextProperty
-				{
-					PropertyName = x.PropertyName,
-					TypeName = x.TypeName,
-					SchemaName = x.SchemaName,
-				})
+					{
+						PropertyName = x.PropertyName,
+						TypeName = x.TypeName,
+						SchemaName = x.SchemaName,
+					}
+				)
 				.Collect()
 				.Combine(rootNamespace)
 				.Combine(schemas),
@@ -107,7 +115,8 @@ public sealed partial class DbGenerator : IIncrementalGenerator
 
 		context.RegisterSourceOutput(
 			syncEnums.Combine(map).Combine(rootNamespace),
-			action: (spc, x) => RenderEnum(spc, x.Left.Left, x.Left.Right, x.Right, perEnumTemplate));
+			action: (spc, x) => RenderEnum(spc, x.Left.Left, x.Left.Right, x.Right, perEnumTemplate)
+		);
 
 		var names = syncEnums
 			.Select((n, _) => n.Name)
@@ -119,7 +128,6 @@ public sealed partial class DbGenerator : IIncrementalGenerator
 			names.Combine(rootNamespace),
 			action: (spc, n) => RenderAllEnums(spc, n.Left, n.Right, allEnumsTemplate)
 		);
-
 	}
 
 	private static MappedType? TransformVogenValueObject(
@@ -132,13 +140,14 @@ public sealed partial class DbGenerator : IIncrementalGenerator
 
 		var otherNamesAttribute = symbol.GetAttributes()
 			.FirstOrDefault(a => a is
-			{
-				AttributeClass.Name: "AlternativeColumnNamesAttribute",
-				ConstructorArguments:
-				[
-					{ Kind: TypedConstantKind.Array }
-				],
-			});
+				{
+					AttributeClass.Name: "AlternativeColumnNamesAttribute",
+					ConstructorArguments:
+					[
+						{ Kind: TypedConstantKind.Array },
+					],
+				}
+			);
 
 		var otherNames = otherNamesAttribute switch
 		{

@@ -1,119 +1,122 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <Import Project="../Scaffold/Scaffold.targets" />
-  <Import Project="Secrets.targets" Condition="Exists('Secrets.targets')" />
+	<Import Project="../Scaffold/Scaffold.targets" />
+	<Import Project="Secrets.targets" Condition="Exists('Secrets.targets')" />
 
-  <PropertyGroup Label="Scaffolder">
-	<ScaffoldOutput>$(MSBuildThisFileDirectory)Database/Models/Scaffold.json</ScaffoldOutput>
-  </PropertyGroup>
-
-  <ItemGroup Label="Scaffolder">
-	<None Remove="Database/Scripts/*.sql" />
-	<EmbeddedResource Include="Database/Scripts/*.sql" Script="true" />
-
-	<AdditionalFiles Include="Database/Models/Scaffold.json" />
-  </ItemGroup>
-
-  <PropertyGroup>
-	<RootNamespace>VsaTemplate.Web</RootNamespace>
-	<BuildFrontend Condition="'$(BuildFrontend)' == ''">true</BuildFrontend>
-	<FrontendDirectory>$(MSBuildProjectDirectory)/ClientApp</FrontendDirectory>
-	<FrontendWebRoot>$(MSBuildProjectDirectory)/wwwroot/</FrontendWebRoot>
-	<!-- Generated assets are added after synchronization, when their filenames are current. -->
-	<DefaultItemExcludes>$(DefaultItemExcludes);ClientApp/node_modules/**;ClientApp/dist/**;wwwroot/**</DefaultItemExcludes>
-  </PropertyGroup>
-
-  <ItemGroup>
-	<Content Remove="ClientApp/**/*" />
-	<None Remove="ClientApp/**/*" />
-	<None Include="ClientApp/**/*" Exclude="ClientApp/node_modules/**/*;ClientApp/dist/**/*" />
-  </ItemGroup>
-
-  <ItemGroup Label="Usings">
-	<Using Include="Vogen" />
-  </ItemGroup>
-
-  <ItemGroup>
-	<ProjectReference Include="../Analyzers/Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-	<ProjectReference Include="../Scaffold/Scaffold.csproj" ReferenceOutputAssembly="false" />
-	<ProjectReference Include="../SourceGen/SourceGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-  </ItemGroup>
-
-  <ItemGroup>
-	<PackageReference Include="Immediate.Apis" />
-	<PackageReference Include="Immediate.Cache" />
-	<PackageReference Include="Immediate.Handlers" />
-	<PackageReference Include="Immediate.Injections" />
-	<PackageReference Include="Immediate.Validations" />
-	<PackageReference Include="linq2db" />
-	<PackageReference Include="Mailkit" />
-	<PackageReference Include="Microsoft.AspNetCore.OpenApi" />
-	<PackageReference Include="Microsoft.Data.SqlClient" />
-	<PackageReference Include="Resend" />
-	<PackageReference Include="Scalar.AspNetCore" />
-	<PackageReference Include="SimpleBase" />
-	<PackageReference Include="Serilog.AspNetCore" />
-	<PackageReference Include="Serilog.Enrichers.Environment" />
-	<PackageReference Include="Serilog.Enrichers.Thread" />
-	<PackageReference Include="Serilog.Exceptions" />
-	<PackageReference Include="Serilog.Exceptions.MsSqlServer" />
-	<PackageReference Include="Serilog.Exceptions.Refit" />
-	<PackageReference Include="Serilog.Sinks.Seq" />
-	<PackageReference Include="SuperLinq" />
-	<PackageReference Include="Vogen" />
-  </ItemGroup>
-
-  <ItemGroup>
-	<FrontendSource Include="$(MSBuildProjectFullPath)" />
-	<FrontendSource Include="$(FrontendDirectory)/index.html;$(FrontendDirectory)/package.json;$(FrontendDirectory)/package-lock.json" />
-	<FrontendSource Include="$(FrontendDirectory)/src/**/*;$(FrontendDirectory)/public/**/*" />
-	<FrontendSource Include="$(FrontendDirectory)/tsconfig*.json;$(FrontendDirectory)/*.config.*" />
-  </ItemGroup>
-
-  <Target Name="RestoreFrontend"
-	Inputs="$(FrontendDirectory)/package.json;$(FrontendDirectory)/package-lock.json"
-	Outputs="$(FrontendDirectory)/node_modules/.package-lock.json"
-	Condition="'$(DesignTimeBuild)' != 'true' and '$(BuildFrontend)' == 'true'">
-	<Exec Command="npm ci" WorkingDirectory="$(FrontendDirectory)" />
-  </Target>
-
-  <!-- A manifest also invalidates the build when a source file is removed. -->
-  <Target Name="CollectFrontendSources"
-	Condition="'$(DesignTimeBuild)' != 'true' and '$(BuildFrontend)' == 'true'">
-	<PropertyGroup>
-	  <FrontendBuildStamp>$(IntermediateOutputPath)frontend-build.stamp</FrontendBuildStamp>
-	  <FrontendSourceManifest>$(IntermediateOutputPath)frontend-sources.txt</FrontendSourceManifest>
+	<PropertyGroup Label="Scaffolder">
+		<ScaffoldOutput>$(MSBuildThisFileDirectory)Database/Models/Scaffold.json</ScaffoldOutput>
 	</PropertyGroup>
-	<MakeDir Directories="$(IntermediateOutputPath)" />
-	<WriteLinesToFile File="$(FrontendSourceManifest)" Lines="@(FrontendSource)" Overwrite="true" WriteOnlyWhenDifferent="true" />
-  </Target>
 
-  <Target Name="BuildReactApp"
-	DependsOnTargets="RestoreFrontend;CollectFrontendSources"
-	Inputs="@(FrontendSource);$(FrontendSourceManifest)"
-	Outputs="$(FrontendBuildStamp);$(FrontendDirectory)/dist/index.html"
-	Condition="'$(DesignTimeBuild)' != 'true' and '$(BuildFrontend)' == 'true'">
-	<Exec Command="npm run build" WorkingDirectory="$(FrontendDirectory)" />
-	<Touch Files="$(FrontendBuildStamp)" AlwaysCreate="true" />
-  </Target>
+	<ItemGroup Label="Scaffolder">
+		<None Remove="Database/Scripts/*.sql" />
+		<EmbeddedResource Include="Database/Scripts/*.sql" Script="true" />
 
-  <Target Name="IncludeFrontendAssets"
-	BeforeTargets="PrepareForBuild;ComputeFilesToPublish"
-	DependsOnTargets="BuildReactApp"
-	Condition="'$(DesignTimeBuild)' != 'true'">
-	<Error Condition="!Exists('$(FrontendDirectory)/dist/index.html')" Text="The React app has not been built. Run npm ci and npm run build in Web/ClientApp before using BuildFrontend=false." />
-	<ItemGroup>
-	  <FrontendOutput Include="$(FrontendDirectory)/dist/**/*" />
-	  <FrontendDestination Include="@(FrontendOutput->'$(FrontendWebRoot)%(RecursiveDir)%(Filename)%(Extension)')" />
-	  <StaleFrontendOutput Include="$(FrontendWebRoot)**/*" Exclude="@(FrontendDestination)" />
+		<AdditionalFiles Include="Database/Models/Scaffold.json" />
 	</ItemGroup>
-	<Delete Files="@(StaleFrontendOutput)" />
-	<Copy SourceFiles="@(FrontendOutput)" DestinationFiles="@(FrontendDestination)" SkipUnchangedFiles="true" />
-	<!-- Generated files must be added after copying on a clean checkout. -->
+
+	<PropertyGroup>
+		<RootNamespace>VsaTemplate.Web</RootNamespace>
+		<BuildFrontend Condition="'$(BuildFrontend)' == ''">true</BuildFrontend>
+		<FrontendDirectory>$(MSBuildProjectDirectory)/ClientApp</FrontendDirectory>
+		<FrontendWebRoot>$(MSBuildProjectDirectory)/wwwroot/</FrontendWebRoot>
+		<!-- Generated assets are added after synchronization, when their filenames are current. -->
+		<DefaultItemExcludes>$(DefaultItemExcludes);ClientApp/node_modules/**;ClientApp/dist/**;wwwroot/**</DefaultItemExcludes>
+	</PropertyGroup>
+
 	<ItemGroup>
-	  <Content Remove="wwwroot/**/*" />
-	  <Content Include="wwwroot/**/*" CopyToPublishDirectory="PreserveNewest" />
+		<Content Remove="ClientApp/**/*" />
+		<None Remove="ClientApp/**/*" />
+		<None Include="ClientApp/**/*" Exclude="ClientApp/node_modules/**/*;ClientApp/dist/**/*" />
 	</ItemGroup>
-  </Target>
+
+	<ItemGroup Label="Usings">
+		<Using Include="Vogen" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="../Analyzers/Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+		<ProjectReference Include="../Scaffold/Scaffold.csproj" ReferenceOutputAssembly="false" />
+		<ProjectReference Include="../SourceGen/SourceGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Immediate.Apis" />
+		<PackageReference Include="Immediate.Cache" />
+		<PackageReference Include="Immediate.Handlers" />
+		<PackageReference Include="Immediate.Injections" />
+		<PackageReference Include="Immediate.Validations" />
+		<PackageReference Include="linq2db" />
+		<PackageReference Include="Mailkit" />
+		<PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+		<PackageReference Include="Microsoft.Data.SqlClient" />
+		<PackageReference Include="Resend" />
+		<PackageReference Include="Scalar.AspNetCore" />
+		<PackageReference Include="SimpleBase" />
+		<PackageReference Include="Serilog.AspNetCore" />
+		<PackageReference Include="Serilog.Enrichers.Environment" />
+		<PackageReference Include="Serilog.Enrichers.Thread" />
+		<PackageReference Include="Serilog.Exceptions" />
+		<PackageReference Include="Serilog.Exceptions.MsSqlServer" />
+		<PackageReference Include="Serilog.Exceptions.Refit" />
+		<PackageReference Include="Serilog.Sinks.Seq" />
+		<PackageReference Include="SuperLinq" />
+		<PackageReference Include="Vogen" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<FrontendSource Include="$(MSBuildProjectFullPath)" />
+		<FrontendSource
+			Include="$(FrontendDirectory)/index.html;$(FrontendDirectory)/package.json;$(FrontendDirectory)/package-lock.json" />
+		<FrontendSource Include="$(FrontendDirectory)/src/**/*;$(FrontendDirectory)/public/**/*" />
+		<FrontendSource Include="$(FrontendDirectory)/tsconfig*.json;$(FrontendDirectory)/*.config.*" />
+	</ItemGroup>
+
+	<Target Name="RestoreFrontend"
+	        Inputs="$(FrontendDirectory)/package.json;$(FrontendDirectory)/package-lock.json"
+	        Outputs="$(FrontendDirectory)/node_modules/.package-lock.json"
+	        Condition="'$(DesignTimeBuild)' != 'true' and '$(BuildFrontend)' == 'true'">
+		<Exec Command="npm ci" WorkingDirectory="$(FrontendDirectory)" />
+	</Target>
+
+	<!-- A manifest also invalidates the build when a source file is removed. -->
+	<Target Name="CollectFrontendSources"
+	        Condition="'$(DesignTimeBuild)' != 'true' and '$(BuildFrontend)' == 'true'">
+		<PropertyGroup>
+			<FrontendBuildStamp>$(IntermediateOutputPath)frontend-build.stamp</FrontendBuildStamp>
+			<FrontendSourceManifest>$(IntermediateOutputPath)frontend-sources.txt</FrontendSourceManifest>
+		</PropertyGroup>
+		<MakeDir Directories="$(IntermediateOutputPath)" />
+		<WriteLinesToFile File="$(FrontendSourceManifest)" Lines="@(FrontendSource)" Overwrite="true"
+		                  WriteOnlyWhenDifferent="true" />
+	</Target>
+
+	<Target Name="BuildReactApp"
+	        DependsOnTargets="RestoreFrontend;CollectFrontendSources"
+	        Inputs="@(FrontendSource);$(FrontendSourceManifest)"
+	        Outputs="$(FrontendBuildStamp);$(FrontendDirectory)/dist/index.html"
+	        Condition="'$(DesignTimeBuild)' != 'true' and '$(BuildFrontend)' == 'true'">
+		<Exec Command="npm run build" WorkingDirectory="$(FrontendDirectory)" />
+		<Touch Files="$(FrontendBuildStamp)" AlwaysCreate="true" />
+	</Target>
+
+	<Target Name="IncludeFrontendAssets"
+	        BeforeTargets="PrepareForBuild;ComputeFilesToPublish"
+	        DependsOnTargets="BuildReactApp"
+	        Condition="'$(DesignTimeBuild)' != 'true'">
+		<Error Condition="!Exists('$(FrontendDirectory)/dist/index.html')"
+		       Text="The React app has not been built. Run npm ci and npm run build in Web/ClientApp before using BuildFrontend=false." />
+		<ItemGroup>
+			<FrontendOutput Include="$(FrontendDirectory)/dist/**/*" />
+			<FrontendDestination Include="@(FrontendOutput->'$(FrontendWebRoot)%(RecursiveDir)%(Filename)%(Extension)')" />
+			<StaleFrontendOutput Include="$(FrontendWebRoot)**/*" Exclude="@(FrontendDestination)" />
+		</ItemGroup>
+		<Delete Files="@(StaleFrontendOutput)" />
+		<Copy SourceFiles="@(FrontendOutput)" DestinationFiles="@(FrontendDestination)" SkipUnchangedFiles="true" />
+		<!-- Generated files must be added after copying on a clean checkout. -->
+		<ItemGroup>
+			<Content Remove="wwwroot/**/*" />
+			<Content Include="wwwroot/**/*" CopyToPublishDirectory="PreserveNewest" />
+		</ItemGroup>
+	</Target>
 
 </Project>

@@ -26,32 +26,6 @@ public sealed partial class SaveTenantRole(
 	PermissionCacheInvalidator cacheInvalidator
 )
 {
-	[Validate]
-	public sealed partial record Request : IAuthorizedRequest, ITenantRequest, IValidationTarget<Request>
-	{
-		public static TenantPermission TenantPermission => TenantPermission.UserManagement;
-
-		[FromRoute]
-		public required TenantId TenantId { get; init; }
-
-		[FromRoute]
-		public required TenantRoleId RoleId { get; init; }
-
-		[FromBody]
-		public required RequestBody RequestBody { get; init; }
-	}
-
-	[Validate]
-	public sealed partial record RequestBody : IValidationTarget<RequestBody>
-	{
-		[NotEmpty]
-		[TrimmedMaxLength(200)]
-		public required string Name { get; init; }
-
-		[NotEmpty]
-		public required IReadOnlyList<TenantPermission> Permissions { get; init; }
-	}
-
 	private async ValueTask HandleAsync([AsParameters] Request request, CancellationToken token)
 	{
 		var name = request.RequestBody.Name.Trim();
@@ -67,14 +41,22 @@ public sealed partial class SaveTenantRole(
 		await using var transaction = await context.BeginTransactionAsync(IsolationLevel.Serializable, token);
 
 		var role = await context.TenantRoles
-			.FirstOrDefaultAsync(r => r.TenantId == request.TenantId && r.TenantRoleId == request.RoleId, token)
+				.FirstOrDefaultAsync(r => r.TenantId == request.TenantId && r.TenantRoleId == request.RoleId, token)
 			?? throw new NotFoundException(nameof(Database.Models.TenantRole));
 
 		var oldPermissions = TenantManagement.ReadPermissions(role.PermissionsJson);
 		TenantManagement.EnsureCanGrant(actorPermissions, oldPermissions);
 
 		if (oldPermissions.Contains(TenantPermission.Admin) && !permissions.Contains(TenantPermission.Admin))
-			await TenantManagement.EnsureAdministratorRemains(context, request.TenantId, request.RoleId, excludedUserId: null, token);
+		{
+			await TenantManagement.EnsureAdministratorRemains(
+				context,
+				request.TenantId,
+				request.RoleId,
+				excludedUserId: null,
+				token
+			);
+		}
 
 		await context.TenantRoles
 			.Where(r => r.TenantId == request.TenantId && r.TenantRoleId == request.RoleId)
@@ -85,5 +67,31 @@ public sealed partial class SaveTenantRole(
 
 		await transaction.CommitAsync(token);
 		await cacheInvalidator.InvalidateTenant(request.TenantId);
+	}
+
+	[Validate]
+	public sealed partial record Request : IAuthorizedRequest, ITenantRequest, IValidationTarget<Request>
+	{
+		[FromRoute]
+		public required TenantRoleId RoleId { get; init; }
+
+		[FromBody]
+		public required RequestBody RequestBody { get; init; }
+
+		public static TenantPermission TenantPermission => TenantPermission.UserManagement;
+
+		[FromRoute]
+		public required TenantId TenantId { get; init; }
+	}
+
+	[Validate]
+	public sealed partial record RequestBody : IValidationTarget<RequestBody>
+	{
+		[NotEmpty]
+		[TrimmedMaxLength(200)]
+		public required string Name { get; init; }
+
+		[NotEmpty]
+		public required IReadOnlyList<TenantPermission> Permissions { get; init; }
 	}
 }

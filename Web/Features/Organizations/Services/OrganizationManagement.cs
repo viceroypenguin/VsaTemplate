@@ -31,7 +31,7 @@ internal static class OrganizationManagement
 		OrganizationRoleId roleId,
 		CancellationToken token
 	) => await context.OrganizationRoles
-		.FirstOrDefaultAsync(r => r.OrganizationId == organizationId && r.OrganizationRoleId == roleId, token)
+			.FirstOrDefaultAsync(r => r.OrganizationId == organizationId && r.OrganizationRoleId == roleId, token)
 		?? throw new NotFoundException(nameof(Database.Models.OrganizationRole));
 
 	public static async Task EnsureAdministratorRemains(
@@ -48,7 +48,8 @@ internal static class OrganizationManagement
 
 		var adminRoleIds = roles
 			.Where(r => (changingRoleId is null || r.OrganizationRoleId != changingRoleId.Value)
-				&& ReadPermissions(r.PermissionsJson).Contains(OrganizationPermission.Admin))
+				&& ReadPermissions(r.PermissionsJson).Contains(OrganizationPermission.Admin)
+			)
 			.Select(r => r.OrganizationRoleId)
 			.ToArray();
 
@@ -56,8 +57,10 @@ internal static class OrganizationManagement
 			.Where(u => adminRoleIds.Contains(u.OrganizationRoleId) && u.User.IsActive && u.User.ApiKey == null);
 
 		if (removingUserId is { } userId)
+		{
 			administrators = administrators
 				.Where(u => u.UserId != userId);
+		}
 
 		if (!await administrators.AnyAsync(token))
 			ConflictException.ThrowConflictException("An organization must retain at least one active administrator.");
@@ -69,7 +72,10 @@ internal static class OrganizationManagement
 		CancellationToken token
 	)
 	{
-		if (!await context.AccessControl.Users.AnyAsync(u => u.UserId == userId && u.IsActive && u.ApiKey == null, token))
+		if (!await context.AccessControl.Users.AnyAsync(
+				u => u.UserId == userId && u.IsActive && u.ApiKey == null,
+				token
+			))
 			NotFoundException.ThrowNotFoundException("User");
 	}
 }

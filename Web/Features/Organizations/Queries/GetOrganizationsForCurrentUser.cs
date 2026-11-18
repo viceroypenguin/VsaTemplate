@@ -9,12 +9,15 @@ public sealed partial class GetOrganizationsForCurrentUser(
 	CurrentUserService currentUserService
 )
 {
-	public sealed record Query;
-
-	private async ValueTask<IReadOnlyList<GetOrganizationsForUser.Organization>> HandleAsync(Query _, CancellationToken token)
+	private async ValueTask<IReadOnlyList<GetOrganizationsForUser.Organization>> HandleAsync(
+		Query _,
+		CancellationToken token
+	)
 	{
 		return currentUserService.GetCurrentUserId() is { } userId
 			? await getOrganizationsForUser.HandleAsync(new() { UserId = userId }, token)
 			: [];
 	}
+
+	public sealed record Query;
 }

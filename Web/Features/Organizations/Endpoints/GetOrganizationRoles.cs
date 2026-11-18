@@ -6,7 +6,6 @@ using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.AccessControl.Authorization;
 using VsaTemplate.Web.Features.Organizations.Authorization;
 using VsaTemplate.Web.Features.Organizations.Models;
-
 using VsaTemplate.Web.Features.Organizations.Services;
 
 namespace VsaTemplate.Web.Features.Organizations.Endpoints;
@@ -15,19 +14,6 @@ namespace VsaTemplate.Web.Features.Organizations.Endpoints;
 [MapGet("/api/organizations/{organizationId}/roles")]
 public sealed partial class GetOrganizationRoles(DbContext context)
 {
-	public sealed record Query : IAuthorizedRequest, IOrganizationRequest
-	{
-		public static OrganizationPermission OrganizationPermission => OrganizationPermission.UserManagement;
-
-		[FromRoute]
-		public required OrganizationId OrganizationId { get; init; }
-	}
-
-	public sealed record Response
-	{
-		public required IReadOnlyList<OrganizationRoleDetails> Roles { get; init; }
-	}
-
 	private async ValueTask<Response> HandleAsync([AsParameters] Query query, CancellationToken token)
 	{
 		var roles = await context.OrganizationRoles
@@ -40,12 +26,26 @@ public sealed partial class GetOrganizationRoles(DbContext context)
 		{
 			Roles = roles
 				.Select(r => new OrganizationRoleDetails
-				{
-					RoleId = r.OrganizationRoleId,
-					Name = r.Name,
-					Permissions = OrganizationManagement.ReadPermissions(r.PermissionsJson),
-				})
+					{
+						RoleId = r.OrganizationRoleId,
+						Name = r.Name,
+						Permissions = OrganizationManagement.ReadPermissions(r.PermissionsJson),
+					}
+				)
 				.ToList(),
 		};
+	}
+
+	public sealed record Query : IAuthorizedRequest, IOrganizationRequest
+	{
+		public static OrganizationPermission OrganizationPermission => OrganizationPermission.UserManagement;
+
+		[FromRoute]
+		public required OrganizationId OrganizationId { get; init; }
+	}
+
+	public sealed record Response
+	{
+		public required IReadOnlyList<OrganizationRoleDetails> Roles { get; init; }
 	}
 }

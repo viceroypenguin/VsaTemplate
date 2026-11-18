@@ -23,17 +23,6 @@ public sealed partial class RemoveUserFromTenant(
 	PermissionCacheInvalidator cacheInvalidator
 )
 {
-	public sealed record Request : IAuthorizedRequest, ITenantRequest
-	{
-		public static TenantPermission TenantPermission => TenantPermission.UserManagement;
-
-		[FromRoute]
-		public required TenantId TenantId { get; init; }
-
-		[FromRoute]
-		public required UserId UserId { get; init; }
-	}
-
 	private async ValueTask HandleAsync([AsParameters] Request request, CancellationToken token)
 	{
 		var actorId = currentUserService.GetLoggedInUserId();
@@ -56,7 +45,15 @@ public sealed partial class RemoveUserFromTenant(
 		TenantManagement.EnsureCanGrant(actorPermissions, permissions);
 
 		if (permissions.Contains(TenantPermission.Admin))
-			await TenantManagement.EnsureAdministratorRemains(context, request.TenantId, excludedRoleId: null, request.UserId, token);
+		{
+			await TenantManagement.EnsureAdministratorRemains(
+				context,
+				request.TenantId,
+				excludedRoleId: null,
+				request.UserId,
+				token
+			);
+		}
 
 		var memberships = context.TenantRoleUsers
 			.Where(u => u.UserId == request.UserId && u.TenantRole.TenantId == request.TenantId);
@@ -71,5 +68,16 @@ public sealed partial class RemoveUserFromTenant(
 		await transaction.CommitAsync(token);
 		await cacheInvalidator.InvalidateUser(request.UserId);
 		await cacheInvalidator.InvalidateTenant(request.TenantId);
+	}
+
+	public sealed record Request : IAuthorizedRequest, ITenantRequest
+	{
+		[FromRoute]
+		public required UserId UserId { get; init; }
+
+		public static TenantPermission TenantPermission => TenantPermission.UserManagement;
+
+		[FromRoute]
+		public required TenantId TenantId { get; init; }
 	}
 }

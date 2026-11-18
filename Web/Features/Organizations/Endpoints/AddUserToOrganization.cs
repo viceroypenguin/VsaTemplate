@@ -22,44 +22,50 @@ public sealed partial class AddUserToOrganization(
 	PermissionCacheInvalidator permissionCacheInvalidator
 )
 {
-	public sealed record Request : IAuthorizedRequest, IOrganizationRequest
-	{
-		public static OrganizationPermission OrganizationPermission => OrganizationPermission.UserManagement;
-
-		[FromRoute]
-		public required OrganizationId OrganizationId { get; init; }
-
-		[FromRoute]
-		public required OrganizationRoleId RoleId { get; init; }
-
-		[FromRoute]
-		public required UserId UserId { get; init; }
-	}
-
 	private async ValueTask HandleAsync([AsParameters] Request request, CancellationToken token)
 	{
 		await using var transaction = await context.BeginTransactionAsync(IsolationLevel.Serializable, token);
 		var role = await OrganizationManagement.GetRole(context, request.OrganizationId, request.RoleId, token);
 
-		await OrganizationManagement.DemandDelegablePermissions(currentOrganizationUserService, request.OrganizationId,
-			OrganizationManagement.ReadPermissions(role.PermissionsJson));
+		await OrganizationManagement.DemandDelegablePermissions(
+			currentOrganizationUserService,
+			request.OrganizationId,
+			OrganizationManagement.ReadPermissions(role.PermissionsJson)
+		);
 
 		await OrganizationManagement.EnsureActiveUser(context, request.UserId, token);
 
 		await context.OrganizationRoleUsers
-			.Merge().Using([
-			new Database.Models.OrganizationRoleUser
-			{
-				OrganizationRoleId = request.RoleId,
-				UserId = request.UserId,
-				EditedUserId = currentUserService.GetLoggedInUserId(),
-			},
-		])
+			.Merge()
+			.Using(
+				[
+					new Database.Models.OrganizationRoleUser
+					{
+						OrganizationRoleId = request.RoleId,
+						UserId = request.UserId,
+						EditedUserId = currentUserService.GetLoggedInUserId(),
+					},
+				]
+			)
 			.OnTargetKey()
 			.InsertWhenNotMatched()
 			.MergeAsync(token);
 
 		await transaction.CommitAsync(token);
 		await permissionCacheInvalidator.InvalidateOrganization(request.OrganizationId);
+	}
+
+	public sealed record Request : IAuthorizedRequest, IOrganizationRequest
+	{
+		[FromRoute]
+		public required OrganizationRoleId RoleId { get; init; }
+
+		[FromRoute]
+		public required UserId UserId { get; init; }
+
+		public static OrganizationPermission OrganizationPermission => OrganizationPermission.UserManagement;
+
+		[FromRoute]
+		public required OrganizationId OrganizationId { get; init; }
 	}
 }

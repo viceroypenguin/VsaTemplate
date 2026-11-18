@@ -22,16 +22,47 @@ public sealed partial class AddRoleToTenant(
 	DbContext context
 )
 {
+	private async ValueTask<Response> HandleAsync([AsParameters] Request request, CancellationToken token)
+	{
+		var name = request.RequestBody.Name.Trim();
+
+		var permissions = request.RequestBody.Permissions
+			.Distinct()
+			.ToList();
+
+		TenantManagement.EnsureCanGrant(
+			await currentTenantUserService.GetLoggedInUserPermissions(request.TenantId),
+			permissions
+		);
+
+		var userId = currentUserService.GetLoggedInUserId();
+
+		var roleId = TenantRoleId.From(
+			await context.InsertWithInt32IdentityAsync(
+				new Database.Models.TenantRole
+				{
+					TenantId = request.TenantId,
+					Name = name,
+					PermissionsJson = JsonSerializer.Serialize(permissions),
+					EditedUserId = userId,
+				},
+				token: token
+			)
+		);
+
+		return new() { RoleId = roleId };
+	}
+
 	[Validate]
 	public sealed partial record Request : IAuthorizedRequest, ITenantRequest, IValidationTarget<Request>
 	{
+		[FromBody]
+		public required RequestBody RequestBody { get; init; }
+
 		public static TenantPermission TenantPermission => TenantPermission.UserManagement;
 
 		[FromRoute]
 		public required TenantId TenantId { get; init; }
-
-		[FromBody]
-		public required RequestBody RequestBody { get; init; }
 	}
 
 	[Validate]
@@ -48,30 +79,5 @@ public sealed partial class AddRoleToTenant(
 	public sealed record Response
 	{
 		public required TenantRoleId RoleId { get; init; }
-	}
-
-	private async ValueTask<Response> HandleAsync([AsParameters] Request request, CancellationToken token)
-	{
-		var name = request.RequestBody.Name.Trim();
-
-		var permissions = request.RequestBody.Permissions
-			.Distinct()
-			.ToList();
-
-		TenantManagement.EnsureCanGrant(
-			await currentTenantUserService.GetLoggedInUserPermissions(request.TenantId), permissions);
-
-		var userId = currentUserService.GetLoggedInUserId();
-
-		var roleId = TenantRoleId.From(await context.InsertWithInt32IdentityAsync(
-			new Database.Models.TenantRole
-			{
-				TenantId = request.TenantId,
-				Name = name,
-				PermissionsJson = JsonSerializer.Serialize(permissions),
-				EditedUserId = userId,
-			}, token: token));
-
-		return new() { RoleId = roleId };
 	}
 }

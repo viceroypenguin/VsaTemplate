@@ -17,19 +17,6 @@ public sealed partial class ValidApiKeyCache
 [Handler]
 public sealed partial class GetApiKey(DbContext context, TimeProvider timeProvider)
 {
-	public sealed record Request : ISensitiveRequest
-	{
-		public required string ApiKey { get; init; }
-	}
-
-	public sealed record Response
-	{
-		public required bool IsValid { get; init; }
-		public required UserId? UserId { get; init; }
-		public required UserId? OwnerUserId { get; init; }
-		public required DateTimeOffset? Expiration { get; init; }
-	}
-
 	private async ValueTask<Response> HandleAsync(
 		Request request,
 		CancellationToken token
@@ -68,5 +55,18 @@ public sealed partial class GetApiKey(DbContext context, TimeProvider timeProvid
 			OwnerUserId = apiKey?.OwnerUserId,
 			Expiration = apiKey?.ExpirationDateTime,
 		};
+	}
+
+	public sealed record Request : ISensitiveRequest
+	{
+		public required string ApiKey { get; init; }
+	}
+
+	public sealed record Response
+	{
+		public required bool IsValid { get; init; }
+		public required UserId? UserId { get; init; }
+		public required UserId? OwnerUserId { get; init; }
+		public required DateTimeOffset? Expiration { get; init; }
 	}
 }

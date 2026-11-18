@@ -171,8 +171,11 @@ resharper_csharp_align_multiline_calls_chain = false
 resharper_csharp_align_multiline_argument = false
 resharper_csharp_align_multiline_parameter = false
 resharper_csharp_align_multiline_binary_expressions_chain = false
+resharper_csharp_outdent_binary_ops = false
+resharper_csharp_wrap_before_binary_opsign = true
 resharper_csharp_keep_existing_initializer_arrangement = true
 resharper_csharp_wrap_object_and_collection_initializer_style = chop_if_long
+resharper_csharp_alignment_tab_fill_style = optimal_fill
 
 # Use separate lines for multiline argument and parameter lists.
 resharper_csharp_keep_existing_invocation_parens_arrangement = true
@@ -182,13 +185,17 @@ resharper_csharp_wrap_after_declaration_lpar = true
 resharper_csharp_wrap_before_declaration_rpar = true
 resharper_csharp_wrap_after_primary_constructor_declaration_lpar = true
 resharper_csharp_wrap_before_primary_constructor_declaration_rpar = true
+resharper_csharp_trailing_comma_in_multiline_lists = true
+resharper_csharp_trailing_comma_in_singleline_lists = false
+resharper_csharp_force_attribute_style = separate
 
 # Separate multiline statements and record properties without padding block edges.
 resharper_csharp_blank_lines_before_multiline_statements = 1
 resharper_csharp_blank_lines_after_multiline_statements = 1
 resharper_csharp_remove_blank_lines_near_braces_in_code = true
 resharper_csharp_blank_lines_around_auto_property = 1
-resharper_csharp_blank_lines_around_single_line_auto_property = 1
+resharper_csharp_blank_lines_around_single_line_auto_property = 0
+resharper_csharp_blank_lines_around_single_line_accessor = 0
 resharper_csharp_place_accessorholder_attribute_on_same_line = false
 
 # Indentation preferences
@@ -277,6 +284,10 @@ csharp_style_prefer_top_level_statements = true:silent
 csharp_style_prefer_tuple_swap = true:suggestion
 csharp_style_prefer_utf8_string_literals = true:suggestion
 csharp_style_throw_expression = true:warning
+csharp_preferred_modifier_order = public, private, protected, internal, file, static, extern, new, virtual, abstract, sealed, override, readonly, unsafe, required, volatile, async
+resharper_csharp_object_creation_when_type_evident = target_typed
+resharper_csharp_object_creation_when_type_not_evident = target_typed
+resharper_csharp_csharp_null_checking_pattern_style = not_null_pattern
 
 # New Lines
 csharp_style_allow_embedded_statements_on_same_line_experimental = true:silent

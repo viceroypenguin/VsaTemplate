@@ -26,9 +26,11 @@ public sealed class PermissionCacheInvalidator(
 		var userIds = await context.TenantRoleUsers
 			.Where(u => u.TenantRole.TenantId == tenantId)
 			.Select(u => u.UserId)
-			.Union(context.OrganizationRoleUsers
-				.Where(u => u.OrganizationRole.Organization.TenantId == tenantId)
-				.Select(u => u.UserId))
+			.Union(
+				context.OrganizationRoleUsers
+					.Where(u => u.OrganizationRole.Organization.TenantId == tenantId)
+					.Select(u => u.UserId)
+			)
 			.ToListAsync(CancellationToken.None);
 
 		foreach (var userId in userIds)
@@ -75,13 +77,21 @@ public sealed class PermissionCacheInvalidator(
 			foreach (var tenantId in tenantIds)
 			{
 				tenantPermissions.RemoveValue(new() { UserId = id, TenantId = tenantId });
-				tenantAdministration.RemoveValue(new() { UserId = id, TenantId = tenantId });
+
+				tenantAdministration.RemoveValue(
+					new() { UserId = id, TenantId = tenantId }
+				);
 			}
 
 			foreach (var organizationId in organizationIds)
 			{
-				organizationPermissions.RemoveValue(new() { UserId = id, OrganizationId = organizationId });
-				organizationAdministration.RemoveValue(new() { UserId = id, OrganizationId = organizationId });
+				organizationPermissions.RemoveValue(
+					new() { UserId = id, OrganizationId = organizationId }
+				);
+
+				organizationAdministration.RemoveValue(
+					new() { UserId = id, OrganizationId = organizationId }
+				);
 			}
 		}
 	}

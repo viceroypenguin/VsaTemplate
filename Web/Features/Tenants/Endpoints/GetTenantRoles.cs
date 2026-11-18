@@ -14,6 +14,27 @@ namespace VsaTemplate.Web.Features.Tenants.Endpoints;
 [MapGet("/api/tenants/{tenantId}/roles")]
 public sealed partial class GetTenantRoles(DbContext context)
 {
+	private async ValueTask<Response> HandleAsync([AsParameters] Query query, CancellationToken token)
+	{
+		var roles = await context.TenantRoles
+			.Where(r => r.TenantId == query.TenantId)
+			.OrderBy(r => r.Name)
+			.ToListAsync(token);
+
+		return new()
+		{
+			Roles = roles
+				.Select(r => new Role
+					{
+						RoleId = r.TenantRoleId,
+						Name = r.Name,
+						Permissions = TenantManagement.ReadPermissions(r.PermissionsJson),
+					}
+				)
+				.ToList(),
+		};
+	}
+
 	public sealed record Query : IAuthorizedRequest, ITenantRequest
 	{
 		public static TenantPermission TenantPermission => TenantPermission.UserManagement;
@@ -34,25 +55,5 @@ public sealed partial class GetTenantRoles(DbContext context)
 		public required string Name { get; init; }
 
 		public required IReadOnlyList<TenantPermission> Permissions { get; init; }
-	}
-
-	private async ValueTask<Response> HandleAsync([AsParameters] Query query, CancellationToken token)
-	{
-		var roles = await context.TenantRoles
-			.Where(r => r.TenantId == query.TenantId)
-			.OrderBy(r => r.Name)
-			.ToListAsync(token);
-
-		return new()
-		{
-			Roles = roles
-				.Select(r => new Role
-				{
-					RoleId = r.TenantRoleId,
-					Name = r.Name,
-					Permissions = TenantManagement.ReadPermissions(r.PermissionsJson),
-				})
-				.ToList(),
-		};
 	}
 }

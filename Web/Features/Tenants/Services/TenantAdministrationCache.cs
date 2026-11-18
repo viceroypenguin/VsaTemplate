@@ -16,6 +16,16 @@ public sealed partial class TenantAdministrationCache
 [Handler]
 public sealed partial class GetTenantAdministrationPermissions(TenantPermissionReader permissions)
 {
+	private async ValueTask<Response> HandleAsync(Query query, CancellationToken token)
+	{
+		var effectivePermissions = await permissions.Read(query.UserId, query.TenantId, includeInactive: true, token);
+
+		return new()
+		{
+			Permissions = effectivePermissions.Contains(TenantPermission.Admin) ? [TenantPermission.Admin] : [],
+		};
+	}
+
 	public sealed record Query
 	{
 		public required UserId UserId { get; init; }
@@ -26,15 +36,5 @@ public sealed partial class GetTenantAdministrationPermissions(TenantPermissionR
 	public sealed record Response
 	{
 		public required IReadOnlyList<TenantPermission> Permissions { get; init; }
-	}
-
-	private async ValueTask<Response> HandleAsync(Query query, CancellationToken token)
-	{
-		var effectivePermissions = await permissions.Read(query.UserId, query.TenantId, includeInactive: true, token);
-
-		return new()
-		{
-			Permissions = effectivePermissions.Contains(TenantPermission.Admin) ? [TenantPermission.Admin] : [],
-		};
 	}
 }

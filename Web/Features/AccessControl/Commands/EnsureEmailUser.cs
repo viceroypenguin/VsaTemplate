@@ -14,15 +14,6 @@ public sealed partial class EnsureEmailUser(
 	DbContext context
 )
 {
-	[Validate]
-	public sealed partial record Command : IValidationTarget<Command>
-	{
-		[NotEmpty]
-		[TrimmedMaxLength(500)]
-		[BareEmailAddress]
-		public required string EmailAddress { get; init; }
-	}
-
 	private async ValueTask<UserId> HandleAsync(Command command, CancellationToken token)
 	{
 		var email = EmailLoginNormalization.NormalizeEmail(command.EmailAddress);
@@ -35,5 +26,14 @@ public sealed partial class EnsureEmailUser(
 		await transaction.CommitAsync(token);
 
 		return user.UserId;
+	}
+
+	[Validate]
+	public sealed partial record Command : IValidationTarget<Command>
+	{
+		[NotEmpty]
+		[TrimmedMaxLength(500)]
+		[BareEmailAddress]
+		public required string EmailAddress { get; init; }
 	}
 }

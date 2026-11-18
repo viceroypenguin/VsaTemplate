@@ -10,19 +10,6 @@ namespace VsaTemplate.SourceGen;
 
 public sealed partial class DbGenerator
 {
-	private sealed record SyncEnum
-	{
-		public required bool DeleteUnknown { get; init; }
-
-		public required string Table { get; init; }
-
-		public required string Name { get; init; }
-
-		public required string TypeName { get; init; }
-
-		public required EquatableReadOnlyList<(string, int?)> Values { get; init; }
-	}
-
 	private static SyncEnum TransformEnums(
 		GeneratorAttributeSyntaxContext context,
 		CancellationToken token
@@ -58,18 +45,18 @@ public sealed partial class DbGenerator
 		var attr = context.Attributes[0];
 
 		var deleteUnknown = (bool?)attr.NamedArguments
-			.FirstOrDefault(a => a.Key == "DeleteUnknownValues")
-			.Value.Value
+				.FirstOrDefault(a => a.Key == "DeleteUnknownValues")
+				.Value.Value
 			?? true;
 
 		var table = (string?)attr.NamedArguments
-			.FirstOrDefault(a => a.Key == "Table")
-			.Value.Value
+				.FirstOrDefault(a => a.Key == "Table")
+				.Value.Value
 			?? name;
 
 		token.ThrowIfCancellationRequested();
 
-		return new SyncEnum
+		return new()
 		{
 			DeleteUnknown = deleteUnknown,
 			Table = table,
@@ -91,15 +78,17 @@ public sealed partial class DbGenerator
 			? value.UnderlyingType
 			: "int";
 
-		var output = perEnumTemplate.Render(new
-		{
-			RootNamespace = rootNamespace,
-			node.DeleteUnknown,
-			node.Table,
-			node.Name,
-			Type = type,
-			values = node.Values.Collection,
-		});
+		var output = perEnumTemplate.Render(
+			new
+			{
+				RootNamespace = rootNamespace,
+				node.DeleteUnknown,
+				node.Table,
+				node.Name,
+				Type = type,
+				values = node.Values.Collection,
+			}
+		);
 
 		spc.AddSource($"{node.Name}.g.cs", SourceText.From(output, Encoding.UTF8));
 	}
@@ -111,12 +100,27 @@ public sealed partial class DbGenerator
 		Template allEnumsTemplate
 	)
 	{
-		var output = allEnumsTemplate.Render(new
-		{
-			Names = n,
-			RootNamespace = rootNamespace,
-		});
+		var output = allEnumsTemplate.Render(
+			new
+			{
+				Names = n,
+				RootNamespace = rootNamespace,
+			}
+		);
 
 		spc.AddSource("SyncAllEnums.g.cs", SourceText.From(output, Encoding.UTF8));
+	}
+
+	private sealed record SyncEnum
+	{
+		public required bool DeleteUnknown { get; init; }
+
+		public required string Table { get; init; }
+
+		public required string Name { get; init; }
+
+		public required string TypeName { get; init; }
+
+		public required EquatableReadOnlyList<(string, int?)> Values { get; init; }
 	}
 }

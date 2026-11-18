@@ -1,49 +1,49 @@
 <Project>
-  <PropertyGroup>
-    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
-    <NetSdkVersion>11.0.0</NetSdkVersion>
-  </PropertyGroup>
-  
-  <ItemGroup>
-    <PackageVersion Include="Humanizer" Version="3.0.10" />
-    <PackageVersion Include="Immediate.Apis" Version="6.5.0" />
-    <PackageVersion Include="Immediate.Cache" Version="2.4.0" />
-    <PackageVersion Include="Immediate.Handlers" Version="4.3.0" />
-    <PackageVersion Include="Immediate.Injections" Version="1.2.0" />
-    <PackageVersion Include="Immediate.Validations" Version="3.8.0" />
-    <PackageVersion Include="linq2db" Version="6.5.1" />
-    <PackageVersion Include="MailKit" Version="5.0.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(NetSdkVersion)" />
-    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="$(NetSdkVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="5.9.0" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.9.0" />
-    <PackageVersion Include="Microsoft.Data.SqlClient" Version="7.1.2" />
-    <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.12.0" />
-    <PackageVersion Include="Refit" Version="16.4.0" />
-    <PackageVersion Include="Resend" Version="0.26.0" />
-    <PackageVersion Include="Scalar.AspNetCore" Version="2.21.0" />
-    <PackageVersion Include="Scriban" Version="7.6.1" />
-    <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
-    <PackageVersion Include="Serilog.Enrichers.Environment" Version="3.0.1" />
-    <PackageVersion Include="Serilog.Enrichers.Thread" Version="4.0.0" />
-    <PackageVersion Include="Serilog.Exceptions" Version="8.4.0" />
-    <PackageVersion Include="Serilog.Exceptions.MsSqlServer" Version="8.4.0" />
-    <PackageVersion Include="Serilog.Exceptions.Refit" Version="8.4.0" />
-    <PackageVersion Include="Serilog.Sinks.Seq" Version="9.1.0" />
-    <PackageVersion Include="SimpleBase" Version="5.6.4" />
-    <PackageVersion Include="Spectre.Console.Cli" Version="0.57.2" />
-    <PackageVersion Include="SuperLinq" Version="6.4.1" />
-    <PackageVersion Include="Testcontainers" Version="4.16.0" />
-    <PackageVersion Include="Testcontainers.MsSql" Version="4.16.0" />
-    <PackageVersion Include="Vogen" Version="8.0.7" />
-    <PackageVersion Include="xunit.v3.mtp-v2" Version="4.0.3" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <GlobalPackageReference Include="AssemblyMetadata.Generators" Version="2.2.0" />
-    <GlobalPackageReference Include="Meziantou.Analyzer" Version="3.0.339" />
-    <GlobalPackageReference Include="Meziantou.Polyfill" Version="1.0.171" />
-    <GlobalPackageReference Include="MinVer" Version="8.0.0" PrivateAssets="All" />
-  </ItemGroup>
+	<PropertyGroup>
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+		<CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+		<NetSdkVersion>11.0.0</NetSdkVersion>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageVersion Include="Humanizer" Version="3.0.10" />
+		<PackageVersion Include="Immediate.Apis" Version="6.5.0" />
+		<PackageVersion Include="Immediate.Cache" Version="2.4.0" />
+		<PackageVersion Include="Immediate.Handlers" Version="4.3.0" />
+		<PackageVersion Include="Immediate.Injections" Version="1.2.0" />
+		<PackageVersion Include="Immediate.Validations" Version="3.8.0" />
+		<PackageVersion Include="linq2db" Version="6.5.1" />
+		<PackageVersion Include="MailKit" Version="5.0.0" />
+		<PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(NetSdkVersion)" />
+		<PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="$(NetSdkVersion)" />
+		<PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="5.9.0" />
+		<PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.9.0" />
+		<PackageVersion Include="Microsoft.Data.SqlClient" Version="7.1.2" />
+		<PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.12.0" />
+		<PackageVersion Include="Refit" Version="16.4.0" />
+		<PackageVersion Include="Resend" Version="0.26.0" />
+		<PackageVersion Include="Scalar.AspNetCore" Version="2.21.0" />
+		<PackageVersion Include="Scriban" Version="7.6.1" />
+		<PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
+		<PackageVersion Include="Serilog.Enrichers.Environment" Version="3.0.1" />
+		<PackageVersion Include="Serilog.Enrichers.Thread" Version="4.0.0" />
+		<PackageVersion Include="Serilog.Exceptions" Version="8.4.0" />
+		<PackageVersion Include="Serilog.Exceptions.MsSqlServer" Version="8.4.0" />
+		<PackageVersion Include="Serilog.Exceptions.Refit" Version="8.4.0" />
+		<PackageVersion Include="Serilog.Sinks.Seq" Version="9.1.0" />
+		<PackageVersion Include="SimpleBase" Version="5.6.4" />
+		<PackageVersion Include="Spectre.Console.Cli" Version="0.57.2" />
+		<PackageVersion Include="SuperLinq" Version="6.4.1" />
+		<PackageVersion Include="Testcontainers" Version="4.16.0" />
+		<PackageVersion Include="Testcontainers.MsSql" Version="4.16.0" />
+		<PackageVersion Include="Vogen" Version="8.0.7" />
+		<PackageVersion Include="xunit.v3.mtp-v2" Version="4.0.3" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<GlobalPackageReference Include="AssemblyMetadata.Generators" Version="2.2.0" />
+		<GlobalPackageReference Include="Meziantou.Analyzer" Version="3.0.339" />
+		<GlobalPackageReference Include="Meziantou.Polyfill" Version="1.0.171" />
+		<GlobalPackageReference Include="MinVer" Version="8.0.0" PrivateAssets="All" />
+	</ItemGroup>
 </Project>

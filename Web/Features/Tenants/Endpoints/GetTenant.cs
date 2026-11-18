@@ -14,6 +14,19 @@ namespace VsaTemplate.Web.Features.Tenants.Endpoints;
 [MapGet("/api/tenants/{tenantId}")]
 public sealed partial class GetTenant(DbContext context)
 {
+	private async ValueTask<Response> HandleAsync([AsParameters] Query query, CancellationToken token) =>
+		await context.Tenants
+			.Where(t => t.TenantId == query.TenantId)
+			.Select(t => new Response
+				{
+					TenantId = t.TenantId,
+					Name = t.Name,
+					IsActive = t.IsActive,
+				}
+			)
+			.FirstOrDefaultAsync(token)
+		?? throw new NotFoundException(nameof(Database.Models.Tenant));
+
 	public sealed record Query : IAuthorizedRequest, ITenantRequest
 	{
 		[FromRoute]
@@ -28,16 +41,4 @@ public sealed partial class GetTenant(DbContext context)
 
 		public required bool IsActive { get; init; }
 	}
-
-	private async ValueTask<Response> HandleAsync([AsParameters] Query query, CancellationToken token) =>
-		await context.Tenants
-			.Where(t => t.TenantId == query.TenantId)
-			.Select(t => new Response
-			{
-				TenantId = t.TenantId,
-				Name = t.Name,
-				IsActive = t.IsActive,
-			})
-			.FirstOrDefaultAsync(token)
-		?? throw new NotFoundException(nameof(Database.Models.Tenant));
 }

@@ -18,13 +18,23 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 	public async Task ReactShellAndAssetsArePublicWhileUnknownApiRoutesStayNotFound()
 	{
 		using var client = fixture.CreateAnonymousClient();
-		using var rootResponse = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
+
+		using var rootResponse = await client.GetAsync(
+			new Uri("/", UriKind.Relative),
+			TestContext.Current.CancellationToken
+		);
+
 		Assert.Equal(HttpStatusCode.OK, rootResponse.StatusCode);
 		Assert.Equal("text/html", rootResponse.Content.Headers.ContentType?.MediaType);
 		var html = await rootResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 		Assert.Contains("id=\"root\"", html, StringComparison.Ordinal);
 		Assert.DoesNotContain("_blazor", html, StringComparison.OrdinalIgnoreCase);
-		using var deepLink = await client.GetAsync(new Uri("/tenants/123", UriKind.Relative), TestContext.Current.CancellationToken);
+
+		using var deepLink = await client.GetAsync(
+			new Uri("/tenants/123", UriKind.Relative),
+			TestContext.Current.CancellationToken
+		);
+
 		Assert.Equal(HttpStatusCode.OK, deepLink.StatusCode);
 		Assert.Equal(html, await deepLink.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
 		await AssertStatusAsync(client, HttpMethod.Get, "/api/does-not-exist", HttpStatusCode.NotFound);
@@ -35,7 +45,12 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 		Assert.NotEqual(-1, sourceAttribute);
 		var sourceStart = sourceAttribute + "src=\"".Length;
 		var sourceEnd = sourceStart + html.AsSpan(sourceStart).IndexOf('"');
-		using var script = await client.GetAsync(new Uri(html[sourceStart..sourceEnd], UriKind.Relative), TestContext.Current.CancellationToken);
+
+		using var script = await client.GetAsync(
+			new Uri(html[sourceStart..sourceEnd], UriKind.Relative),
+			TestContext.Current.CancellationToken
+		);
+
 		Assert.Equal(HttpStatusCode.OK, script.StatusCode);
 		Assert.Contains("javascript", script.Content.Headers.ContentType?.MediaType ?? "", StringComparison.Ordinal);
 		Assert.NotEmpty(await script.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
@@ -45,15 +60,29 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 	public async Task AnonymousRequestsCannotReadTenantData()
 	{
 		using var client = fixture.CreateAnonymousClient();
-		using var response = await client.GetAsync(new Uri("/api/tenants", UriKind.Relative), TestContext.Current.CancellationToken);
+
+		using var response = await client.GetAsync(
+			new Uri("/api/tenants", UriKind.Relative),
+			TestContext.Current.CancellationToken
+		);
+
 		Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
 	}
 
 	[Fact]
 	public async Task MutationsRequireAnAntiforgeryToken()
 	{
-		using var client = await fixture.CreateClientAsync(await fixture.CreateUserAsync(), includeAntiforgeryToken: false);
-		using var response = await client.PostAsJsonAsync("/api/tenants/create", new { name = "Rejected" }, TestContext.Current.CancellationToken);
+		using var client = await fixture.CreateClientAsync(
+			await fixture.CreateUserAsync(),
+			includeAntiforgeryToken: false
+		);
+
+		using var response = await client.PostAsJsonAsync(
+			"/api/tenants/create",
+			new { name = "Rejected" },
+			TestContext.Current.CancellationToken
+		);
+
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 	}
 
@@ -63,8 +92,15 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 		using var client = await fixture.CreateClientAsync(await fixture.CreateUserAsync());
 		var otherUser = await fixture.CreateUserAsync();
 		client.DefaultRequestHeaders.Remove("X-Test-User");
-		client.DefaultRequestHeaders.Add("X-Test-User", otherUser.Value.ToString(System.Globalization.CultureInfo.InvariantCulture));
-		await AssertStatusAsync(client, HttpMethod.Post, "/api/tenants/create", HttpStatusCode.BadRequest, new { name = "Rejected" });
+		client.DefaultRequestHeaders.Add("X-Test-User", otherUser.Value.ToString(CultureInfo.InvariantCulture));
+
+		await AssertStatusAsync(
+			client,
+			HttpMethod.Post,
+			"/api/tenants/create",
+			HttpStatusCode.BadRequest,
+			new { name = "Rejected" }
+		);
 	}
 
 	[Fact]
@@ -85,15 +121,26 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 		var session = await GetAsync(client, "/api/session");
 		Assert.True(session.GetProperty("isAuthenticated").GetBoolean());
 
-		await AssertStatusAsync(client, HttpMethod.Post, "/api/users/apikey/create", HttpStatusCode.Forbidden,
-			new { permissions = ReadOnlyPermissions, lifetime = "01:00:00" });
+		await AssertStatusAsync(
+			client,
+			HttpMethod.Post,
+			"/api/users/apikey/create",
+			HttpStatusCode.Forbidden,
+			new { permissions = ReadOnlyPermissions, lifetime = "01:00:00" }
+		);
 	}
 
 	[Fact]
 	public async Task ApiKeyCreationStoresTheRequestedPermissionSubset()
 	{
 		using var owner = await fixture.CreateClientAsync(await fixture.CreateUserAsync(isAdministrator: true));
-		var result = await PostAsync(owner, "/api/users/apikey/create", new { permissions = ReadOnlyPermissions, lifetime = "01:00:00" });
+
+		var result = await PostAsync(
+			owner,
+			"/api/users/apikey/create",
+			new { permissions = ReadOnlyPermissions, lifetime = "01:00:00" }
+		);
+
 		var permissions = await fixture.ReadApiKeyPermissionsAsync(result.GetProperty("apiKey").GetString()!);
 
 		Assert.Equal(Permission.None, Assert.Single(permissions));
@@ -116,17 +163,35 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 	{
 		var ownerId = await fixture.CreateUserAsync(isAdministrator: true);
 		using var owner = await fixture.CreateClientAsync(ownerId);
-		var named = await PostAsync(owner, "/api/users/apikey/create",
-			new { permissions = AdministratorPermissions, lifetime = "01:00:00", note = "  Release automation  " });
-		var unnamed = await PostAsync(owner, "/api/users/apikey/create",
-			new { permissions = ReadOnlyPermissions, lifetime = "01:00:00" });
+
+		var named = await PostAsync(
+			owner,
+			"/api/users/apikey/create",
+			new { permissions = AdministratorPermissions, lifetime = "01:00:00", note = "  Release automation  " }
+		);
+
+		var unnamed = await PostAsync(
+			owner,
+			"/api/users/apikey/create",
+			new { permissions = ReadOnlyPermissions, lifetime = "01:00:00" }
+		);
+
 		var namedKey = named.GetProperty("apiKey").GetString()!;
 		var unnamedKey = unnamed.GetProperty("apiKey").GetString()!;
 		var expired = await fixture.CreateApiKeyAsync(ownerId, DateTimeOffset.UtcNow.AddMinutes(-1));
-		var unrelated = await fixture.CreateApiKeyAsync(await fixture.CreateUserAsync(), DateTimeOffset.UtcNow.AddHours(1));
 
-		await AssertStatusAsync(owner, HttpMethod.Post, "/api/users/apikey/create", HttpStatusCode.BadRequest,
-			new { permissions = ReadOnlyPermissions, lifetime = "01:00:00", note = new string('a', 201) });
+		var unrelated = await fixture.CreateApiKeyAsync(
+			await fixture.CreateUserAsync(),
+			DateTimeOffset.UtcNow.AddHours(1)
+		);
+
+		await AssertStatusAsync(
+			owner,
+			HttpMethod.Post,
+			"/api/users/apikey/create",
+			HttpStatusCode.BadRequest,
+			new { permissions = ReadOnlyPermissions, lifetime = "01:00:00", note = new string('a', 201) }
+		);
 
 		var listing = await GetAsync(owner, "/api/users/apikey");
 		var keys = listing.GetProperty("apiKeys").EnumerateArray().ToArray();
@@ -179,7 +244,10 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 		Assert.False(isActive);
 		Assert.NotEqual(key, emailAddress, StringComparer.Ordinal);
 
-		var remaining = Assert.Single((await GetAsync(owner, "/api/users/apikey")).GetProperty("apiKeys").EnumerateArray());
+		var remaining = Assert.Single(
+			(await GetAsync(owner, "/api/users/apikey")).GetProperty("apiKeys").EnumerateArray()
+		);
+
 		Assert.Equal(retainedKey[^3..], remaining.GetProperty("keySuffix").GetString());
 		using var retainedKeyClient = fixture.CreateApiKeyClient(retainedKey);
 		Assert.True((await GetAsync(retainedKeyClient, "/api/session")).GetProperty("isAuthenticated").GetBoolean());
@@ -191,12 +259,30 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 		using var owner = await fixture.CreateClientAsync(await fixture.CreateUserAsync());
 		var tenantId = await CreateTenantAsync(owner);
 		var roleId = await GetOnlyRoleIdAsync(owner, $"/api/tenants/{tenantId}/roles");
-		var created = await PostAsync(owner, "/api/users/apikey/create", new { permissions = ReadOnlyPermissions, lifetime = "01:00:00" });
+
+		var created = await PostAsync(
+			owner,
+			"/api/users/apikey/create",
+			new { permissions = ReadOnlyPermissions, lifetime = "01:00:00" }
+		);
+
 		var key = created.GetProperty("apiKey").GetString()!;
 		var keyUserId = await fixture.ReadApiKeyUserIdAsync(key);
-		await AssertStatusAsync(owner, HttpMethod.Put, $"/api/tenants/{tenantId}/roles/{roleId}/users/{keyUserId.Value}", HttpStatusCode.NotFound);
+
+		await AssertStatusAsync(
+			owner,
+			HttpMethod.Put,
+			$"/api/tenants/{tenantId}/roles/{roleId}/users/{keyUserId.Value}",
+			HttpStatusCode.NotFound
+		);
+
 		var users = await GetAsync(owner, $"/api/tenants/{tenantId}/users");
-		Assert.DoesNotContain(users.GetProperty("users").EnumerateArray(), u => u.GetProperty("userId").GetInt32() == keyUserId.Value);
+
+		Assert.DoesNotContain(
+			users.GetProperty("users").EnumerateArray(),
+			u => u.GetProperty("userId").GetInt32() == keyUserId.Value
+		);
+
 		Assert.DoesNotContain(key, users.GetRawText(), StringComparison.Ordinal);
 	}
 
@@ -208,15 +294,19 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 		var created = await PostAsync(owner, "/api/tenants/create", new { name = "  Acme  " });
 		var tenantId = created.GetProperty("tenantId").GetInt32();
 
-		var keys = created.GetProperty("recoveryKeys").EnumerateArray()
+		var keys = created.GetProperty("recoveryKeys")
+			.EnumerateArray()
 			.Select(k => k.GetString())
 			.ToArray();
 
 		Assert.Equal(12, keys.Length);
 
-		Assert.Equal(12, keys
-			.Distinct(StringComparer.Ordinal)
-			.Count());
+		Assert.Equal(
+			12,
+			keys
+				.Distinct(StringComparer.Ordinal)
+				.Count()
+		);
 
 		Assert.All(keys, key => Assert.False(string.IsNullOrWhiteSpace(key)));
 
@@ -238,7 +328,13 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 	public async Task TenantNamesMustContainText(string name)
 	{
 		using var owner = await fixture.CreateClientAsync(await fixture.CreateUserAsync());
-		using var response = await owner.PostAsJsonAsync("/api/tenants/create", new { name }, TestContext.Current.CancellationToken);
+
+		using var response = await owner.PostAsJsonAsync(
+			"/api/tenants/create",
+			new { name },
+			TestContext.Current.CancellationToken
+		);
+
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 	}
 
@@ -246,7 +342,13 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 	public async Task TenantNamesCannotExceedDatabaseLimit()
 	{
 		using var owner = await fixture.CreateClientAsync(await fixture.CreateUserAsync());
-		using var response = await owner.PostAsJsonAsync("/api/tenants/create", new { name = new string('x', 201) }, TestContext.Current.CancellationToken);
+
+		using var response = await owner.PostAsJsonAsync(
+			"/api/tenants/create",
+			new { name = new string('x', 201) },
+			TestContext.Current.CancellationToken
+		);
+
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 	}
 
@@ -278,9 +380,20 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 		var first = await CreateTenantAsync(owner);
 		var second = await CreateTenantAsync(owner);
 		var foreignRole = await GetOnlyRoleIdAsync(owner, $"/api/tenants/{second}/roles");
-		await AssertStatusAsync(owner, HttpMethod.Put, $"/api/tenants/{first}/roles/{foreignRole}/users/{memberId.Value}", HttpStatusCode.NotFound);
+
+		await AssertStatusAsync(
+			owner,
+			HttpMethod.Put,
+			$"/api/tenants/{first}/roles/{foreignRole}/users/{memberId.Value}",
+			HttpStatusCode.NotFound
+		);
+
 		var members = await GetAsync(owner, $"/api/tenants/{second}/users");
-		Assert.DoesNotContain(members.GetProperty("users").EnumerateArray(), u => u.GetProperty("userId").GetInt32() == memberId.Value);
+
+		Assert.DoesNotContain(
+			members.GetProperty("users").EnumerateArray(),
+			u => u.GetProperty("userId").GetInt32() == memberId.Value
+		);
 	}
 
 	[Fact]
@@ -292,11 +405,23 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 		var tenantId = await CreateTenantAsync(owner);
 		var route = $"/api/tenants/{tenantId}";
 		await AssertStatusAsync(member, HttpMethod.Get, $"{route}/roles", HttpStatusCode.Forbidden);
-		var createdRole = await PutAsync(owner, $"{route}/roles", new { name = "Managers", permissions = UserManagementPermissions });
+
+		var createdRole = await PutAsync(
+			owner,
+			$"{route}/roles",
+			new { name = "Managers", permissions = UserManagementPermissions }
+		);
+
 		var roleId = createdRole.GetProperty("roleId").GetInt32();
 		await PutAsync(owner, $"{route}/roles/{roleId}/users/{memberId.Value}");
 		await GetAsync(member, $"{route}/roles");
-		await PutAsync(owner, $"{route}/roles/{roleId}", new { name = "Organization managers", permissions = OrganizationManagementPermissions });
+
+		await PutAsync(
+			owner,
+			$"{route}/roles/{roleId}",
+			new { name = "Organization managers", permissions = OrganizationManagementPermissions }
+		);
+
 		await AssertStatusAsync(member, HttpMethod.Get, $"{route}/roles", HttpStatusCode.Forbidden);
 		await GetAsync(member, $"{route}/organizations");
 		await DeleteAsync(owner, $"{route}/users/{memberId.Value}");
@@ -312,10 +437,29 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 		var tenantId = await CreateTenantAsync(owner);
 		var route = $"/api/tenants/{tenantId}";
 		var ownerRole = await GetOnlyRoleIdAsync(owner, $"{route}/roles");
-		var role = await PutAsync(owner, $"{route}/roles", new { name = "Managers", permissions = UserManagementPermissions });
+
+		var role = await PutAsync(
+			owner,
+			$"{route}/roles",
+			new { name = "Managers", permissions = UserManagementPermissions }
+		);
+
 		await PutAsync(owner, $"{route}/roles/{role.GetProperty("roleId").GetInt32()}/users/{managerId.Value}");
-		await AssertStatusAsync(manager, HttpMethod.Put, $"{route}/roles", HttpStatusCode.Forbidden, new { name = "Escalated", permissions = AdministratorPermissions });
-		await AssertStatusAsync(manager, HttpMethod.Put, $"{route}/roles/{ownerRole}/users/{managerId.Value}", HttpStatusCode.Forbidden);
+
+		await AssertStatusAsync(
+			manager,
+			HttpMethod.Put,
+			$"{route}/roles",
+			HttpStatusCode.Forbidden,
+			new { name = "Escalated", permissions = AdministratorPermissions }
+		);
+
+		await AssertStatusAsync(
+			manager,
+			HttpMethod.Put,
+			$"{route}/roles/{ownerRole}/users/{managerId.Value}",
+			HttpStatusCode.Forbidden
+		);
 	}
 
 	[Fact]
@@ -327,7 +471,15 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 		var route = $"/api/tenants/{tenantId}";
 		var roleId = await GetOnlyRoleIdAsync(owner, $"{route}/roles");
 		await AssertStatusAsync(owner, HttpMethod.Delete, $"{route}/users/{ownerId.Value}", HttpStatusCode.Conflict);
-		await AssertStatusAsync(owner, HttpMethod.Put, $"{route}/roles/{roleId}", HttpStatusCode.Conflict, new { name = "Former owners", permissions = UserManagementPermissions });
+
+		await AssertStatusAsync(
+			owner,
+			HttpMethod.Put,
+			$"{route}/roles/{roleId}",
+			HttpStatusCode.Conflict,
+			new { name = "Former owners", permissions = UserManagementPermissions }
+		);
+
 		await GetAsync(owner, $"{route}/roles");
 	}
 
@@ -346,10 +498,35 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 		Assert.Equal(tenantId, organization.GetProperty("tenantId").GetInt32());
 		Assert.Contains("Admin", Strings(organization.GetProperty("permissions")), StringComparer.Ordinal);
 		var self = await GetAsync(owner, "/api/organizations");
-		Assert.Contains(self.GetProperty("organizations").EnumerateArray(), o => o.GetProperty("organizationId").GetInt32() == organizationId);
-		await AssertStatusAsync(outsider, HttpMethod.Get, $"/api/tenants/{tenantId}/organizations", HttpStatusCode.Forbidden);
-		await AssertStatusAsync(outsider, HttpMethod.Put, $"/api/tenants/{tenantId}/organizations", HttpStatusCode.Forbidden, new { name = "Rejected" });
-		await AssertStatusAsync(outsider, HttpMethod.Put, $"/api/organizations/{organizationId}", HttpStatusCode.Forbidden, new { name = "Rejected", isActive = true });
+
+		Assert.Contains(
+			self.GetProperty("organizations").EnumerateArray(),
+			o => o.GetProperty("organizationId").GetInt32() == organizationId
+		);
+
+		await AssertStatusAsync(
+			outsider,
+			HttpMethod.Get,
+			$"/api/tenants/{tenantId}/organizations",
+			HttpStatusCode.Forbidden
+		);
+
+		await AssertStatusAsync(
+			outsider,
+			HttpMethod.Put,
+			$"/api/tenants/{tenantId}/organizations",
+			HttpStatusCode.Forbidden,
+			new { name = "Rejected" }
+		);
+
+		await AssertStatusAsync(
+			outsider,
+			HttpMethod.Put,
+			$"/api/organizations/{organizationId}",
+			HttpStatusCode.Forbidden,
+			new { name = "Rejected", isActive = true }
+		);
+
 		var outsiderOrganizations = await GetAsync(outsider, "/api/organizations");
 		Assert.Empty(outsiderOrganizations.GetProperty("organizations").EnumerateArray());
 	}
@@ -362,13 +539,19 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 		var organizationId = await CreateOrganizationAsync(owner, tenantId);
 		await PutAsync(owner, $"/api/organizations/{organizationId}", new { name = "Renamed", isActive = false });
 
-		var inactive = Assert.Single((await GetAsync(owner, $"/api/tenants/{tenantId}/organizations")).GetProperty("organizations").EnumerateArray());
+		var inactive = Assert.Single(
+			(await GetAsync(owner, $"/api/tenants/{tenantId}/organizations")).GetProperty("organizations")
+			.EnumerateArray()
+		);
 
 		Assert.Equal("Renamed", inactive.GetProperty("name").GetString());
 		Assert.False(inactive.GetProperty("isActive").GetBoolean());
 		await PutAsync(owner, $"/api/organizations/{organizationId}", new { name = "Renamed", isActive = true });
 
-		var active = Assert.Single((await GetAsync(owner, $"/api/tenants/{tenantId}/organizations")).GetProperty("organizations").EnumerateArray());
+		var active = Assert.Single(
+			(await GetAsync(owner, $"/api/tenants/{tenantId}/organizations")).GetProperty("organizations")
+			.EnumerateArray()
+		);
 
 		Assert.True(active.GetProperty("isActive").GetBoolean());
 	}
@@ -384,7 +567,13 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 		var memberId = await fixture.CreateUserAsync();
 		var tenantRole = await GetOnlyRoleIdAsync(owner, $"/api/tenants/{tenantId}/roles");
 		await PutAsync(owner, $"/api/tenants/{tenantId}/roles/{tenantRole}/users/{memberId.Value}");
-		await AssertStatusAsync(owner, HttpMethod.Put, $"/api/organizations/{first}/roles/{foreignRole}/users/{memberId.Value}", HttpStatusCode.NotFound);
+
+		await AssertStatusAsync(
+			owner,
+			HttpMethod.Put,
+			$"/api/organizations/{first}/roles/{foreignRole}/users/{memberId.Value}",
+			HttpStatusCode.NotFound
+		);
 	}
 
 	[Fact]
@@ -401,10 +590,19 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 		await GetAsync(member, $"/api/organizations/{organizationId}/roles");
 		await AssertStatusAsync(member, HttpMethod.Get, $"/api/tenants/{tenantId}", HttpStatusCode.Forbidden);
 		Assert.Empty((await GetAsync(member, "/api/tenants")).GetProperty("tenants").EnumerateArray());
-		Assert.Contains((await GetAsync(member, "/api/organizations")).GetProperty("organizations").EnumerateArray(), o => o.GetProperty("organizationId").GetInt32() == organizationId);
+
+		Assert.Contains(
+			(await GetAsync(member, "/api/organizations")).GetProperty("organizations").EnumerateArray(),
+			o => o.GetProperty("organizationId").GetInt32() == organizationId
+		);
+
 		await PutAsync(owner, $"/api/tenants/{tenantId}", new { name = "Inactive tenant", isActive = false });
 		await GetAsync(member, $"/api/organizations/{organizationId}/roles");
-		Assert.Contains((await GetAsync(member, "/api/organizations")).GetProperty("organizations").EnumerateArray(), o => o.GetProperty("organizationId").GetInt32() == organizationId);
+
+		Assert.Contains(
+			(await GetAsync(member, "/api/organizations")).GetProperty("organizations").EnumerateArray(),
+			o => o.GetProperty("organizationId").GetInt32() == organizationId
+		);
 	}
 
 	[Fact]
@@ -417,7 +615,14 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 		var route = $"/api/organizations/{organizationId}";
 		var roleId = await GetOnlyRoleIdAsync(owner, $"{route}/roles");
 		await AssertStatusAsync(owner, HttpMethod.Delete, $"{route}/users/{ownerId.Value}", HttpStatusCode.Conflict);
-		await AssertStatusAsync(owner, HttpMethod.Put, $"{route}/roles/{roleId}", HttpStatusCode.Conflict, new { name = "Former administrators", permissions = UserManagementPermissions });
+
+		await AssertStatusAsync(
+			owner,
+			HttpMethod.Put,
+			$"{route}/roles/{roleId}",
+			HttpStatusCode.Conflict,
+			new { name = "Former administrators", permissions = UserManagementPermissions }
+		);
 	}
 
 	[Fact]
@@ -426,22 +631,53 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 		using var owner = await fixture.CreateClientAsync(await fixture.CreateUserAsync());
 		var tenantId = await CreateTenantAsync(owner);
 		var organizationId = await CreateOrganizationAsync(owner, tenantId);
-		var tenantRole = await PutAsync(owner, $"/api/tenants/{tenantId}/roles", new { name = "Members", permissions = ReadOnlyPermissions });
+
+		var tenantRole = await PutAsync(
+			owner,
+			$"/api/tenants/{tenantId}/roles",
+			new { name = "Members", permissions = ReadOnlyPermissions }
+		);
+
 		var email = $"{Guid.NewGuid():N}@example.test";
-		var added = await PutAsync(owner, $"/api/tenants/{tenantId}/users", new { emailAddress = email, roleId = tenantRole.GetProperty("roleId").GetInt32() });
+
+		var added = await PutAsync(
+			owner,
+			$"/api/tenants/{tenantId}/users",
+			new { emailAddress = email, roleId = tenantRole.GetProperty("roleId").GetInt32() }
+		);
+
 		var memberId = added.GetProperty("userId").GetInt32();
 		using var member = await fixture.CreateClientAsync(UserId.From(memberId));
 		var route = $"/api/organizations/{organizationId}";
 		await AssertStatusAsync(member, HttpMethod.Get, $"{route}/roles", HttpStatusCode.Forbidden);
-		var role = await PostAsync(owner, $"{route}/roles/create", new { name = "Managers", permissions = UserManagementPermissions });
+
+		var role = await PostAsync(
+			owner,
+			$"{route}/roles/create",
+			new { name = "Managers", permissions = UserManagementPermissions }
+		);
+
 		var roleId = role.GetProperty("roleId").GetInt32();
 		var organizationMember = await PutAsync(owner, $"{route}/users", new { emailAddress = email, roleId });
 		Assert.Equal(memberId, organizationMember.GetProperty("userId").GetInt32());
 		await GetAsync(member, $"{route}/roles");
-		await AssertStatusAsync(member, HttpMethod.Post, $"{route}/roles/create", HttpStatusCode.Forbidden, new { name = "Escalated", permissions = AdministratorPermissions });
+
+		await AssertStatusAsync(
+			member,
+			HttpMethod.Post,
+			$"{route}/roles/create",
+			HttpStatusCode.Forbidden,
+			new { name = "Escalated", permissions = AdministratorPermissions }
+		);
+
 		await PutAsync(owner, $"{route}/roles/{roleId}", new { name = "Readers", permissions = ReadOnlyPermissions });
 		await AssertStatusAsync(member, HttpMethod.Get, $"{route}/roles", HttpStatusCode.Forbidden);
-		Assert.Contains((await GetAsync(member, "/api/organizations")).GetProperty("organizations").EnumerateArray(), o => o.GetProperty("organizationId").GetInt32() == organizationId);
+
+		Assert.Contains(
+			(await GetAsync(member, "/api/organizations")).GetProperty("organizations").EnumerateArray(),
+			o => o.GetProperty("organizationId").GetInt32() == organizationId
+		);
+
 		await DeleteAsync(owner, $"{route}/users/{memberId}");
 		var self = await GetAsync(member, "/api/organizations");
 		Assert.Empty(self.GetProperty("organizations").EnumerateArray());
@@ -455,14 +691,38 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 		using var member = await fixture.CreateClientAsync(memberId);
 		var tenantId = await CreateTenantAsync(owner);
 		var organizationId = await CreateOrganizationAsync(owner, tenantId);
-		var tenantRole = await PutAsync(owner, $"/api/tenants/{tenantId}/roles", new { name = "Members", permissions = ReadOnlyPermissions });
-		await PutAsync(owner, $"/api/tenants/{tenantId}/roles/{tenantRole.GetProperty("roleId").GetInt32()}/users/{memberId.Value}");
-		var organizationRole = await PostAsync(owner, $"/api/organizations/{organizationId}/roles/create", new { name = "Managers", permissions = UserManagementPermissions });
-		await PutAsync(owner, $"/api/organizations/{organizationId}/roles/{organizationRole.GetProperty("roleId").GetInt32()}/users/{memberId.Value}");
+
+		var tenantRole = await PutAsync(
+			owner,
+			$"/api/tenants/{tenantId}/roles",
+			new { name = "Members", permissions = ReadOnlyPermissions }
+		);
+
+		await PutAsync(
+			owner,
+			$"/api/tenants/{tenantId}/roles/{tenantRole.GetProperty("roleId").GetInt32()}/users/{memberId.Value}"
+		);
+
+		var organizationRole = await PostAsync(
+			owner,
+			$"/api/organizations/{organizationId}/roles/create",
+			new { name = "Managers", permissions = UserManagementPermissions }
+		);
+
+		await PutAsync(
+			owner,
+			$"/api/organizations/{organizationId}/roles/{organizationRole.GetProperty("roleId").GetInt32()}/users/{memberId.Value}"
+		);
+
 		await GetAsync(member, $"/api/organizations/{organizationId}/roles");
 		await DeleteAsync(owner, $"/api/tenants/{tenantId}/users/{memberId.Value}");
 		await GetAsync(member, $"/api/organizations/{organizationId}/roles");
-		Assert.Contains((await GetAsync(member, "/api/organizations")).GetProperty("organizations").EnumerateArray(), o => o.GetProperty("organizationId").GetInt32() == organizationId);
+
+		Assert.Contains(
+			(await GetAsync(member, "/api/organizations")).GetProperty("organizations").EnumerateArray(),
+			o => o.GetProperty("organizationId").GetInt32() == organizationId
+		);
+
 		Assert.Empty((await GetAsync(member, "/api/tenants")).GetProperty("tenants").EnumerateArray());
 	}
 
@@ -473,8 +733,18 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 		var tenantId = await CreateTenantAsync(owner);
 		var memberId = await fixture.CreateUserAsync();
 		using var member = await fixture.CreateClientAsync(memberId);
-		var role = await PutAsync(owner, $"/api/tenants/{tenantId}/roles", new { name = "Readers", permissions = ReadOnlyPermissions });
-		await PutAsync(owner, $"/api/tenants/{tenantId}/roles/{role.GetProperty("roleId").GetInt32()}/users/{memberId.Value}");
+
+		var role = await PutAsync(
+			owner,
+			$"/api/tenants/{tenantId}/roles",
+			new { name = "Readers", permissions = ReadOnlyPermissions }
+		);
+
+		await PutAsync(
+			owner,
+			$"/api/tenants/{tenantId}/roles/{role.GetProperty("roleId").GetInt32()}/users/{memberId.Value}"
+		);
+
 		var tenant = await GetAsync(member, $"/api/tenants/{tenantId}");
 		Assert.Equal(tenantId, tenant.GetProperty("tenantId").GetInt32());
 		await AssertStatusAsync(member, HttpMethod.Get, $"/api/tenants/{tenantId}/roles", HttpStatusCode.Forbidden);
@@ -491,14 +761,37 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 		using var owner = await fixture.CreateClientAsync(await fixture.CreateUserAsync());
 		var tenantId = await CreateTenantAsync(owner);
 		var organizationId = await CreateOrganizationAsync(owner, tenantId);
-		var role = await PostAsync(owner, $"/api/organizations/{organizationId}/roles/create", new { name = "Readers", permissions = ReadOnlyPermissions });
-		var added = await PutAsync(owner, $"/api/organizations/{organizationId}/users", new { emailAddress = $"{Guid.NewGuid():N}@example.test", roleId = role.GetProperty("roleId").GetInt32() });
+
+		var role = await PostAsync(
+			owner,
+			$"/api/organizations/{organizationId}/roles/create",
+			new { name = "Readers", permissions = ReadOnlyPermissions }
+		);
+
+		var added = await PutAsync(
+			owner,
+			$"/api/organizations/{organizationId}/users",
+			new { emailAddress = $"{Guid.NewGuid():N}@example.test", roleId = role.GetProperty("roleId").GetInt32() }
+		);
+
 		using var member = await fixture.CreateClientAsync(UserId.From(added.GetProperty("userId").GetInt32()));
 		await GetAsync(member, $"/api/organizations/{organizationId}");
 		Assert.Empty((await GetAsync(member, "/api/tenants")).GetProperty("tenants").EnumerateArray());
-		Assert.Contains((await GetAsync(member, "/api/organizations")).GetProperty("organizations").EnumerateArray(), o => o.GetProperty("organizationId").GetInt32() == organizationId);
+
+		Assert.Contains(
+			(await GetAsync(member, "/api/organizations")).GetProperty("organizations").EnumerateArray(),
+			o => o.GetProperty("organizationId").GetInt32() == organizationId
+		);
+
 		await PutAsync(owner, $"/api/organizations/{organizationId}", new { name = "Inactive", isActive = false });
-		await AssertStatusAsync(member, HttpMethod.Get, $"/api/organizations/{organizationId}", HttpStatusCode.Forbidden);
+
+		await AssertStatusAsync(
+			member,
+			HttpMethod.Get,
+			$"/api/organizations/{organizationId}",
+			HttpStatusCode.Forbidden
+		);
+
 		Assert.Empty((await GetAsync(member, "/api/organizations")).GetProperty("organizations").EnumerateArray());
 		await PutAsync(owner, $"/api/organizations/{organizationId}", new { name = "Restored", isActive = true });
 		await GetAsync(member, $"/api/organizations/{organizationId}");
@@ -515,8 +808,22 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 		Assert.Equal(name, (await GetAsync(owner, route)).GetProperty("name").GetString());
 
 		await PutAsync(owner, route, new { name = $"  {name}  ", isActive = true });
-		await AssertStatusAsync(owner, HttpMethod.Post, "/api/tenants/create", HttpStatusCode.BadRequest, new { name = name + "a" });
-		await AssertStatusAsync(owner, HttpMethod.Put, route, HttpStatusCode.BadRequest, new { name = name + "a", isActive = true });
+
+		await AssertStatusAsync(
+			owner,
+			HttpMethod.Post,
+			"/api/tenants/create",
+			HttpStatusCode.BadRequest,
+			new { name = name + "a" }
+		);
+
+		await AssertStatusAsync(
+			owner,
+			HttpMethod.Put,
+			route,
+			HttpStatusCode.BadRequest,
+			new { name = name + "a", isActive = true }
+		);
 	}
 
 	[Theory]
@@ -526,6 +833,7 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 	{
 		using var owner = await fixture.CreateClientAsync(await fixture.CreateUserAsync());
 		var tenantId = await CreateTenantAsync(owner);
+
 		var route = organization
 			? $"/api/organizations/{await CreateOrganizationAsync(owner, tenantId)}"
 			: $"/api/tenants/{tenantId}";
@@ -533,8 +841,12 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 		var createRoute = organization ? $"{route}/roles/create" : $"{route}/roles";
 		var createMethod = organization ? HttpMethod.Post : HttpMethod.Put;
 
-		var created = await SendAsync(owner, createMethod, createRoute,
-			new { name = "  Readers  ", permissions = DuplicateReadOnlyPermissions });
+		var created = await SendAsync(
+			owner,
+			createMethod,
+			createRoute,
+			new { name = "  Readers  ", permissions = DuplicateReadOnlyPermissions }
+		);
 
 		var roleId = created.GetProperty("roleId").GetInt32();
 
@@ -569,6 +881,7 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 	{
 		using var owner = await fixture.CreateClientAsync(await fixture.CreateUserAsync());
 		var tenantId = await CreateTenantAsync(owner);
+
 		var route = organization
 			? $"/api/organizations/{await CreateOrganizationAsync(owner, tenantId)}"
 			: $"/api/tenants/{tenantId}";
@@ -577,19 +890,29 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 
 		foreach (var email in new[] { "", "not-an-email", "Display Name <user@example.test>", new string('a', 501) })
 		{
-			await AssertStatusAsync(owner, HttpMethod.Put, $"{route}/users", HttpStatusCode.BadRequest,
-				new { emailAddress = email, roleId });
+			await AssertStatusAsync(
+				owner,
+				HttpMethod.Put,
+				$"{route}/users",
+				HttpStatusCode.BadRequest,
+				new { emailAddress = email, roleId }
+			);
 		}
 	}
 
 	private static async Task<int> CreateTenantAsync(HttpClient client) =>
-		(await PostAsync(client, "/api/tenants/create", new { name = "Test tenant" })).GetProperty("tenantId").GetInt32();
+		(await PostAsync(client, "/api/tenants/create", new { name = "Test tenant" })).GetProperty("tenantId")
+		.GetInt32();
 
 	private static async Task<int> CreateOrganizationAsync(HttpClient client, int tenantId) =>
-		(await PutAsync(client, $"/api/tenants/{tenantId}/organizations", new { name = "Test organization" })).GetProperty("organizationId").GetInt32();
+		(await PutAsync(client, $"/api/tenants/{tenantId}/organizations", new { name = "Test organization" }))
+		.GetProperty("organizationId")
+		.GetInt32();
 
 	private static async Task<int> GetOnlyRoleIdAsync(HttpClient client, string path) =>
-		Assert.Single((await GetAsync(client, path)).GetProperty("roles").EnumerateArray()).GetProperty("roleId").GetInt32();
+		Assert.Single((await GetAsync(client, path)).GetProperty("roles").EnumerateArray())
+			.GetProperty("roleId")
+			.GetInt32();
 
 	private static IEnumerable<string?> Strings(JsonElement array) => array.EnumerateArray()
 		.Select(e => e.GetString());
@@ -606,7 +929,12 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 	private static async Task DeleteAsync(HttpClient client, string path) =>
 		await SendAsync(client, HttpMethod.Delete, path);
 
-	private static async Task<JsonElement> SendAsync(HttpClient client, HttpMethod method, string path, object? body = null)
+	private static async Task<JsonElement> SendAsync(
+		HttpClient client,
+		HttpMethod method,
+		string path,
+		object? body = null
+	)
 	{
 		using var request = new HttpRequestMessage(method, path);
 
@@ -624,7 +952,13 @@ public sealed class ManagementTests(ApplicationFactoryFixture fixture)
 		return document.RootElement.Clone();
 	}
 
-	private static async Task AssertStatusAsync(HttpClient client, HttpMethod method, string path, HttpStatusCode status, object? body = null)
+	private static async Task AssertStatusAsync(
+		HttpClient client,
+		HttpMethod method,
+		string path,
+		HttpStatusCode status,
+		object? body = null
+	)
 	{
 		using var request = new HttpRequestMessage(method, path);
 

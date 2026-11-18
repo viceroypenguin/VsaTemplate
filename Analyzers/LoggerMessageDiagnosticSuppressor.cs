@@ -21,8 +21,9 @@ public sealed class LoggerMessageDiagnosticSuppressor : DiagnosticSuppressor
 	{
 		foreach (var diagnostic in context.ReportedDiagnostics)
 		{
-			if (diagnostic.Location.SourceTree?.GetRoot(context.CancellationToken).FindNode(diagnostic.Location.SourceSpan) is not
-					InvocationExpressionSyntax { ArgumentList.Arguments.Count: 1 })
+			if (diagnostic.Location.SourceTree?.GetRoot(context.CancellationToken)
+					.FindNode(diagnostic.Location.SourceSpan) is not
+				InvocationExpressionSyntax { ArgumentList.Arguments.Count: 1 })
 			{
 				continue;
 			}

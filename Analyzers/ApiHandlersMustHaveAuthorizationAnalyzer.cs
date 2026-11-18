@@ -104,6 +104,5 @@ public sealed class ApiHandlersMustHaveAuthorizationAnalyzer : DiagnosticAnalyze
 				requestType.Name
 			)
 		);
-
 	}
 }

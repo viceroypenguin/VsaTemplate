@@ -11,7 +11,9 @@ public sealed class CurrentOrganizationUserService(
 	OrganizationUserPermissionCache organizationUserPermissionCache
 )
 {
-	public async ValueTask<IReadOnlyList<OrganizationPermission>> GetCurrentUserPermissions(OrganizationId organizationId) =>
+	public async ValueTask<IReadOnlyList<OrganizationPermission>> GetCurrentUserPermissions(
+		OrganizationId organizationId
+	) =>
 		currentUserService.GetCurrentUserId() switch
 		{
 			{ } userId => await organizationUserPermissionCache
@@ -27,7 +29,9 @@ public sealed class CurrentOrganizationUserService(
 			_ => [],
 		};
 
-	public async ValueTask<IReadOnlyList<OrganizationPermission>> GetLoggedInUserPermissions(OrganizationId organizationId) =>
+	public async ValueTask<IReadOnlyList<OrganizationPermission>> GetLoggedInUserPermissions(
+		OrganizationId organizationId
+	) =>
 		await organizationUserPermissionCache
 			.GetValue(
 				new()

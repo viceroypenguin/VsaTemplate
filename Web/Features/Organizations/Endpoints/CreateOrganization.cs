@@ -21,16 +21,58 @@ public sealed partial class CreateOrganization(
 	PermissionCacheInvalidator permissionCacheInvalidator
 )
 {
+	private async ValueTask<Response> HandleAsync([AsParameters] Request request, CancellationToken token)
+	{
+		var userId = currentUserService.GetLoggedInUserId();
+		var memberUserId = currentUserService.GetMembershipUserId();
+		await using var transaction = await context.BeginTransactionAsync(token);
+
+		var organizationId = (OrganizationId)await context.InsertWithInt32IdentityAsync(
+			new Database.Models.Organization
+			{
+				TenantId = request.TenantId,
+				Name = request.Body.Name.Trim(),
+				IsActive = true,
+			},
+			token: token
+		);
+
+		var roleId = (OrganizationRoleId)await context.InsertWithInt32IdentityAsync(
+			new Database.Models.OrganizationRole
+			{
+				OrganizationId = organizationId,
+				Name = "Admin",
+				PermissionsJson = JsonSerializer.Serialize(new[] { OrganizationPermission.Admin }),
+				EditedUserId = userId,
+			},
+			token: token
+		);
+
+		await context.InsertAsync(
+			new Database.Models.OrganizationRoleUser
+			{
+				OrganizationRoleId = roleId,
+				UserId = memberUserId,
+				EditedUserId = userId,
+			},
+			token: token
+		);
+
+		await transaction.CommitAsync(token);
+		await permissionCacheInvalidator.InvalidateOrganization(organizationId);
+		return new() { OrganizationId = organizationId };
+	}
+
 	[Validate]
 	public sealed partial record Request : IAuthorizedRequest, ITenantRequest, IValidationTarget<Request>
 	{
+		[FromBody]
+		public required RequestBody Body { get; init; }
+
 		public static TenantPermission TenantPermission => TenantPermission.OrganizationManagement;
 
 		[FromRoute]
 		public required TenantId TenantId { get; init; }
-
-		[FromBody]
-		public required RequestBody Body { get; init; }
 	}
 
 	[Validate]
@@ -44,40 +86,5 @@ public sealed partial class CreateOrganization(
 	public sealed record Response
 	{
 		public required OrganizationId OrganizationId { get; init; }
-	}
-
-	private async ValueTask<Response> HandleAsync([AsParameters] Request request, CancellationToken token)
-	{
-		var userId = currentUserService.GetLoggedInUserId();
-		var memberUserId = currentUserService.GetMembershipUserId();
-		await using var transaction = await context.BeginTransactionAsync(token);
-
-		var organizationId = (OrganizationId)await context.InsertWithInt32IdentityAsync(
-			new Database.Models.Organization
-			{
-				TenantId = request.TenantId,
-				Name = request.Body.Name.Trim(),
-				IsActive = true,
-			}, token: token);
-
-		var roleId = (OrganizationRoleId)await context.InsertWithInt32IdentityAsync(
-			new Database.Models.OrganizationRole
-			{
-				OrganizationId = organizationId,
-				Name = "Admin",
-				PermissionsJson = JsonSerializer.Serialize(new[] { OrganizationPermission.Admin }),
-				EditedUserId = userId,
-			}, token: token);
-
-		await context.InsertAsync(new Database.Models.OrganizationRoleUser
-		{
-			OrganizationRoleId = roleId,
-			UserId = memberUserId,
-			EditedUserId = userId,
-		}, token: token);
-
-		await transaction.CommitAsync(token);
-		await permissionCacheInvalidator.InvalidateOrganization(organizationId);
-		return new() { OrganizationId = organizationId };
 	}
 }

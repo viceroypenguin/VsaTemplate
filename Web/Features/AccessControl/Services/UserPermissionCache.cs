@@ -21,16 +21,6 @@ public sealed partial class GetUserPermissions(
 	UserPermissionCache userPermissionCache
 )
 {
-	public sealed record Query
-	{
-		public required UserId UserId { get; init; }
-	}
-
-	public sealed record Response
-	{
-		public required IReadOnlyList<Permission> Permissions { get; init; }
-	}
-
 	private async ValueTask<Response> HandleAsync(
 		Query query,
 		CancellationToken token
@@ -47,12 +37,16 @@ public sealed partial class GetUserPermissions(
 			return new()
 			{
 				Permissions = (
-					await context.AccessControl.RoleUsers
-						.Where(u => u.UserId == query.UserId)
-						.Select(u => u.Role)
-						.Select(r => JsonSerializer.Deserialize<List<Permission>>(r.PermissionsJson, default(JsonSerializerOptions))!)
-						.ToListAsync(token)
-				)
+						await context.AccessControl.RoleUsers
+							.Where(u => u.UserId == query.UserId)
+							.Select(u => u.Role)
+							.Select(r => JsonSerializer.Deserialize<List<Permission>>(
+									r.PermissionsJson,
+									default(JsonSerializerOptions)
+								)!
+							)
+							.ToListAsync(token)
+					)
 					.SelectMany(p => p)
 					.DefaultIfEmpty(Permission.None)
 					.Distinct()
@@ -67,11 +61,23 @@ public sealed partial class GetUserPermissions(
 
 		return new()
 		{
-			Permissions = JsonSerializer.Deserialize<List<Permission>>(apiKey.PermissionsJson, default(JsonSerializerOptions))!
-				.Where(p => p == Permission.None || parentPermissions.Permissions.Contains(Permission.Admin) || parentPermissions.Permissions.Contains(p))
+			Permissions = JsonSerializer.Deserialize<List<Permission>>(apiKey.PermissionsJson)!
+				.Where(p => p == Permission.None || parentPermissions.Permissions.Contains(Permission.Admin) ||
+					parentPermissions.Permissions.Contains(p)
+				)
 				.DefaultIfEmpty(Permission.None)
 				.Distinct()
 				.ToList(),
 		};
+	}
+
+	public sealed record Query
+	{
+		public required UserId UserId { get; init; }
+	}
+
+	public sealed record Response
+	{
+		public required IReadOnlyList<Permission> Permissions { get; init; }
 	}
 }

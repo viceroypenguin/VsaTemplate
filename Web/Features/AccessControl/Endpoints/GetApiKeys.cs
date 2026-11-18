@@ -18,6 +18,43 @@ public sealed partial class GetApiKeys(
 	TimeProvider timeProvider
 )
 {
+	private async ValueTask<Response> HandleAsync(Request _, CancellationToken token)
+	{
+		var userId = currentUserService.GetLoggedInHumanUserId();
+		var now = timeProvider.GetUtcNow();
+
+		var keys = await context.AccessControl.ApiKeys
+			.Where(k => k.OwnerUserId == userId && k.User.IsActive && k.ExpirationDateTime > now)
+			.OrderByDescending(k => k.CreatedDateTime)
+			.ThenByDescending(k => k.ApiKeyId)
+			.Select(k => new
+				{
+					k.ApiKeyId,
+					k.Note,
+					k.PermissionsJson,
+					KeySuffix = k.User.EmailAddress.Length > 3
+						? k.User.EmailAddress.Substring(k.User.EmailAddress.Length - 3)
+						: "",
+				}
+			)
+			.ToListAsync(token);
+
+		return new()
+		{
+			ApiKeys = keys
+				.Select(k => new ApiKey
+					{
+						ApiKeyId = k.ApiKeyId,
+						Note = k.Note,
+						Permissions = JsonSerializer.Deserialize<Permission[]>(k.PermissionsJson)!,
+						KeySuffix = k.KeySuffix,
+					}
+				)
+				.ToList(),
+			CanCreateAdminKey = await currentUserService.GetLoggedInUserPermissions().IsAdmin(),
+		};
+	}
+
 	public sealed record Request : IAuthorizedRequest;
 
 	public sealed record ApiKey
@@ -36,40 +73,5 @@ public sealed partial class GetApiKeys(
 		public required IReadOnlyList<ApiKey> ApiKeys { get; init; }
 
 		public required bool CanCreateAdminKey { get; init; }
-	}
-
-	private async ValueTask<Response> HandleAsync(Request _, CancellationToken token)
-	{
-		var userId = currentUserService.GetLoggedInHumanUserId();
-		var now = timeProvider.GetUtcNow();
-
-		var keys = await context.AccessControl.ApiKeys
-			.Where(k => k.OwnerUserId == userId && k.User.IsActive && k.ExpirationDateTime > now)
-			.OrderByDescending(k => k.CreatedDateTime)
-			.ThenByDescending(k => k.ApiKeyId)
-			.Select(k => new
-			{
-				k.ApiKeyId,
-				k.Note,
-				k.PermissionsJson,
-				KeySuffix = k.User.EmailAddress.Length > 3
-					? k.User.EmailAddress.Substring(k.User.EmailAddress.Length - 3)
-					: "",
-			})
-			.ToListAsync(token);
-
-		return new()
-		{
-			ApiKeys = keys
-				.Select(k => new ApiKey
-				{
-					ApiKeyId = k.ApiKeyId,
-					Note = k.Note,
-					Permissions = JsonSerializer.Deserialize<Permission[]>(k.PermissionsJson)!,
-					KeySuffix = k.KeySuffix,
-				})
-				.ToList(),
-			CanCreateAdminKey = await currentUserService.GetLoggedInUserPermissions().IsAdmin(),
-		};
 	}
 }

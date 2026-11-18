@@ -14,13 +14,6 @@ public sealed partial class GetOrganizationsBySelf(
 	GetOrganizationsByUserCache organizationsCache
 )
 {
-	public sealed record Query : IAuthorizedRequest;
-
-	public sealed record Response
-	{
-		public required IReadOnlyList<GetOrganizationsForUser.Organization> Organizations { get; init; }
-	}
-
 	private async ValueTask<Response> HandleAsync(Query _, CancellationToken token)
 	{
 		var result = await organizationsCache.GetValue(
@@ -29,5 +22,12 @@ public sealed partial class GetOrganizationsBySelf(
 		);
 
 		return new() { Organizations = result.Organizations };
+	}
+
+	public sealed record Query : IAuthorizedRequest;
+
+	public sealed record Response
+	{
+		public required IReadOnlyList<GetOrganizationsForUser.Organization> Organizations { get; init; }
 	}
 }

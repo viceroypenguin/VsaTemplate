@@ -22,16 +22,45 @@ public sealed partial class AddOrganizationRole(
 	PermissionCacheInvalidator permissionCacheInvalidator
 )
 {
+	private async ValueTask<Response> HandleAsync([AsParameters] Request request, CancellationToken token)
+	{
+		var name = request.Body.Name.Trim();
+
+		var permissions = request.Body.Permissions
+			.Distinct()
+			.ToArray();
+
+		await OrganizationManagement.DemandDelegablePermissions(
+			currentOrganizationUserService,
+			request.OrganizationId,
+			permissions
+		);
+
+		var roleId = (OrganizationRoleId)await context.InsertWithInt32IdentityAsync(
+			new Database.Models.OrganizationRole
+			{
+				OrganizationId = request.OrganizationId,
+				Name = name,
+				PermissionsJson = JsonSerializer.Serialize(permissions),
+				EditedUserId = currentUserService.GetLoggedInUserId(),
+			},
+			token: token
+		);
+
+		await permissionCacheInvalidator.InvalidateOrganization(request.OrganizationId);
+		return new() { RoleId = roleId };
+	}
+
 	[Validate]
 	public sealed partial record Request : IAuthorizedRequest, IOrganizationRequest, IValidationTarget<Request>
 	{
+		[FromBody]
+		public required RequestBody Body { get; init; }
+
 		public static OrganizationPermission OrganizationPermission => OrganizationPermission.UserManagement;
 
 		[FromRoute]
 		public required OrganizationId OrganizationId { get; init; }
-
-		[FromBody]
-		public required RequestBody Body { get; init; }
 	}
 
 	[Validate]
@@ -48,28 +77,5 @@ public sealed partial class AddOrganizationRole(
 	public sealed record Response
 	{
 		public required OrganizationRoleId RoleId { get; init; }
-	}
-
-	private async ValueTask<Response> HandleAsync([AsParameters] Request request, CancellationToken token)
-	{
-		var name = request.Body.Name.Trim();
-
-		var permissions = request.Body.Permissions
-			.Distinct()
-			.ToArray();
-
-		await OrganizationManagement.DemandDelegablePermissions(currentOrganizationUserService, request.OrganizationId, permissions);
-
-		var roleId = (OrganizationRoleId)await context.InsertWithInt32IdentityAsync(
-			new Database.Models.OrganizationRole
-			{
-				OrganizationId = request.OrganizationId,
-				Name = name,
-				PermissionsJson = JsonSerializer.Serialize(permissions),
-				EditedUserId = currentUserService.GetLoggedInUserId(),
-			}, token: token);
-
-		await permissionCacheInvalidator.InvalidateOrganization(request.OrganizationId);
-		return new() { RoleId = roleId };
 	}
 }

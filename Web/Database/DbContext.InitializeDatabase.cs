@@ -5,16 +5,6 @@ namespace VsaTemplate.Web.Database;
 
 public partial class DbContext : DataConnection, IVersionedDbContext
 {
-	public void InitializeDatabase()
-	{
-		this.Initialize(logger, timeProvider);
-
-		SyncAllEnums();
-		initialization.IsInitialized = true;
-	}
-
-	partial void SyncAllEnums();
-
 	public IReadOnlyList<string> GetExecutedScripts() =>
 		VersionHistories
 			.Select(vh => vh.SqlFile)
@@ -35,4 +25,14 @@ public partial class DbContext : DataConnection, IVersionedDbContext
 			}
 		);
 	}
+
+	public void InitializeDatabase()
+	{
+		this.Initialize(logger, timeProvider);
+
+		SyncAllEnums();
+		initialization.IsInitialized = true;
+	}
+
+	partial void SyncAllEnums();
 }

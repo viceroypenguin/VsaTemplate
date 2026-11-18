@@ -18,6 +18,20 @@ public sealed partial class GetOrganizationsByUser(
 	GetOrganizationsForUser.Handler getOrganizationsForUser
 )
 {
+	private async ValueTask<Response> HandleAsync(
+		Query query,
+		CancellationToken token
+	)
+	{
+		return new()
+		{
+			Organizations = await getOrganizationsForUser.HandleAsync(
+				new() { UserId = query.UserId },
+				token
+			),
+		};
+	}
+
 	public sealed record Query
 	{
 		public required UserId UserId { get; init; }
@@ -26,16 +40,5 @@ public sealed partial class GetOrganizationsByUser(
 	public sealed record Response
 	{
 		public required IReadOnlyList<GetOrganizationsForUser.Organization> Organizations { get; init; }
-	}
-
-	private async ValueTask<Response> HandleAsync(
-		Query query,
-		CancellationToken token
-	)
-	{
-		return new()
-		{
-			Organizations = await getOrganizationsForUser.HandleAsync(new() { UserId = query.UserId }, token),
-		};
 	}
 }

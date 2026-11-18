@@ -10,8 +10,7 @@ public static class OptionsExtensions
 	{
 		services
 			.AddOptionsWithValidateOnStart<T>()
-			.Validate(
-				o =>
+			.Validate(o =>
 				{
 					ValidationException.ThrowIfInvalid(o, $@"Validation error for ""{typeof(T).Name}"".");
 					return true;

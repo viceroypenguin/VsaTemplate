@@ -8,8 +8,8 @@ public sealed partial class LoggingBehavior<TRequest, TResponse>(
 	IHttpContextAccessor httpContextAccessor
 ) : Behavior<TRequest, TResponse>
 {
-	private readonly ILogger<LoggingBehavior<TRequest, TResponse>> _logger = logger;
 	private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+	private readonly ILogger<LoggingBehavior<TRequest, TResponse>> _logger = logger;
 
 	public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
 	{
@@ -24,7 +24,7 @@ public sealed partial class LoggingBehavior<TRequest, TResponse>(
 
 		var httpContext = _httpContextAccessor.HttpContext;
 
-		if (httpContext is { })
+		if (httpContext is not null)
 		{
 			properties["User"] = httpContext.User?.Identity?.Name;
 			properties["RemoteIP"] = httpContext.Connection.RemoteIpAddress;

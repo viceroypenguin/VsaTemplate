@@ -36,7 +36,14 @@ public sealed partial class TenantAuthorizationBehavior<TRequest, TResponse>(
 
 	[LoggerMessage(
 		Level = LogLevel.Warning,
-		Message = "Unauthorized tenant access: User {UserId}, TenantId {TenantId}, Handler {HandlerType}, Permission {Permission}"
+		Message =
+			"Unauthorized tenant access: User {UserId}, TenantId {TenantId}, Handler {HandlerType}, Permission {Permission}"
 	)]
-	private static partial void LogUnauthorizedAccess(ILogger logger, UserId? userId, TenantId tenantId, string? handlerType, TenantPermission permission);
+	private static partial void LogUnauthorizedAccess(
+		ILogger logger,
+		UserId? userId,
+		TenantId tenantId,
+		string? handlerType,
+		TenantPermission permission
+	);
 }

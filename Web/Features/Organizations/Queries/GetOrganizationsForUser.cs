@@ -11,24 +11,6 @@ namespace VsaTemplate.Web.Features.Organizations.Queries;
 [Handler]
 public sealed partial class GetOrganizationsForUser(DbContext context, TimeProvider timeProvider)
 {
-	public sealed record Query
-	{
-		public required UserId UserId { get; init; }
-	}
-
-	public sealed record Organization
-	{
-		public required OrganizationId OrganizationId { get; init; }
-
-		public required TenantId TenantId { get; init; }
-
-		public required string Name { get; init; }
-
-		public required bool IsActive { get; init; }
-
-		public required IReadOnlyList<OrganizationPermission> Permissions { get; init; }
-	}
-
 	private async ValueTask<IReadOnlyList<Organization>> HandleAsync(Query query, CancellationToken token)
 	{
 		var now = timeProvider.GetUtcNow();
@@ -37,10 +19,11 @@ public sealed partial class GetOrganizationsForUser(DbContext context, TimeProvi
 			.Where(k => k.ApiKeyId == query.UserId && k.User.IsActive)
 			.Where(k => k.OwnerUser.IsActive && k.OwnerUser.ApiKey == null && k.ExpirationDateTime > now)
 			.Select(k => new
-			{
-				k.OwnerUserId,
-				PermissionsJson = k.OrganizationApiKey == null ? null : k.OrganizationApiKey.PermissionsJson,
-			})
+				{
+					k.OwnerUserId,
+					PermissionsJson = k.OrganizationApiKey == null ? null : k.OrganizationApiKey.PermissionsJson,
+				}
+			)
 			.FirstOrDefaultAsync(token);
 
 		if (apiKey is not null && apiKey.PermissionsJson is null)
@@ -52,13 +35,14 @@ public sealed partial class GetOrganizationsForUser(DbContext context, TimeProvi
 			.Where(u => u.UserId == memberUserId && u.User.IsActive && u.User.ApiKey == null)
 			.Select(u => u.OrganizationRole)
 			.Select(r => new
-			{
-				r.OrganizationId,
-				r.Organization.TenantId,
-				r.Organization.Name,
-				r.Organization.IsActive,
-				r.PermissionsJson,
-			})
+				{
+					r.OrganizationId,
+					r.Organization.TenantId,
+					r.Organization.Name,
+					r.Organization.IsActive,
+					r.PermissionsJson,
+				}
+			)
 			.ToListAsync(token);
 
 		var keyPermissions = apiKey is null ? null : OrganizationManagement.ReadPermissions(apiKey.PermissionsJson);
@@ -79,7 +63,8 @@ public sealed partial class GetOrganizationsForUser(DbContext context, TimeProvi
 				: keyPermissions
 					.Where(p => p is OrganizationPermission.None
 						|| membershipPermissions.Contains(OrganizationPermission.Admin)
-						|| membershipPermissions.Contains(p))
+						|| membershipPermissions.Contains(p)
+					)
 					.Distinct()
 					.ToArray();
 
@@ -89,19 +74,39 @@ public sealed partial class GetOrganizationsForUser(DbContext context, TimeProvi
 			if (permissions.Length == 0)
 				continue;
 
-			organizations.Add(new()
-			{
-				OrganizationId = group.Key.OrganizationId,
-				TenantId = group.Key.TenantId,
-				Name = group.Key.Name,
-				IsActive = group.Key.IsActive,
-				Permissions = permissions,
-			});
+			organizations.Add(
+				new()
+				{
+					OrganizationId = group.Key.OrganizationId,
+					TenantId = group.Key.TenantId,
+					Name = group.Key.Name,
+					IsActive = group.Key.IsActive,
+					Permissions = permissions,
+				}
+			);
 		}
 
 		return organizations
 			.OrderBy(o => o.Name, StringComparer.OrdinalIgnoreCase)
 			.ThenBy(o => o.OrganizationId.Value)
 			.ToList();
+	}
+
+	public sealed record Query
+	{
+		public required UserId UserId { get; init; }
+	}
+
+	public sealed record Organization
+	{
+		public required OrganizationId OrganizationId { get; init; }
+
+		public required TenantId TenantId { get; init; }
+
+		public required string Name { get; init; }
+
+		public required bool IsActive { get; init; }
+
+		public required IReadOnlyList<OrganizationPermission> Permissions { get; init; }
 	}
 }

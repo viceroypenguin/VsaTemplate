@@ -13,53 +13,57 @@ public static class AuthenticationStartupExtensions
 	{
 		services
 			.AddAuthentication(o =>
-			{
-				o.DefaultAuthenticateScheme = ApiKeyAuthenticationHandler.AuthenticationScheme;
-				o.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-				o.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-			})
+				{
+					o.DefaultAuthenticateScheme = ApiKeyAuthenticationHandler.AuthenticationScheme;
+					o.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+					o.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+				}
+			)
 			.AddCookie(o =>
-			{
-				o.LoginPath = "/";
-				o.AccessDeniedPath = "/";
-				o.Cookie.HttpOnly = true;
-				o.Cookie.SameSite = SameSiteMode.Lax;
-				o.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-
-				o.Events.OnRedirectToLogin = context =>
 				{
-					if (context.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
-						context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-					else
-						context.Response.Redirect(context.RedirectUri);
+					o.LoginPath = "/";
+					o.AccessDeniedPath = "/";
+					o.Cookie.HttpOnly = true;
+					o.Cookie.SameSite = SameSiteMode.Lax;
+					o.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
 
-					return Task.CompletedTask;
-				};
-
-				o.Events.OnRedirectToAccessDenied = context =>
-				{
-					if (context.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
-						context.Response.StatusCode = StatusCodes.Status403Forbidden;
-					else
-						context.Response.Redirect(context.RedirectUri);
-
-					return Task.CompletedTask;
-				};
-
-				o.Events.OnValidatePrincipal = async context =>
-				{
-					var value = context.Principal?.FindFirstValue("vsa-id");
-					var db = context.HttpContext.RequestServices.GetRequiredService<DbContext>();
-
-					if (UserId.TryParse(value ?? "", CultureInfo.InvariantCulture, out var userId)
-						&& await db.AccessControl.Users.AnyAsync(u => u.UserId == userId && u.IsActive && u.ApiKey == null))
+					o.Events.OnRedirectToLogin = context =>
 					{
-						return;
-					}
+						if (context.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
+							context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+						else
+							context.Response.Redirect(context.RedirectUri);
 
-					context.RejectPrincipal();
-				};
-			})
+						return Task.CompletedTask;
+					};
+
+					o.Events.OnRedirectToAccessDenied = context =>
+					{
+						if (context.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
+							context.Response.StatusCode = StatusCodes.Status403Forbidden;
+						else
+							context.Response.Redirect(context.RedirectUri);
+
+						return Task.CompletedTask;
+					};
+
+					o.Events.OnValidatePrincipal = async context =>
+					{
+						var value = context.Principal?.FindFirstValue("vsa-id");
+						var db = context.HttpContext.RequestServices.GetRequiredService<DbContext>();
+
+						if (UserId.TryParse(value ?? "", CultureInfo.InvariantCulture, out var userId)
+							&& await db.AccessControl.Users.AnyAsync(u =>
+								u.UserId == userId && u.IsActive && u.ApiKey == null
+							))
+						{
+							return;
+						}
+
+						context.RejectPrincipal();
+					};
+				}
+			)
 			.AddScheme<ApiKeyAuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(
 				ApiKeyAuthenticationHandler.AuthenticationScheme,
 				configureOptions: null

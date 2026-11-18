@@ -215,10 +215,20 @@ public sealed class EmailLoginTests(ApplicationFactoryFixture fixture)
 		using var client = await fixture.CreateEmailLoginClientAsync();
 		using var invalidJson = new StringContent("{", Encoding.UTF8, "application/json");
 
-		using var malformed = await client.PostAsync(new Uri("/api/auth/email/request", UriKind.Relative), invalidJson, Token);
+		using var malformed = await client.PostAsync(
+			new Uri("/api/auth/email/request", UriKind.Relative),
+			invalidJson,
+			Token
+		);
+
 		Assert.Equal(HttpStatusCode.BadRequest, malformed.StatusCode);
 
-		using var missingFields = await client.PostAsJsonAsync(new Uri("/api/auth/email/verify", UriKind.Relative), new { }, Token);
+		using var missingFields = await client.PostAsJsonAsync(
+			new Uri("/api/auth/email/verify", UriKind.Relative),
+			new { },
+			Token
+		);
+
 		Assert.Equal(HttpStatusCode.BadRequest, missingFields.StatusCode);
 	}
 
@@ -315,8 +325,16 @@ public sealed class EmailLoginTests(ApplicationFactoryFixture fixture)
 	private static string NewSession() => Guid.NewGuid().ToString("D");
 
 	private static Task<HttpResponseMessage> RequestCode(HttpClient client, string email, string session) =>
-		client.PostAsJsonAsync(new Uri("/api/auth/email/request", UriKind.Relative), new { emailAddress = email, sessionId = session }, Token);
+		client.PostAsJsonAsync(
+			new Uri("/api/auth/email/request", UriKind.Relative),
+			new { emailAddress = email, sessionId = session },
+			Token
+		);
 
 	private static Task<HttpResponseMessage> VerifyCode(HttpClient client, string email, string session, string code) =>
-		client.PostAsJsonAsync(new Uri("/api/auth/email/verify", UriKind.Relative), new { emailAddress = email, sessionId = session, token = code }, Token);
+		client.PostAsJsonAsync(
+			new Uri("/api/auth/email/verify", UriKind.Relative),
+			new { emailAddress = email, sessionId = session, token = code },
+			Token
+		);
 }

@@ -19,9 +19,9 @@ public sealed class EmailLoginService(
 	ILoginTokenGenerator tokenGenerator
 )
 {
+	private const int MaximumAttempts = 5;
 	private static readonly TimeSpan Lifetime = TimeSpan.FromMinutes(15);
 	private static readonly TimeSpan RequestCooldown = TimeSpan.FromMinutes(1);
-	private const int MaximumAttempts = 5;
 
 	public async Task<DateTimeOffset> RequestAsync(string emailAddress, string sessionId, CancellationToken token)
 	{
@@ -63,10 +63,16 @@ public sealed class EmailLoginService(
 				.Select(c => c.TokenHash)
 				.FirstOrDefaultAsync(token);
 
-			for (var attempt = 0; previousHash is not null && CryptographicOperations.FixedTimeEquals(previousHash, codeHash); attempt++)
+			for (var attempt = 0;
+				 previousHash is not null && CryptographicOperations.FixedTimeEquals(previousHash, codeHash);
+				 attempt++)
 			{
 				if (attempt >= 10)
-					throw new InvalidOperationException("The sign-in code generator repeatedly returned the previous code.");
+				{
+					throw new InvalidOperationException(
+						"The sign-in code generator repeatedly returned the previous code."
+					);
+				}
 
 				code = tokenGenerator.GenerateToken();
 				codeHash = HashCode(session, email, code);
@@ -100,7 +106,8 @@ public sealed class EmailLoginService(
 				{
 					To = [email],
 					Subject = "Your sign-in code",
-					Body = $"Your sign-in code is {code}.\n\nEnter it in the same window where you requested it. This code expires in 15 minutes and can be used once.\n\nIf you did not request this email, you can ignore it.",
+					Body =
+						$"Your sign-in code is {code}.\n\nEnter it in the same window where you requested it. This code expires in 15 minutes and can be used once.\n\nIf you did not request this email, you can ignore it.",
 				},
 				token
 			);
@@ -119,16 +126,6 @@ public sealed class EmailLoginService(
 		return expiresAt;
 	}
 
-	private sealed record EmailUser
-	{
-		public string EmailAddress { get; init; } = null!;
-		public bool IsActive { get; init; }
-		public DateTimeOffset? LastLogin { get; init; }
-		public string? Name { get; init; }
-		public UserId UserId { get; init; }
-		public bool IsApiKey { get; init; }
-	}
-
 	public async Task<EmailLoginUser?> EnsureAsync(
 		string email,
 		DateTimeOffset? loginAt,
@@ -138,31 +135,32 @@ public sealed class EmailLoginService(
 		var output = await context.AccessControl.Users
 			.Where(u => u.EmailAddress == email)
 			.Select(u => new EmailUser
-			{
-				UserId = u.UserId,
-				EmailAddress = u.EmailAddress,
-				Name = u.Name,
-				LastLogin = u.LastLogin,
-				IsActive = u.IsActive,
-				IsApiKey = context.AccessControl.ApiKeys.Any(ak => ak.ApiKeyId == u.UserId),
-			})
+				{
+					UserId = u.UserId,
+					EmailAddress = u.EmailAddress,
+					Name = u.Name,
+					LastLogin = u.LastLogin,
+					IsActive = u.IsActive,
+					IsApiKey = context.AccessControl.ApiKeys.Any(ak => ak.ApiKeyId == u.UserId),
+				}
+			)
 			.AsCte()
-			.Merge().Using([new { EmailAddress = email, LoginTime = loginAt }])
+			.Merge()
+			.Using([new { EmailAddress = email, LoginTime = loginAt }])
 			.On((dst, src) => dst.EmailAddress == src.EmailAddress)
 			.InsertWhenNotMatched(src => new()
-			{
-				EmailAddress = src.EmailAddress,
-				IsActive = true,
-				LastLogin = src.LoginTime,
-			})
-			.UpdateWhenMatched(
-				(dst, src) => new()
+				{
+					EmailAddress = src.EmailAddress,
+					IsActive = true,
+					LastLogin = src.LoginTime,
+				}
+			)
+			.UpdateWhenMatched((dst, src) => new()
 				{
 					LastLogin = src.LoginTime ?? dst.LastLogin,
 				}
 			)
-			.MergeWithOutputAsync(
-				(a, del, ins, src) => new
+			.MergeWithOutputAsync((a, del, ins, src) => new
 				{
 					Action = a,
 					ins.UserId,
@@ -251,4 +249,14 @@ public sealed class EmailLoginService(
 
 	private static byte[] HashCode(string sessionId, string emailAddress, string code) =>
 		SHA256.HashData(Encoding.UTF8.GetBytes($"{sessionId}\n{emailAddress}\n{code}"));
+
+	private sealed record EmailUser
+	{
+		public string EmailAddress { get; init; } = null!;
+		public bool IsActive { get; init; }
+		public DateTimeOffset? LastLogin { get; init; }
+		public string? Name { get; init; }
+		public UserId UserId { get; init; }
+		public bool IsApiKey { get; init; }
+	}
 }

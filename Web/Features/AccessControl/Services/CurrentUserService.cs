@@ -46,9 +46,9 @@ public sealed class CurrentUserService(
 
 	public UserId GetLoggedInHumanUserId()
 	{
-		if (httpContextAccessor.HttpContext?.User.Identities.Any(
-			identity => identity.AuthenticationType == ApiKeyAuthenticationHandler.AuthenticationScheme
-		) == true)
+		if (httpContextAccessor.HttpContext?.User.Identities.Any(identity =>
+				identity.AuthenticationType == ApiKeyAuthenticationHandler.AuthenticationScheme
+			) == true)
 		{
 			throw new UnauthorizedException("API keys cannot manage API keys.");
 		}

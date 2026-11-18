@@ -15,24 +15,6 @@ public sealed partial class GetTenantsForCurrentUser(
 	TenantAdministrationCache administration
 )
 {
-	public sealed record Query;
-
-	public sealed record Response
-	{
-		public required IReadOnlyList<Tenant> Tenants { get; init; }
-	}
-
-	public sealed record Tenant
-	{
-		public required TenantId TenantId { get; init; }
-
-		public required string Name { get; init; }
-
-		public required bool IsActive { get; init; }
-
-		public required IReadOnlyList<TenantPermission> Permissions { get; init; }
-	}
-
 	private async ValueTask<Response> HandleAsync(Query _, CancellationToken token)
 	{
 		if (currentUserService.GetCurrentUserId() is null)
@@ -43,11 +25,12 @@ public sealed partial class GetTenantsForCurrentUser(
 		var roles = await context.TenantRoleUsers
 			.Where(u => u.UserId == userId && u.User.IsActive)
 			.Select(u => new
-			{
-				u.TenantRole.TenantId,
-				u.TenantRole.Tenant.Name,
-				u.TenantRole.Tenant.IsActive,
-			})
+				{
+					u.TenantRole.TenantId,
+					u.TenantRole.Tenant.Name,
+					u.TenantRole.Tenant.IsActive,
+				}
+			)
 			.ToListAsync(token);
 
 		var tenants = new List<Tenant>();
@@ -64,13 +47,15 @@ public sealed partial class GetTenantsForCurrentUser(
 			if (permissions.Count == 0)
 				continue;
 
-			tenants.Add(new()
-			{
-				TenantId = group.Key.TenantId,
-				Name = group.Key.Name,
-				IsActive = group.Key.IsActive,
-				Permissions = permissions,
-			});
+			tenants.Add(
+				new()
+				{
+					TenantId = group.Key.TenantId,
+					Name = group.Key.Name,
+					IsActive = group.Key.IsActive,
+					Permissions = permissions,
+				}
+			);
 		}
 
 		return new()
@@ -79,5 +64,23 @@ public sealed partial class GetTenantsForCurrentUser(
 				.OrderBy(t => t.Name, StringComparer.OrdinalIgnoreCase)
 				.ToList(),
 		};
+	}
+
+	public sealed record Query;
+
+	public sealed record Response
+	{
+		public required IReadOnlyList<Tenant> Tenants { get; init; }
+	}
+
+	public sealed record Tenant
+	{
+		public required TenantId TenantId { get; init; }
+
+		public required string Name { get; init; }
+
+		public required bool IsActive { get; init; }
+
+		public required IReadOnlyList<TenantPermission> Permissions { get; init; }
 	}
 }

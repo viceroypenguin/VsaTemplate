@@ -13,6 +13,25 @@ public sealed partial class GetTenants(
 	GetTenantsForCurrentUser.Handler getTenantsForCurrentUser
 )
 {
+	private async ValueTask<Response> HandleAsync(
+		Query _,
+		CancellationToken token
+	) => new()
+	{
+		Tenants = await getTenantsForCurrentUser.HandleAsync(new(), token)
+			.Transform(x => x.Tenants
+				.Select(t => new Tenant
+					{
+						TenantId = t.TenantId,
+						Name = t.Name,
+						IsActive = t.IsActive,
+						Permissions = t.Permissions,
+					}
+				)
+				.ToList()
+			),
+	};
+
 	public sealed record Query : IAuthorizedRequest;
 
 	public sealed record Response
@@ -30,22 +49,4 @@ public sealed partial class GetTenants(
 
 		public required IReadOnlyList<TenantPermission> Permissions { get; init; }
 	}
-
-	private async ValueTask<Response> HandleAsync(
-		Query _,
-		CancellationToken token
-	) => new()
-	{
-		Tenants = await getTenantsForCurrentUser.HandleAsync(new(), token)
-			.Transform(x => x.Tenants
-				.Select(t => new Tenant
-				{
-					TenantId = t.TenantId,
-					Name = t.Name,
-					IsActive = t.IsActive,
-					Permissions = t.Permissions,
-				})
-				.ToList()
-			),
-	};
 }

@@ -22,26 +22,6 @@ public sealed partial class CreateApiKey(
 	TimeProvider timeProvider
 )
 {
-	[Validate]
-	public sealed partial record Request : IAuthorizedRequest, IValidationTarget<Request>
-	{
-		public required IReadOnlyList<Permission> Permissions { get; init; }
-
-		[GreaterThan(nameof(TimeSpan.Zero), Message = "API key lifetime must be positive.")]
-		[LessThan(nameof(MaxLifetime), Message = "API key lifetime cannot exceed one year.")]
-		public required TimeSpan Lifetime { get; init; }
-
-		[TrimmedMaxLength(200)]
-		public string? Note { get; init; }
-
-		private static readonly TimeSpan MaxLifetime = TimeSpan.FromDays(366);
-	}
-
-	public sealed record Response
-	{
-		public required string ApiKey { get; init; }
-	}
-
 	private async ValueTask<Response> HandleAsync(
 		Request request,
 		CancellationToken token
@@ -64,7 +44,7 @@ public sealed partial class CreateApiKey(
 
 		var newUserId = UserId.From(
 			await context.InsertWithInt32IdentityAsync(
-				new Database.Models.AccessControl.User()
+				new Database.Models.AccessControl.User
 				{
 					Name = string.Create(provider: null, $"API Key For: {userId}"),
 					EmailAddress = key,
@@ -75,7 +55,7 @@ public sealed partial class CreateApiKey(
 		);
 
 		await context.InsertAsync(
-			new Database.Models.AccessControl.ApiKey()
+			new Database.Models.AccessControl.ApiKey
 			{
 				ApiKeyId = newUserId,
 				OwnerUserId = userId,
@@ -101,5 +81,24 @@ public sealed partial class CreateApiKey(
 	{
 		var bytes = RandomNumberGenerator.GetBytes(16);
 		return Base58.Bitcoin.Encode(bytes);
+	}
+
+	[Validate]
+	public sealed partial record Request : IAuthorizedRequest, IValidationTarget<Request>
+	{
+		private static readonly TimeSpan MaxLifetime = TimeSpan.FromDays(366);
+		public required IReadOnlyList<Permission> Permissions { get; init; }
+
+		[GreaterThan(nameof(TimeSpan.Zero), Message = "API key lifetime must be positive.")]
+		[LessThan(nameof(MaxLifetime), Message = "API key lifetime cannot exceed one year.")]
+		public required TimeSpan Lifetime { get; init; }
+
+		[TrimmedMaxLength(200)]
+		public string? Note { get; init; }
+	}
+
+	public sealed record Response
+	{
+		public required string ApiKey { get; init; }
 	}
 }

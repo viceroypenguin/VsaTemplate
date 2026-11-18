@@ -56,27 +56,38 @@ try
 	app.UseAntiforgery();
 
 	app.Use(async (context, next) =>
-	{
-		if ((context.User.Identity?.IsAuthenticated == true
-			|| context.Request.Path.StartsWithSegments("/api/auth/email", StringComparison.OrdinalIgnoreCase))
-			&& !context.User.Identities.Any(i => i.AuthenticationType == ApiKeyAuthenticationHandler.AuthenticationScheme)
-			&& !HttpMethods.IsGet(context.Request.Method)
-			&& !HttpMethods.IsHead(context.Request.Method)
-			&& !HttpMethods.IsOptions(context.Request.Method))
 		{
-			try
+			if (
+				(context.User.Identity?.IsAuthenticated == true
+					|| context.Request.Path.StartsWithSegments("/api/auth/email", StringComparison.OrdinalIgnoreCase))
+				&& !context.User.Identities.Any(i =>
+					i.AuthenticationType is ApiKeyAuthenticationHandler.AuthenticationScheme
+				)
+				&& !HttpMethods.IsGet(context.Request.Method)
+				&& !HttpMethods.IsHead(context.Request.Method)
+				&& !HttpMethods.IsOptions(context.Request.Method)
+			)
 			{
-				await context.RequestServices.GetRequiredService<IAntiforgery>().ValidateRequestAsync(context);
-			}
-			catch (AntiforgeryValidationException)
-			{
-				await Results.Problem(statusCode: StatusCodes.Status400BadRequest, detail: "The request verification token is missing or invalid. Refresh the page and try again.").ExecuteAsync(context);
-				return;
-			}
-		}
+				try
+				{
+					await context.RequestServices.GetRequiredService<IAntiforgery>().ValidateRequestAsync(context);
+				}
+				catch (AntiforgeryValidationException)
+				{
+					await Results.Problem(
+							statusCode: StatusCodes.Status400BadRequest,
+							detail:
+							"The request verification token is missing or invalid. Refresh the page and try again."
+						)
+						.ExecuteAsync(context);
 
-		await next(context);
-	});
+					return;
+				}
+			}
+
+			await next(context);
+		}
+	);
 
 	app.UseRateLimiter();
 	app.UseLogging();
@@ -114,20 +125,17 @@ internal static class StartupExtensions
 	[RegisterServices]
 	public static void ConfigureWebOptions(IServiceCollection services)
 	{
-		services.Configure<ApiBehaviorOptions>(
-			o => o.SuppressInferBindingSourcesForParameters = true
+		services.Configure<ApiBehaviorOptions>(o => o.SuppressInferBindingSourcesForParameters = true
 		);
 
-		services.Configure<RouteHandlerOptions>(
-			o => o.ThrowOnBadRequest = true
+		services.Configure<RouteHandlerOptions>(o => o.ThrowOnBadRequest = true
 		);
 
-		services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(
-			o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter())
+		services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(o =>
+			o.SerializerOptions.Converters.Add(new JsonStringEnumConverter())
 		);
 
-		services.AddResponseCompression(
-			options => options.EnableForHttps = true
+		services.AddResponseCompression(options => options.EnableForHttps = true
 		);
 	}
 
@@ -136,7 +144,8 @@ internal static class StartupExtensions
 	{
 		services
 			.AddOptions<ResendClientOptions>()
-			.Configure<IOptions<EmailServiceOptions>>((o, eso) => o.ApiToken = eso.Value.ResendApiToken ?? string.Empty);
+			.Configure<IOptions<EmailServiceOptions>>((o, eso) => o.ApiToken = eso.Value.ResendApiToken ?? string.Empty
+			);
 
 		services.AddHttpClient<ResendClient>();
 		services.AddTransient<ResendClient>();
@@ -169,9 +178,9 @@ internal static class StartupExtensions
 	{
 		services.AddDataProtection();
 
-		services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(
-			sp => new ConfigureOptions<KeyManagementOptions>(
-				options => options.XmlRepository = sp.GetRequiredService<LinqToDBXmlRepository>()
+		services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(sp =>
+			new ConfigureOptions<KeyManagementOptions>(options =>
+				options.XmlRepository = sp.GetRequiredService<LinqToDBXmlRepository>()
 			)
 		);
 	}
@@ -180,88 +189,108 @@ internal static class StartupExtensions
 	public static void AddWebOpenApi(this IServiceCollection services)
 	{
 		services.AddOpenApi(o =>
-		{
-			o.CreateSchemaReferenceId = t =>
-				t.Type.IsNested
-					? $"{t.Type.DeclaringType!.Name}+{t.Type.Name}"
-					: OpenApiOptions.CreateDefaultSchemaReferenceId(t);
+			{
+				o.CreateSchemaReferenceId = t =>
+					t.Type.IsNested
+						? $"{t.Type.DeclaringType!.Name}+{t.Type.Name}"
+						: OpenApiOptions.CreateDefaultSchemaReferenceId(t);
 
-			o.MapVogenTypesInVsaTemplate_Web();
+				o.MapVogenTypesInVsaTemplate_Web();
 
-			o.AddDocumentTransformer(
-				(document, context, cancellationToken) =>
-				{
-					var key = new OpenApiSecurityScheme()
+				o.AddDocumentTransformer((document, context, cancellationToken) =>
 					{
-						Scheme = "ApiKey",
-						In = ParameterLocation.Header,
-						Type = SecuritySchemeType.ApiKey,
-						Name = "X-Api-Key",
-					};
+						var key = new OpenApiSecurityScheme
+						{
+							Scheme = "ApiKey",
+							In = ParameterLocation.Header,
+							Type = SecuritySchemeType.ApiKey,
+							Name = "X-Api-Key",
+						};
 
-					document.Components ??= new();
-					document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>(StringComparer.Ordinal);
-					document.Components.SecuritySchemes["ApiKey"] = key;
+						document.Components ??= new();
 
-					return Task.CompletedTask;
-				}
-			);
+						document.Components.SecuritySchemes ??=
+							new Dictionary<string, IOpenApiSecurityScheme>(StringComparer.Ordinal);
 
-			o.AddOperationTransformer(
-				(operation, context, cancellationToken) =>
-				{
-					if (context.Description.RelativePath?.Split(
-							"/",
-							count: 3,
-							StringSplitOptions.RemoveEmptyEntries
-						) is ["api", var name, ..])
-					{
-						//operation.Tags.Add(new OpenApiTag
-						//{
-						//	Name = name[..1].ToUpperInvariant() + name[1..],
-						//});
+						document.Components.SecuritySchemes["ApiKey"] = key;
 
-						operation.Security = [new() { [new("ApiKey", context.Document)] = [] }];
+						return Task.CompletedTask;
 					}
-					else
-					{
-						operation.Security = [];
-					}
+				);
 
-					return Task.CompletedTask;
-				}
-			);
-		});
+				o.AddOperationTransformer((operation, context, cancellationToken) =>
+					{
+						if (context.Description.RelativePath?.Split(
+								"/",
+								count: 3,
+								StringSplitOptions.RemoveEmptyEntries
+							) is ["api", var name, ..])
+						{
+							//operation.Tags.Add(new OpenApiTag
+							//{
+							//	Name = name[..1].ToUpperInvariant() + name[1..],
+							//});
+
+							operation.Security =
+							[
+								new() { [new("ApiKey", context.Document)] = [] },
+							];
+						}
+						else
+						{
+							operation.Security = [];
+						}
+
+						return Task.CompletedTask;
+					}
+				);
+			}
+		);
 	}
 
 	public static IEndpointRouteBuilder MapAccountServices(this IEndpointRouteBuilder app)
 	{
-		app.MapGet("/api/session", async (HttpContext context, CurrentUserService currentUser, DbContext db, IAntiforgery antiforgery) =>
-		{
-			context.Response.Headers.CacheControl = "no-store";
-			var userId = currentUser.GetCurrentUserId();
+		app.MapGet(
+				"/api/session",
+				async (HttpContext context, CurrentUserService currentUser, DbContext db, IAntiforgery antiforgery) =>
+				{
+					context.Response.Headers.CacheControl = "no-store";
+					var userId = currentUser.GetCurrentUserId();
 
-			var user = userId is { } id
-				? await db.AccessControl.Users
-					.Where(u => u.UserId == id && u.IsActive)
-					.Select(u => new SessionUser { UserId = u.UserId, Name = u.ApiKey == null ? u.Name : "API key", EmailAddress = u.ApiKey == null ? u.EmailAddress : "" })
-					.FirstOrDefaultAsync(context.RequestAborted)
-				: null;
+					var user = userId is { } id
+						? await db.AccessControl.Users
+							.Where(u => u.UserId == id && u.IsActive)
+							.Select(u => new SessionUser
+								{
+									UserId = u.UserId,
+									Name = u.ApiKey == null ? u.Name : "API key",
+									EmailAddress = u.ApiKey == null ? u.EmailAddress : "",
+								}
+							)
+							.FirstOrDefaultAsync(context.RequestAborted)
+						: null;
 
-			return Results.Ok(new
-			{
-				IsAuthenticated = user is not null,
-				User = user,
-				antiforgery.GetAndStoreTokens(context).RequestToken,
-			});
-		}).AllowAnonymous();
+					return Results.Ok(
+						new
+						{
+							IsAuthenticated = user is not null,
+							User = user,
+							antiforgery.GetAndStoreTokens(context).RequestToken,
+						}
+					);
+				}
+			)
+			.AllowAnonymous();
 
 		app
-			.MapPost("/Logout", async context =>
-			{
-				await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-				context.Response.Redirect("/");
-			})
+			.MapPost(
+				"/Logout",
+				async context =>
+				{
+					await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+					context.Response.Redirect("/");
+				}
+			)
 			.RequireAuthorization();
 
 		return app;

@@ -24,51 +24,58 @@ public sealed partial class AddUserToTenant(
 	PermissionCacheInvalidator cacheInvalidator
 )
 {
-	public sealed record Request : IAuthorizedRequest, ITenantRequest
-	{
-		public static TenantPermission TenantPermission => TenantPermission.UserManagement;
-
-		[FromRoute]
-		public required TenantId TenantId { get; init; }
-
-		[FromRoute]
-		public required TenantRoleId RoleId { get; init; }
-
-		[FromRoute]
-		public required UserId UserId { get; init; }
-	}
-
 	private async ValueTask HandleAsync([AsParameters] Request request, CancellationToken token)
 	{
 		await using var transaction = await context.BeginTransactionAsync(IsolationLevel.Serializable, token);
 
 		var role = await context.TenantRoles
-			.FirstOrDefaultAsync(r => r.TenantId == request.TenantId && r.TenantRoleId == request.RoleId, token)
+				.FirstOrDefaultAsync(r => r.TenantId == request.TenantId && r.TenantRoleId == request.RoleId, token)
 			?? throw new NotFoundException(nameof(Database.Models.TenantRole));
 
 		TenantManagement.EnsureCanGrant(
 			await currentTenantUserService.GetLoggedInUserPermissions(request.TenantId),
-			TenantManagement.ReadPermissions(role.PermissionsJson));
+			TenantManagement.ReadPermissions(role.PermissionsJson)
+		);
 
-		if (!await context.AccessControl.Users.AnyAsync(u => u.UserId == request.UserId && u.IsActive && u.ApiKey == null, token))
+		if (!await context.AccessControl.Users.AnyAsync(
+				u => u.UserId == request.UserId && u.IsActive && u.ApiKey == null,
+				token
+			))
 			throw new NotFoundException(nameof(Database.Models.AccessControl.User));
 
 		var userId = currentUserService.GetLoggedInUserId();
 
 		await context.TenantRoleUsers
-			.Merge().Using([
-			new Database.Models.TenantRoleUser
-			{
-				TenantRoleId = request.RoleId,
-				UserId = request.UserId,
-				EditedUserId = userId,
-			},
-		])
+			.Merge()
+			.Using(
+				[
+					new Database.Models.TenantRoleUser
+					{
+						TenantRoleId = request.RoleId,
+						UserId = request.UserId,
+						EditedUserId = userId,
+					},
+				]
+			)
 			.OnTargetKey()
 			.InsertWhenNotMatched()
 			.MergeAsync(token);
 
 		await transaction.CommitAsync(token);
 		await cacheInvalidator.InvalidateUser(request.UserId);
+	}
+
+	public sealed record Request : IAuthorizedRequest, ITenantRequest
+	{
+		[FromRoute]
+		public required TenantRoleId RoleId { get; init; }
+
+		[FromRoute]
+		public required UserId UserId { get; init; }
+
+		public static TenantPermission TenantPermission => TenantPermission.UserManagement;
+
+		[FromRoute]
+		public required TenantId TenantId { get; init; }
 	}
 }

@@ -57,7 +57,10 @@ public static class ExceptionStartupExtensions
 			};
 
 			if (c.Exception is EmailLoginRateLimitException rateLimit)
-				c.HttpContext.Response.Headers.RetryAfter = rateLimit.RetryAfterSeconds.ToString(CultureInfo.InvariantCulture);
+			{
+				c.HttpContext.Response.Headers.RetryAfter =
+					rateLimit.RetryAfterSeconds.ToString(CultureInfo.InvariantCulture);
+			}
 
 			c.HttpContext.Response.Headers
 				.Append("RequestId", c.HttpContext.TraceIdentifier);

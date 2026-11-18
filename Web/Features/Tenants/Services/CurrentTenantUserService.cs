@@ -14,13 +14,16 @@ public sealed class CurrentTenantUserService(
 	public async ValueTask<IReadOnlyList<TenantPermission>> GetCurrentUserPermissions(TenantId tenantId) =>
 		currentUserService.GetCurrentUserId() switch
 		{
-			{ } userId => await tenantUserPermissionCache.GetValue(new() { UserId = userId, TenantId = tenantId })
+			{ } userId => await tenantUserPermissionCache
+				.GetValue(new() { UserId = userId, TenantId = tenantId })
 				.Transform(r => r.Permissions),
 
 			_ => [],
 		};
 
 	public async ValueTask<IReadOnlyList<TenantPermission>> GetLoggedInUserPermissions(TenantId tenantId) =>
-		await tenantUserPermissionCache.GetValue(new() { UserId = currentUserService.GetLoggedInUserId(), TenantId = tenantId })
+		await tenantUserPermissionCache.GetValue(
+				new() { UserId = currentUserService.GetLoggedInUserId(), TenantId = tenantId }
+			)
 			.Transform(r => r.Permissions);
 }

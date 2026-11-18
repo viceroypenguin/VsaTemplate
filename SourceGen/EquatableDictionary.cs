@@ -33,14 +33,14 @@ public readonly struct EquatableDictionary<TValue>(
 
 	public bool Equals(EquatableDictionary<TValue> other) =>
 		ReferenceEquals(_dictionary, other._dictionary)
-			|| (GetHashCode() == other.GetHashCode()
-				&& _dictionary.Count == other._dictionary.Count
-				&& _dictionary
-					.All(kvp =>
-						other._dictionary.TryGetValue(kvp.Key, out var oValue)
-							&& EqualityComparer<TValue>.Default.Equals(kvp.Value, oValue)
-					)
-				);
+		|| (GetHashCode() == other.GetHashCode()
+			&& _dictionary.Count == other._dictionary.Count
+			&& _dictionary
+				.All(kvp =>
+					other._dictionary.TryGetValue(kvp.Key, out var oValue)
+					&& EqualityComparer<TValue>.Default.Equals(kvp.Value, oValue)
+				)
+		);
 
 	public override bool Equals(object? obj) =>
 		obj is EquatableDictionary<TValue> dict && Equals(dict);

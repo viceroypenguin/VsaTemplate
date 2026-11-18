@@ -36,7 +36,14 @@ public sealed partial class OrganizationAuthorizationBehavior<TRequest, TRespons
 
 	[LoggerMessage(
 		Level = LogLevel.Warning,
-		Message = "Unauthorized organization access: User {UserId}, OrganizationId {OrganizationId}, Handler {HandlerType}, Permission {Permission}"
+		Message =
+			"Unauthorized organization access: User {UserId}, OrganizationId {OrganizationId}, Handler {HandlerType}, Permission {Permission}"
 	)]
-	private static partial void LogUnauthorizedAccess(ILogger logger, UserId? userId, OrganizationId organizationId, string? handlerType, OrganizationPermission permission);
+	private static partial void LogUnauthorizedAccess(
+		ILogger logger,
+		UserId? userId,
+		OrganizationId organizationId,
+		string? handlerType,
+		OrganizationPermission permission
+	);
 }

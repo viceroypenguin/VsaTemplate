@@ -22,6 +22,30 @@ public sealed partial class VerifyEmailLogin(
 	IHttpContextAccessor httpContextAccessor
 )
 {
+	private async ValueTask<NoContent> HandleAsync(Request request, CancellationToken token)
+	{
+		var user = await emailLoginService.VerifyAsync(request.EmailAddress, request.SessionId, request.Token, token);
+		var userId = user.UserId.Value.ToString(CultureInfo.InvariantCulture);
+
+		var identity = new ClaimsIdentity(
+			[
+				new("vsa-id", userId),
+				new(ClaimTypes.NameIdentifier, userId),
+				new(ClaimTypes.Name, user.Name ?? user.EmailAddress),
+				new(ClaimTypes.Email, user.EmailAddress),
+			],
+			CookieAuthenticationDefaults.AuthenticationScheme
+		);
+
+		await httpContextAccessor.HttpContext!.SignInAsync(
+			CookieAuthenticationDefaults.AuthenticationScheme,
+			principal: new(identity),
+			properties: new() { IsPersistent = false }
+		);
+
+		return TypedResults.NoContent();
+	}
+
 	[Validate]
 	public sealed partial record Request : ISensitiveRequest, IValidationTarget<Request>
 	{
@@ -36,29 +60,5 @@ public sealed partial class VerifyEmailLogin(
 
 		[Match(expr: @"^[0-9]{6}$")]
 		public required string Token { get; init; }
-	}
-
-	private async ValueTask<NoContent> HandleAsync(Request request, CancellationToken token)
-	{
-		var user = await emailLoginService.VerifyAsync(request.EmailAddress, request.SessionId, request.Token, token);
-		var userId = user.UserId.Value.ToString(CultureInfo.InvariantCulture);
-
-		var identity = new ClaimsIdentity(
-			[
-				new Claim("vsa-id", userId),
-				new Claim(ClaimTypes.NameIdentifier, userId),
-				new Claim(ClaimTypes.Name, user.Name ?? user.EmailAddress),
-				new Claim(ClaimTypes.Email, user.EmailAddress),
-			],
-			CookieAuthenticationDefaults.AuthenticationScheme
-		);
-
-		await httpContextAccessor.HttpContext!.SignInAsync(
-			CookieAuthenticationDefaults.AuthenticationScheme,
-			new ClaimsPrincipal(identity),
-			new AuthenticationProperties { IsPersistent = false }
-		);
-
-		return TypedResults.NoContent();
 	}
 }

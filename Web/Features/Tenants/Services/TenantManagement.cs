@@ -12,10 +12,15 @@ internal static class TenantManagement
 	public static IReadOnlyList<TenantPermission> ReadPermissions(string permissionsJson) =>
 		JsonSerializer.Deserialize<List<TenantPermission>>(permissionsJson) ?? [];
 
-	public static void EnsureCanGrant(IReadOnlyList<TenantPermission> actorPermissions, IReadOnlyList<TenantPermission> permissions)
+	public static void EnsureCanGrant(
+		IReadOnlyList<TenantPermission> actorPermissions,
+		IReadOnlyList<TenantPermission> permissions
+	)
 	{
 		if (!actorPermissions.Contains(TenantPermission.Admin)
-			&& permissions.Any(p => p is TenantPermission.Admin || (p is not TenantPermission.None && !actorPermissions.Contains(p))))
+			&& permissions.Any(p =>
+				p is TenantPermission.Admin || (p is not TenantPermission.None && !actorPermissions.Contains(p))
+			))
 			throw new UnauthorizedException("You cannot manage permissions beyond your own tenant permissions.");
 	}
 
@@ -24,7 +29,8 @@ internal static class TenantManagement
 		TenantId tenantId,
 		TenantRoleId? excludedRoleId,
 		UserId? excludedUserId,
-		CancellationToken token)
+		CancellationToken token
+	)
 	{
 		var roles = await context.TenantRoles
 			.Where(r => r.TenantId == tenantId)
@@ -32,7 +38,8 @@ internal static class TenantManagement
 
 		var administratorRoleIds = roles
 			.Where(r => (excludedRoleId is null || r.TenantRoleId != excludedRoleId.Value)
-				&& ReadPermissions(r.PermissionsJson).Contains(TenantPermission.Admin))
+				&& ReadPermissions(r.PermissionsJson).Contains(TenantPermission.Admin)
+			)
 			.Select(r => r.TenantRoleId)
 			.ToList();
 
@@ -41,8 +48,10 @@ internal static class TenantManagement
 			.Where(u => u.User.IsActive);
 
 		if (excludedUserId is { } userId)
+		{
 			administrators = administrators
 				.Where(u => u.UserId != userId);
+		}
 
 		if (!await administrators.AnyAsync(token))
 			throw new ConflictException("A tenant must retain at least one active administrator.");

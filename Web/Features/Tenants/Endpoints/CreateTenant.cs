@@ -21,21 +21,6 @@ public sealed partial class CreateTenant(
 	PermissionCacheInvalidator cacheInvalidator
 )
 {
-	[Validate]
-	public sealed partial record Request : IAuthorizedRequest, IValidationTarget<Request>
-	{
-		[NotEmpty]
-		[TrimmedMaxLength(200)]
-		public required string Name { get; init; }
-	}
-
-	public sealed record Response
-	{
-		public required TenantId TenantId { get; init; }
-
-		public required IReadOnlyList<string> RecoveryKeys { get; init; }
-	}
-
 	private async ValueTask<Response> HandleAsync(
 		Request request,
 		CancellationToken token
@@ -100,5 +85,20 @@ public sealed partial class CreateTenant(
 				)
 			)
 			.ToList();
+	}
+
+	[Validate]
+	public sealed partial record Request : IAuthorizedRequest, IValidationTarget<Request>
+	{
+		[NotEmpty]
+		[TrimmedMaxLength(200)]
+		public required string Name { get; init; }
+	}
+
+	public sealed record Response
+	{
+		public required TenantId TenantId { get; init; }
+
+		public required IReadOnlyList<string> RecoveryKeys { get; init; }
 	}
 }

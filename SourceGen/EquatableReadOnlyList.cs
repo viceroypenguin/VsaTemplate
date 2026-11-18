@@ -37,9 +37,13 @@ public readonly struct EquatableReadOnlyList<T>(
 	public int Count => Collection.Count;
 	public T this[int index] => Collection[index];
 
-	public static bool operator ==(EquatableReadOnlyList<T> left, EquatableReadOnlyList<T> right) =>
-		left.Equals(right);
+	public static bool operator ==(EquatableReadOnlyList<T> left, EquatableReadOnlyList<T> right)
+	{
+		return left.Equals(right);
+	}
 
-	public static bool operator !=(EquatableReadOnlyList<T> left, EquatableReadOnlyList<T> right) =>
-		!left.Equals(right);
+	public static bool operator !=(EquatableReadOnlyList<T> left, EquatableReadOnlyList<T> right)
+	{
+		return !left.Equals(right);
+	}
 }

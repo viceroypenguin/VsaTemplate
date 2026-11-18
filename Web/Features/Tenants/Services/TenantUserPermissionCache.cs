@@ -16,6 +16,11 @@ public sealed partial class TenantUserPermissionCache
 [Handler]
 public sealed partial class TenantGetUserPermissions(TenantPermissionReader permissions)
 {
+	private async ValueTask<Response> HandleAsync(Query query, CancellationToken token) => new()
+	{
+		Permissions = await permissions.Read(query.UserId, query.TenantId, includeInactive: false, token),
+	};
+
 	public sealed record Query
 	{
 		public required UserId UserId { get; init; }
@@ -27,9 +32,4 @@ public sealed partial class TenantGetUserPermissions(TenantPermissionReader perm
 	{
 		public required IReadOnlyList<TenantPermission> Permissions { get; init; }
 	}
-
-	private async ValueTask<Response> HandleAsync(Query query, CancellationToken token) => new()
-	{
-		Permissions = await permissions.Read(query.UserId, query.TenantId, includeInactive: false, token),
-	};
 }

@@ -43,7 +43,8 @@ public sealed partial class EmailServiceOptions : IValidationTarget<EmailService
 						new()
 						{
 							PropertyName = nameof(SmtpServer),
-							ErrorMessage = $"`{nameof(SmtpServer)}` is required when `{nameof(ServerType)}` is `{nameof(ServerType.Smtp)}`",
+							ErrorMessage =
+								$"`{nameof(SmtpServer)}` is required when `{nameof(ServerType)}` is `{nameof(ServerType.Smtp)}`",
 						}
 					);
 				}
@@ -54,7 +55,8 @@ public sealed partial class EmailServiceOptions : IValidationTarget<EmailService
 						new()
 						{
 							PropertyName = nameof(SmtpPort),
-							ErrorMessage = $"`{nameof(SmtpPort)}` is required when `{nameof(ServerType)}` is `{nameof(ServerType.Smtp)}`",
+							ErrorMessage =
+								$"`{nameof(SmtpPort)}` is required when `{nameof(ServerType)}` is `{nameof(ServerType.Smtp)}`",
 						}
 					);
 				}
@@ -68,7 +70,8 @@ public sealed partial class EmailServiceOptions : IValidationTarget<EmailService
 						new()
 						{
 							PropertyName = nameof(ResendApiToken),
-							ErrorMessage = $"`{nameof(ResendApiToken)}` is required when `{nameof(ServerType)}` is `{nameof(ServerType.Resend)}`",
+							ErrorMessage =
+								$"`{nameof(ResendApiToken)}` is required when `{nameof(ServerType)}` is `{nameof(ServerType.Resend)}`",
 						}
 					);
 				}

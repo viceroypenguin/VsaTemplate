@@ -1,6 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
 
-[SuppressMessage("Design", "CA1050:Declare types in namespaces", Justification = "Should be available to all consumers")]
+[SuppressMessage(
+	"Design",
+	"CA1050:Declare types in namespaces",
+	Justification = "Should be available to all consumers"
+)]
 internal static class ThisAssemblyExtensions
 {
 	extension(ThisAssembly)

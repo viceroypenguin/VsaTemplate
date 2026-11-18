@@ -21,26 +21,6 @@ public sealed partial class UpdateOrganization(
 	PermissionCacheInvalidator permissionCacheInvalidator
 )
 {
-	[Validate]
-	public sealed partial record Request : IAuthorizedRequest, IValidationTarget<Request>
-	{
-		[FromRoute]
-		public required OrganizationId OrganizationId { get; init; }
-
-		[FromBody]
-		public required RequestBody Body { get; init; }
-	}
-
-	[Validate]
-	public sealed partial record RequestBody : IValidationTarget<RequestBody>
-	{
-		[NotEmpty]
-		[MaxLength(200)]
-		public required string Name { get; init; }
-
-		public required bool IsActive { get; init; }
-	}
-
 	private async ValueTask HandleAsync([AsParameters] Request request, CancellationToken token)
 	{
 		var administration = await administrationCache.GetValue(
@@ -65,5 +45,25 @@ public sealed partial class UpdateOrganization(
 			NotFoundException.ThrowNotFoundException(nameof(Database.Models.Organization));
 
 		await permissionCacheInvalidator.InvalidateOrganization(request.OrganizationId);
+	}
+
+	[Validate]
+	public sealed partial record Request : IAuthorizedRequest, IValidationTarget<Request>
+	{
+		[FromRoute]
+		public required OrganizationId OrganizationId { get; init; }
+
+		[FromBody]
+		public required RequestBody Body { get; init; }
+	}
+
+	[Validate]
+	public sealed partial record RequestBody : IValidationTarget<RequestBody>
+	{
+		[NotEmpty]
+		[MaxLength(200)]
+		public required string Name { get; init; }
+
+		public required bool IsActive { get; init; }
 	}
 }

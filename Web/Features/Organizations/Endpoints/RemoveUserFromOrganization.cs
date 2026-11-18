@@ -24,17 +24,6 @@ public sealed partial class RemoveUserFromOrganization(
 	PermissionCacheInvalidator permissionCacheInvalidator
 )
 {
-	public sealed record Request : IAuthorizedRequest, IOrganizationRequest
-	{
-		public static OrganizationPermission OrganizationPermission => OrganizationPermission.UserManagement;
-
-		[FromRoute]
-		public required OrganizationId OrganizationId { get; init; }
-
-		[FromRoute]
-		public required UserId UserId { get; init; }
-	}
-
 	private async ValueTask HandleAsync([AsParameters] Request request, CancellationToken token)
 	{
 		await using var transaction = await context.BeginTransactionAsync(IsolationLevel.Serializable, token);
@@ -47,13 +36,23 @@ public sealed partial class RemoveUserFromOrganization(
 		if (roles.Count == 0)
 			NotFoundException.ThrowNotFoundException("Organization member");
 
-		await OrganizationManagement.DemandDelegablePermissions(currentOrganizationUserService, request.OrganizationId,
+		await OrganizationManagement.DemandDelegablePermissions(
+			currentOrganizationUserService,
+			request.OrganizationId,
 			roles
 				.SelectMany(r => OrganizationManagement.ReadPermissions(r.PermissionsJson))
 				.Distinct()
-				.ToArray());
+				.ToArray()
+		);
 
-		await OrganizationManagement.EnsureAdministratorRemains(context, request.OrganizationId, request.UserId, changingRoleId: null, token);
+		await OrganizationManagement.EnsureAdministratorRemains(
+			context,
+			request.OrganizationId,
+			request.UserId,
+			changingRoleId: null,
+			token
+		);
+
 		var userId = currentUserService.GetLoggedInUserId();
 
 		var memberships = context.OrganizationRoleUsers
@@ -69,5 +68,16 @@ public sealed partial class RemoveUserFromOrganization(
 		await transaction.CommitAsync(token);
 		await permissionCacheInvalidator.InvalidateOrganization(request.OrganizationId);
 		await permissionCacheInvalidator.InvalidateUser(request.UserId);
+	}
+
+	public sealed record Request : IAuthorizedRequest, IOrganizationRequest
+	{
+		[FromRoute]
+		public required UserId UserId { get; init; }
+
+		public static OrganizationPermission OrganizationPermission => OrganizationPermission.UserManagement;
+
+		[FromRoute]
+		public required OrganizationId OrganizationId { get; init; }
 	}
 }

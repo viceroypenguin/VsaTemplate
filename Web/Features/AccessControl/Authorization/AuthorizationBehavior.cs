@@ -32,5 +32,10 @@ public sealed partial class AuthorizationBehavior<TRequest, TResponse>(
 		Level = LogLevel.Warning,
 		Message = "Unauthorized access: User {UserId}, Handler {HandlerType}, Permission {Permission}"
 	)]
-	private static partial void LogUnauthorizedAccess(ILogger logger, UserId? userId, string? handlerType, Permission permission);
+	private static partial void LogUnauthorizedAccess(
+		ILogger logger,
+		UserId? userId,
+		string? handlerType,
+		Permission permission
+	);
 }

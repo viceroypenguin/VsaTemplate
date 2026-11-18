@@ -70,16 +70,18 @@ public sealed class ApiKeyAuthenticationHandler(
 
 		return AuthenticateResult.Success(
 			new(
-				new([
-					new ClaimsIdentity(
-						[
-							new Claim("vsa-id", string.Create(provider: null, $"{userId}")),
-							new Claim("owner-id", string.Create(provider: null, $"{ownerUserId}")),
-							new Claim(ClaimTypes.NameIdentifier, "Api Key"),
-						],
-						AuthenticationScheme
-					),
-				]),
+				new(
+					[
+						new(
+							[
+								new("vsa-id", string.Create(provider: null, $"{userId}")),
+								new("owner-id", string.Create(provider: null, $"{ownerUserId}")),
+								new(ClaimTypes.NameIdentifier, "Api Key"),
+							],
+							AuthenticationScheme
+						),
+					]
+				),
 				AuthenticationScheme
 			)
 		);

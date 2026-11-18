@@ -6,14 +6,49 @@ namespace VsaTemplate.Web.Database;
 
 public static partial class DatabaseInitializer
 {
-	public static void Initialize<TContext>(this TContext context, ILogger logger, TimeProvider timeProvider)
-	 where TContext : DataConnection, IVersionedDbContext =>
-	 new Initializer<TContext>(context, logger, timeProvider).Initialize();
-
 	#region Execute Script
-	[GeneratedRegex("^go\\r?$", RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.Compiled, matchTimeoutMilliseconds: 2_000)]
+
+	[GeneratedRegex(
+		"^go\\r?$",
+		RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.Compiled,
+		matchTimeoutMilliseconds: 2_000
+	)]
 	private static partial Regex SqlBlockRegex { get; }
+
 	#endregion
+
+	public static void Initialize<TContext>(this TContext context, ILogger logger, TimeProvider timeProvider)
+		where TContext : DataConnection, IVersionedDbContext =>
+		new Initializer<TContext>(context, logger, timeProvider).Initialize();
+
+	public static string GetContent(this Assembly assembly, string relativePath)
+	{
+		using var stream = assembly.GetStream(relativePath);
+		using var reader = new StreamReader(stream);
+		return reader.ReadToEnd();
+	}
+
+	public static Stream GetStream(this Assembly assembly, string resourceName)
+	{
+		var manifestResourceName = assembly
+			.GetManifestResourceNames()
+			.FirstOrDefault(x => x.EndsWith(resourceName, StringComparison.OrdinalIgnoreCase));
+
+		if (string.IsNullOrEmpty(manifestResourceName))
+		{
+			throw new InvalidOperationException(
+				$"Did not find required resource ending in '{resourceName}' in assembly '{assembly.GetName().Name}'."
+			);
+		}
+
+		var stream = assembly
+				.GetManifestResourceStream(manifestResourceName)
+			?? throw new InvalidOperationException(
+				$"Did not find required resource '{manifestResourceName}' in assembly '{assembly.GetName().Name}'."
+			);
+
+		return stream;
+	}
 
 	private sealed class Initializer<TContext>(
 		TContext context,
@@ -96,29 +131,6 @@ public static partial class DatabaseInitializer
 				.Select(s => s[resourcePrefix.Length..])
 				.ToList();
 		}
-	}
-
-	public static string GetContent(this Assembly assembly, string relativePath)
-	{
-		using var stream = assembly.GetStream(relativePath);
-		using var reader = new StreamReader(stream);
-		return reader.ReadToEnd();
-	}
-
-	public static Stream GetStream(this Assembly assembly, string resourceName)
-	{
-		var manifestResourceName = assembly
-			.GetManifestResourceNames()
-			.FirstOrDefault(x => x.EndsWith(resourceName, StringComparison.OrdinalIgnoreCase));
-
-		if (string.IsNullOrEmpty(manifestResourceName))
-			throw new InvalidOperationException($"Did not find required resource ending in '{resourceName}' in assembly '{assembly.GetName().Name}'.");
-
-		var stream = assembly
-			.GetManifestResourceStream(manifestResourceName)
-			?? throw new InvalidOperationException($"Did not find required resource '{manifestResourceName}' in assembly '{assembly.GetName().Name}'.");
-
-		return stream;
 	}
 
 	#region Logging

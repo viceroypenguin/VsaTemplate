@@ -24,37 +24,38 @@ public sealed partial class DbGenerator
 	{
 		var properties = entity.Properties.Collection
 			.Select(p =>
-			{
-				var name = p.TypeName;
-				var forceNotNull = p.ForceNotNull;
+				{
+					var name = p.TypeName;
+					var forceNotNull = p.ForceNotNull;
 
-				if (
-					map.TryGetValue(p.ColumnName, out var n)
-					|| (
-						p.ColumnName.EndsWith("Id", StringComparison.Ordinal)
-						&& map.FindValue(p.ColumnName, out n)
+					if (
+						map.TryGetValue(p.ColumnName, out var n)
+						|| (
+							p.ColumnName.EndsWith("Id", StringComparison.Ordinal)
+							&& map.FindValue(p.ColumnName, out n)
+						)
 					)
-				)
-				{
-					name = n.UnderlyingTypeName;
-					forceNotNull = false;
-				}
+					{
+						name = n.UnderlyingTypeName;
+						forceNotNull = false;
+					}
 
-				return new
-				{
-					TypeName = name,
-					p.IsNullable,
-					p.PropertyName,
-					p.ColumnName,
-					p.DataType,
-					ForceNotNull = forceNotNull,
-					p.IsPrimaryKey,
-					p.PrimaryKeyOrder,
-					p.IsIdentity,
-					p.SkipOnInsert,
-					p.SkipOnUpdate,
-				};
-			});
+					return new
+					{
+						TypeName = name,
+						p.IsNullable,
+						p.PropertyName,
+						p.ColumnName,
+						p.DataType,
+						ForceNotNull = forceNotNull,
+						p.IsPrimaryKey,
+						p.PrimaryKeyOrder,
+						p.IsIdentity,
+						p.SkipOnInsert,
+						p.SkipOnUpdate,
+					};
+				}
+			);
 
 		var output = template.Render(
 			new
@@ -69,7 +70,10 @@ public sealed partial class DbGenerator
 			}
 		);
 
-		spc.AddSource($"DbContext.Entity.{entity.SchemaName}.{entity.TypeName}.g.cs", SourceText.From(output, Encoding.UTF8));
+		spc.AddSource(
+			$"DbContext.Entity.{entity.SchemaName}.{entity.TypeName}.g.cs",
+			SourceText.From(output, Encoding.UTF8)
+		);
 	}
 
 	private static void RenderContext(
@@ -82,12 +86,14 @@ public sealed partial class DbGenerator
 	{
 		var tablesBySchema = entities.GroupBy(x => x.SchemaName, StringComparer.Ordinal);
 
-		var output = template.Render(new
-		{
-			TablesBySchema = tablesBySchema,
-			Schemas = schemas.Collection,
-			RootNamespace = rootNamespace,
-		});
+		var output = template.Render(
+			new
+			{
+				TablesBySchema = tablesBySchema,
+				Schemas = schemas.Collection,
+				RootNamespace = rootNamespace,
+			}
+		);
 
 		spc.AddSource("DbContext.Context.g.cs", SourceText.From(output, Encoding.UTF8));
 	}
@@ -102,15 +108,16 @@ public sealed partial class DbGenerator
 		var types = context
 			.Where(x => !x.IsEnum)
 			.Select(x => new
-			{
-				SqlDataType = x.UnderlyingTypeName switch
 				{
-					"int" => "Int32",
-					"string" => "DbVarChar",
-					_ => "Unknown",
-				},
-				x.TypeName,
-			})
+					SqlDataType = x.UnderlyingTypeName switch
+					{
+						"int" => "Int32",
+						"string" => "DbVarChar",
+						_ => "Unknown",
+					},
+					x.TypeName,
+				}
+			)
 			.OrderBy(x => x.TypeName, StringComparer.Ordinal);
 
 		var output = template.Render(
@@ -118,7 +125,8 @@ public sealed partial class DbGenerator
 			{
 				Types = types,
 				RootNamespace = rootNamespace,
-			});
+			}
+		);
 
 		spc.AddSource("DbContext.Schema.g.cs", SourceText.From(output, Encoding.UTF8));
 	}

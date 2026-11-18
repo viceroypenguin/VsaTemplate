@@ -15,9 +15,9 @@ public static class Utility
 
 			if (
 				context.SemanticModel
-					.GetTypeInfo(n, context.CancellationToken)
-					.ConvertedType
-					.IsExpression()
+				.GetTypeInfo(n, context.CancellationToken)
+				.ConvertedType
+				.IsExpression()
 			)
 			{
 				return true;

@@ -1,6 +1,6 @@
 using LinqToDB;
-using VsaTemplate.Web.Features.AccessControl.Models;
 using VsaTemplate.Web.Features.AccessControl.Commands;
+using VsaTemplate.Web.Features.AccessControl.Models;
 
 namespace VsaTemplate.Web.Database;
 
@@ -31,14 +31,18 @@ public static partial class DatabaseStartupExtensions
 			);
 
 			await db.AccessControl.RoleUsers
-				.Merge().Using([new { UserId = rootUserId, RoleId = RoleId.From(-1) }])
+				.Merge()
+				.Using([new { UserId = rootUserId, RoleId = RoleId.From(-1) }])
 				.On((dst, src) => dst.UserId == src.UserId && dst.RoleId == src.RoleId)
-				.InsertWhenNotMatched(src => new()
-				{
-					UserId = src.UserId,
-					RoleId = src.RoleId,
-					EditedUserId = UserId.From(-1),
-				})
+				.InsertWhenNotMatched(
+					src =>
+						new()
+						{
+							UserId = src.UserId,
+							RoleId = src.RoleId,
+							EditedUserId = UserId.From(-1),
+						}
+				)
 				.MergeAsync();
 		}
 

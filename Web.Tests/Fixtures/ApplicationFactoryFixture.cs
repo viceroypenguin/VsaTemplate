@@ -41,10 +41,11 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime
 			.WithEnvironment("MSSQL_MEMORY_LIMIT_MB", "2048")
 			.Build();
 
+	private string? _externalDatabase;
+	private string? _externalServer;
+
 	// Any public type in the application assembly can identify its entry point.
 	private WebApplicationFactory<DbContext>? _factory;
-	private string? _externalServer;
-	private string? _externalDatabase;
 
 	public CapturingEmailSender Emails { get; } = new();
 
@@ -53,6 +54,17 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime
 		var connectionString = await GetConnectionString();
 		_factory = new TestWebApplicationFactory(connectionString, Emails);
 		_factory.StartServer();
+	}
+
+	public async ValueTask DisposeAsync()
+	{
+		if (_factory is not null)
+			await _factory.DisposeAsync();
+
+		if (_externalServer is not null && _externalDatabase is not null)
+			await ExecuteDatabaseCommandAsync(_externalServer, _externalDatabase, create: false);
+		else
+			await _container.DisposeAsync();
 	}
 
 	private async Task<string> GetConnectionString()
@@ -64,23 +76,25 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime
 			await _container.StartAsync(TestContext.Current.CancellationToken);
 			return _container.GetConnectionString();
 		}
-		else
+
+		_externalServer = await File.ReadAllTextAsync(connectionFile, TestContext.Current.CancellationToken);
+		_externalDatabase = $"VsaTemplate_Tests_{Guid.NewGuid():N}";
+
+		await ExecuteDatabaseCommandAsync(_externalServer, _externalDatabase, create: true);
+
+		var builder = new SqlConnectionStringBuilder(_externalServer)
 		{
-			_externalServer = await File.ReadAllTextAsync(connectionFile, TestContext.Current.CancellationToken);
-			_externalDatabase = $"VsaTemplate_Tests_{Guid.NewGuid():N}";
+			InitialCatalog = _externalDatabase,
+		};
 
-			await ExecuteDatabaseCommandAsync(_externalServer, _externalDatabase, create: true);
-
-			var builder = new SqlConnectionStringBuilder(_externalServer)
-			{
-				InitialCatalog = _externalDatabase,
-			};
-
-			return builder.ConnectionString;
-		}
+		return builder.ConnectionString;
 	}
 
-	public async Task<UserId> CreateUserAsync(string name = "Test User", bool isAdministrator = false, string? emailAddress = null)
+	public async Task<UserId> CreateUserAsync(
+		string name = "Test User",
+		bool isAdministrator = false,
+		string? emailAddress = null
+	)
 	{
 		await using var scope = GetFactory().Services.CreateAsyncScope();
 		var context = scope.ServiceProvider.GetRequiredService<DbContext>();
@@ -118,7 +132,10 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime
 		await using var scope = GetFactory().Services.CreateAsyncScope();
 		var handler = scope.ServiceProvider.GetRequiredService<EnsureEmailUser.Handler>();
 
-		return await handler.HandleAsync(new() { EmailAddress = emailAddress }, TestContext.Current.CancellationToken);
+		return await handler.HandleAsync(
+			new() { EmailAddress = emailAddress },
+			TestContext.Current.CancellationToken
+		);
 	}
 
 	public async Task<string> CreateApiKeyAsync(UserId ownerId, DateTimeOffset expiresAt)
@@ -128,13 +145,15 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime
 		var context = scope.ServiceProvider.GetRequiredService<DbContext>();
 
 		var keyId = UserId.From(
-			await context.InsertWithInt32IdentityAsync(new Database.Models.AccessControl.User
-			{
-				Name = "Test API key",
-				EmailAddress = key,
-				IsActive = true,
-			},
-			token: TestContext.Current.CancellationToken)
+			await context.InsertWithInt32IdentityAsync(
+				new Database.Models.AccessControl.User
+				{
+					Name = "Test API key",
+					EmailAddress = key,
+					IsActive = true,
+				},
+				token: TestContext.Current.CancellationToken
+			)
 		);
 
 		await context.InsertAsync(
@@ -171,17 +190,23 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime
 		var context = scope.ServiceProvider.GetRequiredService<DbContext>();
 		var token = TestContext.Current.CancellationToken;
 
-		await context.InsertAsync(new Database.Models.TenantApiKey
-		{
-			TenantApiKeyId = keyId,
-			PermissionsJson = "[0]",
-		}, token: token);
+		await context.InsertAsync(
+			new Database.Models.TenantApiKey
+			{
+				TenantApiKeyId = keyId,
+				PermissionsJson = "[0]",
+			},
+			token: token
+		);
 
-		await context.InsertAsync(new Database.Models.OrganizationApiKey
-		{
-			OrganizationApiKeyId = keyId,
-			PermissionsJson = "[0]",
-		}, token: token);
+		await context.InsertAsync(
+			new Database.Models.OrganizationApiKey
+			{
+				OrganizationApiKeyId = keyId,
+				PermissionsJson = "[0]",
+			},
+			token: token
+		);
 	}
 
 	public async Task<UserId> ReadApiKeyUserIdAsync(string key)
@@ -211,11 +236,13 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime
 	public HttpClient CreateAnonymousClient()
 	{
 		return GetFactory()
-			.CreateClient(new()
-			{
-				AllowAutoRedirect = false,
-				HandleCookies = true,
-			});
+			.CreateClient(
+				new()
+				{
+					AllowAutoRedirect = false,
+					HandleCookies = true,
+				}
+			);
 	}
 
 	public HttpClient CreateApiKeyClient(string key)
@@ -232,7 +259,11 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime
 
 		if (includeAntiforgeryToken)
 		{
-			using var response = await client.GetAsync(new Uri("/api/session", UriKind.Relative), TestContext.Current.CancellationToken);
+			using var response = await client.GetAsync(
+				new Uri("/api/session", UriKind.Relative),
+				TestContext.Current.CancellationToken
+			);
+
 			response.EnsureSuccessStatusCode();
 			var session = await response.Content.ReadFromJsonAsync<JsonElement>(TestContext.Current.CancellationToken);
 			client.DefaultRequestHeaders.Add("X-CSRF-TOKEN", session.GetProperty("requestToken").GetString());
@@ -250,7 +281,11 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime
 
 	public static async Task RefreshAntiforgeryAsync(HttpClient client)
 	{
-		using var response = await client.GetAsync(new Uri("/api/session", UriKind.Relative), TestContext.Current.CancellationToken);
+		using var response = await client.GetAsync(
+			new Uri("/api/session", UriKind.Relative),
+			TestContext.Current.CancellationToken
+		);
+
 		response.EnsureSuccessStatusCode();
 		var session = await response.Content.ReadFromJsonAsync<JsonElement>(TestContext.Current.CancellationToken);
 		client.DefaultRequestHeaders.Remove("X-CSRF-TOKEN");
@@ -291,25 +326,20 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime
 			.UpdateAsync(TestContext.Current.CancellationToken);
 	}
 
-	public async ValueTask DisposeAsync()
-	{
-		if (_factory is not null)
-			await _factory.DisposeAsync();
-
-		if (_externalServer is not null && _externalDatabase is not null)
-			await ExecuteDatabaseCommandAsync(_externalServer, _externalDatabase, create: false);
-		else
-			await _container.DisposeAsync();
-	}
-
 	private static async Task ExecuteDatabaseCommandAsync(string connectionString, string name, bool create)
 	{
 		await using var connection = new SqlConnection(connectionString);
 		await connection.OpenAsync(CancellationToken.None);
 
 		await using var command = create
-			? new SqlCommand("DECLARE @sql nvarchar(max) = N'create database ' + QUOTENAME(@name); EXEC sp_executesql @sql;", connection)
-			: new SqlCommand("DECLARE @sql nvarchar(max) = N'alter database ' + QUOTENAME(@name) + N' set single_user with rollback immediate; drop database ' + QUOTENAME(@name); EXEC sp_executesql @sql;", connection);
+			? new SqlCommand(
+				"DECLARE @sql nvarchar(max) = N'create database ' + QUOTENAME(@name); EXEC sp_executesql @sql;",
+				connection
+			)
+			: new SqlCommand(
+				"DECLARE @sql nvarchar(max) = N'alter database ' + QUOTENAME(@name) + N' set single_user with rollback immediate; drop database ' + QUOTENAME(@name); EXEC sp_executesql @sql;",
+				connection
+			);
 
 		command.Parameters.Add("@name", SqlDbType.NVarChar, 128).Value = name;
 		await command.ExecuteNonQueryAsync(CancellationToken.None);
@@ -319,46 +349,53 @@ public sealed class ApplicationFactoryFixture : IAsyncLifetime
 		_factory ?? throw new InvalidOperationException("The test host has not started.");
 }
 
-file sealed class TestWebApplicationFactory(string connectionString, CapturingEmailSender emails) : WebApplicationFactory<DbContext>
+file sealed class TestWebApplicationFactory(string connectionString, CapturingEmailSender emails)
+	: WebApplicationFactory<DbContext>
 {
 	protected override IHost CreateHost(IHostBuilder builder)
 	{
 		builder
 			.UseEnvironment("Testing")
 			.ConfigureAppConfiguration(cb => cb.AddInMemoryCollection(
-				new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
-				{
-					["DbContext:ConnectionString"] = connectionString,
-					["DbContext:ConnectionStringInit"] = connectionString,
-					["EmailLogin:RequestsPerMinute"] = "1000",
-					["EmailLogin:VerificationsPerMinute"] = "1000",
-					["EmailService:ServerType"] = "Disabled",
-					["EmailService:FromEmailAddress"] = "Tests <tests@example.test>",
-					["EmailService:AdminEmailAddresses:0"] = "admin@example.test",
-				}
-			));
+					new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
+					{
+						["DbContext:ConnectionString"] = connectionString,
+						["DbContext:ConnectionStringInit"] = connectionString,
+						["EmailLogin:RequestsPerMinute"] = "1000",
+						["EmailLogin:VerificationsPerMinute"] = "1000",
+						["EmailService:ServerType"] = "Disabled",
+						["EmailService:FromEmailAddress"] = "Tests <tests@example.test>",
+						["EmailService:AdminEmailAddresses:0"] = "admin@example.test",
+					}
+				)
+			);
 
 		return base.CreateHost(builder);
 	}
 
 	protected override void ConfigureWebHost(IWebHostBuilder builder) =>
 		builder.ConfigureTestServices(services =>
-		{
-			services.RemoveAll<IEmailSender>();
-			services.AddSingleton<IEmailSender>(emails);
-			services.RemoveAll<ILoginTokenGenerator>();
-			services.AddSingleton<ILoginTokenGenerator, TestLoginTokenGenerator>();
-			services.RemoveAll<TimeProvider>();
-			services.AddSingleton<TimeProvider, RequestTimeProvider>();
+			{
+				services.RemoveAll<IEmailSender>();
+				services.AddSingleton<IEmailSender>(emails);
+				services.RemoveAll<ILoginTokenGenerator>();
+				services.AddSingleton<ILoginTokenGenerator, TestLoginTokenGenerator>();
+				services.RemoveAll<TimeProvider>();
+				services.AddSingleton<TimeProvider, RequestTimeProvider>();
 
-			services
-				.AddAuthentication(options =>
-				{
-					options.DefaultAuthenticateScheme = TestAuthenticationHandler.Scheme;
-					options.DefaultChallengeScheme = TestAuthenticationHandler.Scheme;
-				})
-				.AddScheme<AuthenticationSchemeOptions, TestAuthenticationHandler>(TestAuthenticationHandler.Scheme, _ => { });
-		});
+				services
+					.AddAuthentication(options =>
+						{
+							options.DefaultAuthenticateScheme = TestAuthenticationHandler.Scheme;
+							options.DefaultChallengeScheme = TestAuthenticationHandler.Scheme;
+						}
+					)
+					.AddScheme<AuthenticationSchemeOptions, TestAuthenticationHandler>(
+						TestAuthenticationHandler.Scheme,
+						_ => { }
+					);
+			}
+		);
 }
 
 file sealed class RequestTimeProvider(IHttpContextAccessor httpContextAccessor) : TimeProvider
@@ -366,6 +403,7 @@ file sealed class RequestTimeProvider(IHttpContextAccessor httpContextAccessor) 
 	public override DateTimeOffset GetUtcNow()
 	{
 		var header = httpContextAccessor.HttpContext?.Request.Headers["X-Test-Utc-Now"].ToString();
+
 		return DateTimeOffset.TryParseExact(header, "O", CultureInfo.InvariantCulture, DateTimeStyles.None, out var now)
 			? now
 			: System.GetUtcNow();
@@ -390,26 +428,25 @@ file sealed class TestAuthenticationHandler(
 
 		var identity = new ClaimsIdentity(
 			[
-				new Claim("vsa-id", userId.ToString(CultureInfo.InvariantCulture)),
-				new Claim(ClaimTypes.NameIdentifier, userId.ToString(CultureInfo.InvariantCulture)),
-				new Claim(ClaimTypes.Name, "Test User"),
-				new Claim(ClaimTypes.Email, "user@example.test"),
+				new("vsa-id", userId.ToString(CultureInfo.InvariantCulture)),
+				new(ClaimTypes.NameIdentifier, userId.ToString(CultureInfo.InvariantCulture)),
+				new(ClaimTypes.Name, "Test User"),
+				new(ClaimTypes.Email, "user@example.test"),
 			],
 			Scheme
 		);
 
-		return AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(identity), Scheme));
+		return AuthenticateResult.Success(new(new(identity), Scheme));
 	}
 }
 
 public sealed partial class CapturingEmailSender : IEmailSender
 {
-	private readonly ConcurrentDictionary<string, EmailMessage> _messages = new(StringComparer.OrdinalIgnoreCase);
 	private readonly ConcurrentDictionary<string, byte> _failures = new(StringComparer.OrdinalIgnoreCase);
+	private readonly ConcurrentDictionary<string, EmailMessage> _messages = new(StringComparer.OrdinalIgnoreCase);
 
-	public void FailFor(string emailAddress) => _failures[emailAddress] = 0;
-	public void ResumeFor(string emailAddress) => _failures.TryRemove(emailAddress, out _);
-	public string ReadCode(string emailAddress) => CodeRegex.Match(_messages[emailAddress].Body).Value;
+	[GeneratedRegex(@"\b[0-9]{6}\b", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 1_000)]
+	private static partial Regex CodeRegex { get; }
 
 	public Task SendEmail(EmailMessage message, CancellationToken cancellationToken = default) =>
 		SendLoginEmail(message, cancellationToken);
@@ -426,8 +463,9 @@ public sealed partial class CapturingEmailSender : IEmailSender
 		return Task.CompletedTask;
 	}
 
-	[GeneratedRegex(@"\b[0-9]{6}\b", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 1_000)]
-	private static partial Regex CodeRegex { get; }
+	public void FailFor(string emailAddress) => _failures[emailAddress] = 0;
+	public void ResumeFor(string emailAddress) => _failures.TryRemove(emailAddress, out _);
+	public string ReadCode(string emailAddress) => CodeRegex.Match(_messages[emailAddress].Body).Value;
 }
 
 file sealed class TestLoginTokenGenerator : ILoginTokenGenerator

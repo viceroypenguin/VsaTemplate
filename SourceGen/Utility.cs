@@ -15,7 +15,7 @@ public static class Utility
 				$"{templateName}.sbntxt"
 			);
 
-		Debug.Assert(stream is { });
+		Debug.Assert(stream is not null);
 
 		using var reader = new StreamReader(stream);
 		return Template.Parse(reader.ReadToEnd());

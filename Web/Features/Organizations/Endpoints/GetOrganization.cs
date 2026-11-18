@@ -15,6 +15,22 @@ namespace VsaTemplate.Web.Features.Organizations.Endpoints;
 [MapGet("/api/organizations/{organizationId}")]
 public sealed partial class GetOrganization(DbContext context)
 {
+	private async ValueTask<Response> HandleAsync([AsParameters] Query query, CancellationToken token)
+	{
+		return await context.Organizations
+				.Where(o => o.OrganizationId == query.OrganizationId)
+				.Select(o => new Response
+					{
+						OrganizationId = o.OrganizationId,
+						TenantId = o.TenantId,
+						Name = o.Name,
+						IsActive = o.IsActive,
+					}
+				)
+				.FirstOrDefaultAsync(token)
+			?? throw new NotFoundException(nameof(Database.Models.Organization));
+	}
+
 	public sealed record Query : IAuthorizedRequest, IOrganizationRequest
 	{
 		[FromRoute]
@@ -30,20 +46,5 @@ public sealed partial class GetOrganization(DbContext context)
 		public required string Name { get; init; }
 
 		public required bool IsActive { get; init; }
-	}
-
-	private async ValueTask<Response> HandleAsync([AsParameters] Query query, CancellationToken token)
-	{
-		return await context.Organizations
-			.Where(o => o.OrganizationId == query.OrganizationId)
-			.Select(o => new Response
-			{
-				OrganizationId = o.OrganizationId,
-				TenantId = o.TenantId,
-				Name = o.Name,
-				IsActive = o.IsActive,
-			})
-			.FirstOrDefaultAsync(token)
-			?? throw new NotFoundException(nameof(Database.Models.Organization));
 	}
 }
