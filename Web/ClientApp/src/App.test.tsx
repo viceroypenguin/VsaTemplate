@@ -6,7 +6,7 @@ import { AccessPanel } from './access/AccessPanel';
 import { OrganizationCard, ScopePage } from './ScopePage';
 import type { Organization, Scope, Tenant } from './types';
 
-const adminScope: Scope = { kind: 'tenants', id: 1, name: 'Acme', isActive: true, permissions: ['Admin'] };
+const adminScope: Scope = { kind: 'tenants', id: 1, name: 'Acme', permissions: ['Admin'] };
 const json = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status, headers: { 'Content-Type': 'application/json' } });
 const externalOrganization: Organization = { organizationId: 2, tenantId: 9, name: 'Design team', isActive: true, permissions: ['None'] };
 const secondOrganization: Organization = { ...externalOrganization, organizationId: 3, tenantId: 1, name: 'Research team' };
@@ -79,7 +79,7 @@ describe('workspace flows', () => {
 
   it('lets a first-time user find and switch organizations across tenants', async () => {
     const user = userEvent.setup();
-    mockMemberships([externalOrganization, secondOrganization], [{ ...adminScope, tenantId: 1 }]);
+    mockMemberships([externalOrganization, secondOrganization], [{ ...adminScope, tenantId: 1, isActive: true }]);
     render(<App />);
 
     expect(await screen.findByText('Choose an organization to open its workspace.')).toBeInTheDocument();
@@ -108,21 +108,14 @@ describe('workspace flows', () => {
     expect(window.location.hash).toBe('#/organizations/3/workspace');
   });
 
-  it('keeps inaccessible and inactive workspaces out of automatic selection', async () => {
+  it('does not resume a workspace that is missing from the organization list', async () => {
     localStorage.setItem('workspace-organization:1', '4');
-    mockMemberships([externalOrganization, secondOrganization, { ...externalOrganization, organizationId: 4, name: 'Archived team', isActive: false, permissions: ['Admin'] }]);
-    const user = userEvent.setup();
+    mockMemberships([externalOrganization, secondOrganization]);
     render(<App />);
 
     expect(await screen.findByText('Choose an organization to open its workspace.')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Archived team Inactive' })).toHaveAttribute('href', '#/organizations/4/overview');
-    const switcher = screen.getByRole('navigation', { name: 'Organization' });
-    await user.click(within(switcher).getByRole('button', { name: 'Select organization' }));
-    expect(within(switcher).queryByRole('link', { name: 'Archived team' })).not.toBeInTheDocument();
 
     window.location.hash = '#/organizations/4/workspace';
-    expect(await screen.findByRole('heading', { name: 'Organization is inactive' })).toBeInTheDocument();
-    window.location.hash = '#/organizations/5/workspace';
     expect(await screen.findByRole('heading', { name: 'Workspace unavailable' })).toBeInTheDocument();
     expect(screen.queryByText('Future features will appear here.')).not.toBeInTheDocument();
   });
@@ -186,13 +179,13 @@ describe('workspace flows', () => {
     expect(new Headers(deletion?.[1]?.headers).get('X-CSRF-TOKEN')).toBe('csrf-token');
   });
 
-  it('creates a tenant and requires acknowledgment before dismissing its recovery keys', async () => {
+  it('opens the new tenant after creating it', async () => {
     const user = userEvent.setup();
     let created = false;
     const fetchMock = vi.fn(async (input: RequestInfo | URL, options?: RequestInit) => {
       const path = String(input);
       if (path === '/api/session') return json({ isAuthenticated: true, isAdmin: false, user: { userId: 1, name: 'Alex', emailAddress: 'alex@example.com' }, requestToken: 'csrf-token' });
-      if (path === '/api/tenants/create' && options?.method === 'POST') { created = true; return json({ tenantId: 1, recoveryKeys: ['first-recovery-key', 'second-recovery-key'] }); }
+      if (path === '/api/tenants/create' && options?.method === 'POST') { created = true; return json({ tenantId: 1 }); }
       if (path === '/api/tenants') return json({ tenants: created ? [{ tenantId: 1, name: 'Acme', isActive: true, permissions: ['Admin'] }] : [] });
       if (path.endsWith('/organizations')) return json({ organizations: [] });
       throw new Error(`Unexpected request ${path}`);
@@ -205,15 +198,8 @@ describe('workspace flows', () => {
     const name = screen.getByRole('textbox', { name: 'Tenant name' });
     await user.type(name, '  Acme  ');
     await user.click(within(name.closest('form')!).getByRole('button', { name: 'Create tenant' }));
-    expect(await screen.findByRole('heading', { name: 'Save your recovery keys' })).toBeInTheDocument();
-    expect(screen.getByText('first-recovery-key')).toBeInTheDocument();
-    const continueButton = screen.getByRole('button', { name: 'Continue to workspace' });
-    expect(continueButton).toBeDisabled();
-    await user.click(screen.getByRole('checkbox', { name: 'I have saved these recovery keys securely.' }));
-    expect(continueButton).toBeEnabled();
-    await user.click(continueButton);
-    expect(screen.queryByRole('heading', { name: 'Save your recovery keys' })).not.toBeInTheDocument();
     expect(await screen.findByRole('heading', { name: 'Acme' })).toBeInTheDocument();
+    expect(window.location.hash).toBe('#/tenants/1');
     const creation = fetchMock.mock.calls.find(([path]) => path === '/api/tenants/create');
     expect(creation?.[1]?.body).toBe('{"name":"Acme"}');
     expect(new Headers(creation?.[1]?.headers).get('X-CSRF-TOKEN')).toBe('csrf-token');
@@ -316,34 +302,63 @@ describe('workspace flows', () => {
     expect(fetchMock).toHaveBeenCalledWith('/api/tenants/1/users/2', expect.objectContaining({ method: 'DELETE' }));
   });
 
-  it('confirms deactivation on keyboard form submission and restores focus on cancel', async () => {
+  it.each([
+    { kind: 'tenants', id: 1, name: 'Acme', action: 'Deactivate tenant', emptyTitle: 'No tenants available' },
+    { kind: 'organizations', id: 2, name: 'Design team', action: 'Deactivate organization', emptyTitle: 'No organizations yet' },
+  ])('requires DELETE before deactivating $name', async ({ kind, id, name, action, emptyTitle }) => {
     const user = userEvent.setup();
-    const onChanged = vi.fn();
-    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
+    const settingsHash = `#/${kind}/${id}/settings`;
+    window.location.hash = settingsHash;
+    let tenantActive = true;
+    let organizationActive = true;
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, options?: RequestInit) => {
+      const path = String(input);
+      if (path === '/api/session') return json({ isAuthenticated: true, isAdmin: false, user: { userId: 1, name: 'Alex', emailAddress: 'alex@example.com' }, requestToken: 'csrf-token' });
+      if (path === '/api/tenants') return json({ tenants: tenantActive ? [{ tenantId: 1, name: 'Acme', isActive: true, permissions: ['Admin'] }] : [] });
+      if (path === '/api/organizations') return json({ organizations: organizationActive ? [{ ...externalOrganization, tenantId: 1, permissions: ['Admin'] }] : [] });
+      if (path === `/api/${kind}/${id}` && options?.method === 'PUT') {
+        if (kind === 'tenants') tenantActive = false;
+        organizationActive = false;
+        return new Response(null, { status: 204 });
+      }
+      throw new Error(`Unexpected request ${path}`);
+    });
     vi.stubGlobal('fetch', fetchMock);
-    render(<ScopePage scope={adminScope} tab="settings" onChanged={onChanged} />);
+    render(<App />);
 
+    const trigger = await screen.findByRole('button', { name: action });
     const settingsLink = screen.getByRole('link', { name: 'Settings' });
     expect(settingsLink).toHaveAttribute('aria-current', 'page');
-    expect(settingsLink).toHaveAttribute('href', '#/tenants/1/settings');
-    await user.click(screen.getByRole('switch', { name: 'Active workspace' }));
-    await user.type(screen.getByRole('textbox', { name: 'Tenant name' }), '{Enter}');
-    const dialog = screen.getByRole('alertdialog', { name: 'Deactivate Acme?' });
+    expect(settingsLink).toHaveAttribute('href', settingsHash);
+    await user.click(trigger);
+    const dialog = screen.getByRole('alertdialog', { name: `Deactivate ${name}?` });
+    const confirmation = within(dialog).getByRole('textbox', { name: 'Type DELETE to confirm' });
+    const confirm = within(dialog).getByRole('button', { name: action });
+    expect(dialog).toHaveAccessibleDescription(/deactivation is permanent/i);
+    if (kind === 'tenants') expect(dialog).toHaveAccessibleDescription(/all of its organizations/);
+    expect(confirm).toBeDisabled();
+    await user.type(confirmation, 'delete{Enter}');
+    expect(confirm).toBeDisabled();
     await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
-    const save = screen.getByRole('button', { name: 'Save changes' });
-    await waitFor(() => expect(save).toHaveFocus());
-    expect(fetchMock).not.toHaveBeenCalled();
+    await waitFor(() => expect(trigger).toHaveFocus());
+    expect(fetchMock.mock.calls.filter(([, options]) => options?.method === 'PUT')).toHaveLength(0);
 
-    await user.click(save);
-    await user.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Deactivate tenant' }));
-    await waitFor(() => expect(onChanged).toHaveBeenCalledOnce());
-    expect(fetchMock).toHaveBeenCalledWith('/api/tenants/1', expect.objectContaining({ method: 'PUT', body: '{"name":"Acme","isActive":false}' }));
+    await user.click(trigger);
+    const newConfirmation = screen.getByRole('textbox', { name: 'Type DELETE to confirm' });
+    expect(newConfirmation).toHaveValue('');
+    await user.type(newConfirmation, 'DELETE{Enter}');
+    expect(await screen.findByRole('heading', { name: emptyTitle })).toBeInTheDocument();
+    expect(window.location.hash).toBe(`#/${kind}`);
+    expect(fetchMock).toHaveBeenCalledWith(`/api/${kind}/${id}`, expect.objectContaining({ method: 'PUT', body: JSON.stringify({ name, isActive: false }) }));
+
+    window.location.hash = settingsHash;
+    expect(await screen.findByRole('heading', { name: 'Workspace unavailable' })).toBeInTheDocument();
   });
 
   it('lets read-only members open their organization without exposing management controls', () => {
     const fetchMock = vi.fn(); vi.stubGlobal('fetch', fetchMock);
     const organization = { organizationId: 2, tenantId: 1, name: 'Design team', isActive: true, permissions: ['None'] as const };
-    render(<><OrganizationCard organization={{ ...organization, permissions: [...organization.permissions] }} /><ScopePage scope={{ kind: 'organizations', id: 2, name: organization.name, isActive: true, permissions: ['None'] }} tab="overview" onChanged={vi.fn()} /></>);
+    render(<><OrganizationCard organization={{ ...organization, permissions: [...organization.permissions] }} /><ScopePage scope={{ kind: 'organizations', id: 2, name: organization.name, permissions: ['None'] }} tab="overview" onChanged={vi.fn()} /></>);
     expect(screen.getByRole('link', { name: 'Open workspace' })).toHaveAttribute('href', '#/organizations/2/workspace');
     const navigation = screen.getByRole('navigation', { name: 'Organization sections' });
     expect(within(navigation).queryByRole('link', { name: 'Members' })).not.toBeInTheDocument();

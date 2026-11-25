@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Empty, Icon, Status } from './components';
-import { canOpenOrganizationWorkspace, organizationWorkspaceHref } from './organizationWorkspace';
+import { Empty, Icon } from './components';
+import { organizationWorkspaceHref } from './organizationWorkspace';
 import type { OrganizationWorkspaceEntry } from './organizationWorkspace';
 
 export function OrganizationDirectory({ entries }: { entries: OrganizationWorkspaceEntry[] }) {
@@ -23,12 +23,9 @@ export function OrganizationDirectory({ entries }: { entries: OrganizationWorksp
     </div>}
     {filtered.length ? <ul className="organization-list">
       {filtered.map(({ organization, context }) => <li key={organization.organizationId}>
-        <a className="organization-row" href={canOpenOrganizationWorkspace(organization)
-          ? organizationWorkspaceHref(organization.organizationId)
-          : `#/organizations/${organization.organizationId}/overview`}>
+        <a className="organization-row" href={organizationWorkspaceHref(organization.organizationId)}>
           <span className="entity-icon"><Icon name="teams" size={20} /></span>
           <span className="organization-row-name"><strong>{organization.name}</strong>{context && <> <small>{context}</small></>}</span>
-          {!organization.isActive && <> <Status active={false} /></>}
           <Icon name="arrow" size={17} />
         </a>
       </li>)}

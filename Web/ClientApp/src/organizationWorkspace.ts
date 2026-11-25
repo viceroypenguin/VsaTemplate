@@ -9,10 +9,6 @@ export function organizationWorkspaceHref(organizationId: number) {
   return `#/organizations/${organizationId}/workspace`;
 }
 
-export function canOpenOrganizationWorkspace(organization: Organization) {
-  return organization.isActive && organization.permissions.length > 0;
-}
-
 export function organizationWorkspaceEntries(organizations: readonly Organization[], tenants: readonly Tenant[]): OrganizationWorkspaceEntry[] {
   const tenantNames = new Map(tenants.map((tenant) => [tenant.tenantId, tenant.name]));
   const names = new Map<string, number>();

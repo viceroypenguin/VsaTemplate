@@ -60,12 +60,6 @@ export function Empty({ icon = 'building', title, children }: { icon?: keyof typ
   return <div className="empty-state"><span className="empty-icon"><Icon name={icon} size={28} /></span><h3>{title}</h3><p>{children}</p></div>;
 }
 
-export function Status({ active }: { active: boolean }) {
-  return <Badge className={`status ${active ? 'status-active' : 'status-inactive'}`} variant="secondary">
-    <span aria-hidden="true" />{active ? 'Active' : 'Inactive'}
-  </Badge>;
-}
-
 export function Field({ label, hint, id, ...props }: InputHTMLAttributes<HTMLInputElement> & { label: string; hint?: string }) {
   const generatedId = useId();
   const inputId = id ?? generatedId;

@@ -39,7 +39,6 @@ export type Scope = {
   kind: 'tenants' | 'organizations';
   id: number;
   name: string;
-  isActive: boolean;
   permissions: Permission[];
 };
 

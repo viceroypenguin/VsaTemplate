@@ -266,9 +266,9 @@ commits. Caching access decisions is useful only if granting and revoking access
 
 Tenant and organization access are separate scopes. A tenant groups organizations, but a person can belong to one
 organization without belonging to its tenant. Removing tenant membership does not remove independently assigned
-organization membership. The scope's own activity and permissions determine its ordinary authorization answer.
-An inactive tenant returns `[]` from its ordinary permission cache, making that tenant unavailable to ordinary scoped
-operations. Explicit lifecycle administration, such as restoration, is handled separately from ordinary access.
+organization membership. The scope's own activity and permissions determine its authorization answer. Deactivation hides
+the tenant or organization from its listings and removes access to its scoped operations, including settings. Deactivating
+a tenant also deactivates all of its organizations. In Settings, type `DELETE` to confirm permanent deactivation.
 
 The scoped request contracts have a virtual permission demand defaulting to `None`. An operation that needs only base
 membership can use that default; an operation that manages members or settings supplies a stronger demand. An empty

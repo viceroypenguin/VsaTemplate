@@ -6,8 +6,6 @@ create table [Tenant]
 
 	[Name] varchar(200) not null,
 	[IsActive] bit not null,
-
-	[RecoveryKeysJson] json not null,
 );
 
 create table [TenantRole]

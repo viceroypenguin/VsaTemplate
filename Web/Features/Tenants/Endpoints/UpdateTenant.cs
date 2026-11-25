@@ -8,8 +8,8 @@ using VsaTemplate.Web.Features.AccessControl.Authorization;
 using VsaTemplate.Web.Features.AccessControl.Services;
 using VsaTemplate.Web.Features.Shared.Exceptions;
 using VsaTemplate.Web.Features.Shared.Validators;
+using VsaTemplate.Web.Features.Tenants.Authorization;
 using VsaTemplate.Web.Features.Tenants.Models;
-using VsaTemplate.Web.Features.Tenants.Services;
 
 namespace VsaTemplate.Web.Features.Tenants.Endpoints;
 
@@ -17,29 +17,16 @@ namespace VsaTemplate.Web.Features.Tenants.Endpoints;
 [MapPut("/api/tenants/{tenantId}")]
 public sealed partial class UpdateTenant(
 	DbContext context,
-	CurrentUserService currentUserService,
-	TenantAdministrationCache administration,
 	PermissionCacheInvalidator cacheInvalidator
 )
 {
 	private async ValueTask HandleAsync([AsParameters] Request request, CancellationToken token)
 	{
-		var permissions = await administration.GetValue(
-			new()
-			{
-				UserId = currentUserService.GetLoggedInUserId(),
-				TenantId = request.TenantId,
-			},
-			token
-		);
-
-		if (!permissions.Permissions.Contains(TenantPermission.Admin))
-			UnauthorizedException.ThrowUnauthorizedException();
-
 		var name = request.Body.Name.Trim();
+		await using var transaction = await context.BeginTransactionAsync(token);
 
 		var count = await context.Tenants
-			.Where(t => t.TenantId == request.TenantId)
+			.Where(t => t.TenantId == request.TenantId && t.IsActive)
 			.Set(t => t.Name, name)
 			.Set(t => t.IsActive, request.Body.IsActive)
 			.UpdateAsync(token);
@@ -47,12 +34,23 @@ public sealed partial class UpdateTenant(
 		if (count == 0)
 			throw new NotFoundException(nameof(Database.Models.Tenant));
 
+		if (!request.Body.IsActive)
+		{
+			await context.Organizations
+				.Where(o => o.TenantId == request.TenantId && o.IsActive)
+				.Set(o => o.IsActive, value: false)
+				.UpdateAsync(token);
+		}
+
+		await transaction.CommitAsync(token);
 		await cacheInvalidator.InvalidateTenant(request.TenantId);
 	}
 
 	[Validate]
-	public sealed partial record Request : IAuthorizedRequest, IValidationTarget<Request>
+	public sealed partial record Request : IAuthorizedRequest, ITenantRequest, IValidationTarget<Request>
 	{
+		public static TenantPermission TenantPermission => TenantPermission.Admin;
+
 		[FromRoute]
 		public required TenantId TenantId { get; init; }
 

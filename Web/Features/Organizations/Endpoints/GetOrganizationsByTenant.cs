@@ -30,7 +30,7 @@ public sealed partial class GetOrganizationsByTenant(
 			.ToDictionary(o => o.OrganizationId, o => o.Permissions);
 
 		var organizations = await context.Organizations
-			.Where(o => o.TenantId == query.TenantId)
+			.Where(o => o.TenantId == query.TenantId && o.IsActive)
 			.OrderBy(o => o.Name)
 			.ThenBy(o => o.OrganizationId)
 			.ToListAsync(token);

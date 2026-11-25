@@ -1,10 +1,7 @@
-using System.Security.Cryptography;
-using System.Text.Json;
 using Immediate.Apis.Shared;
 using Immediate.Handlers.Shared;
 using Immediate.Validations.Shared;
 using LinqToDB;
-using SimpleBase;
 using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.AccessControl.Authorization;
 using VsaTemplate.Web.Features.AccessControl.Services;
@@ -29,7 +26,6 @@ public sealed partial class CreateTenant(
 		var userId = currentUserService.GetLoggedInUserId();
 		var ownerId = currentUserService.GetMembershipUserId();
 		var name = request.Name.Trim();
-		var recoveryKeys = BuildRecoveryKeys();
 
 		await using var transaction = await context.BeginTransactionAsync(token);
 
@@ -39,7 +35,6 @@ public sealed partial class CreateTenant(
 				{
 					Name = name,
 					IsActive = true,
-					RecoveryKeysJson = JsonSerializer.Serialize(recoveryKeys),
 				},
 				token: token
 			);
@@ -69,21 +64,7 @@ public sealed partial class CreateTenant(
 		await transaction.CommitAsync(token);
 		await cacheInvalidator.InvalidateUser(ownerId);
 
-		return new()
-		{
-			TenantId = tenantId,
-			RecoveryKeys = recoveryKeys,
-		};
-	}
-
-	private static List<string> BuildRecoveryKeys()
-	{
-		return Enumerable.Range(0, 12)
-			.Select(
-				_ =>
-					Base58.Bitcoin.Encode(RandomNumberGenerator.GetBytes(16))
-			)
-			.ToList();
+		return new() { TenantId = tenantId };
 	}
 
 	[Validate]
@@ -97,7 +78,5 @@ public sealed partial class CreateTenant(
 	public sealed record Response
 	{
 		public required TenantId TenantId { get; init; }
-
-		public required IReadOnlyList<string> RecoveryKeys { get; init; }
 	}
 }

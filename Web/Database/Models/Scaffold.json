@@ -1263,19 +1263,6 @@
           "SkipOnUpdate": false
         },
         {
-          "TypeName": "string",
-          "PropertyName": "RecoveryKeysJson",
-          "ColumnName": "RecoveryKeysJson",
-          "IsNullable": false,
-          "DataType": "json",
-          "ForceNotNull": true,
-          "IsPrimaryKey": false,
-          "PrimaryKeyOrder": null,
-          "IsIdentity": false,
-          "SkipOnInsert": false,
-          "SkipOnUpdate": false
-        },
-        {
           "TypeName": "int",
           "PropertyName": "TenantId",
           "ColumnName": "TenantId",
@@ -1289,7 +1276,7 @@
           "SkipOnUpdate": true
         }
       ],
-      "Count": 4
+      "Count": 3
     },
     "Associations": {
       "Collection": [

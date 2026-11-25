@@ -1,13 +1,16 @@
+using System.Data;
 using System.Text.Json;
 using Immediate.Apis.Shared;
 using Immediate.Handlers.Shared;
 using Immediate.Validations.Shared;
 using LinqToDB;
+using LinqToDB.Async;
 using Microsoft.AspNetCore.Mvc;
 using VsaTemplate.Web.Database;
 using VsaTemplate.Web.Features.AccessControl.Authorization;
 using VsaTemplate.Web.Features.AccessControl.Services;
 using VsaTemplate.Web.Features.Organizations.Models;
+using VsaTemplate.Web.Features.Shared.Exceptions;
 using VsaTemplate.Web.Features.Tenants.Authorization;
 using VsaTemplate.Web.Features.Tenants.Models;
 
@@ -25,7 +28,11 @@ public sealed partial class CreateOrganization(
 	{
 		var userId = currentUserService.GetLoggedInUserId();
 		var memberUserId = currentUserService.GetMembershipUserId();
-		await using var transaction = await context.BeginTransactionAsync(token);
+		// Keep the tenant active through the insert so deactivation can include the new organization.
+		await using var transaction = await context.BeginTransactionAsync(IsolationLevel.Serializable, token);
+
+		if (!await context.Tenants.AnyAsync(t => t.TenantId == request.TenantId && t.IsActive, token))
+			throw new NotFoundException(nameof(Database.Models.Tenant));
 
 		var organizationId = (OrganizationId)await context.InsertWithInt32IdentityAsync(
 			new Database.Models.Organization

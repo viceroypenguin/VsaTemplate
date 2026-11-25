@@ -11,8 +11,7 @@ namespace VsaTemplate.Web.Features.Tenants.Queries;
 public sealed partial class GetTenantsForCurrentUser(
 	CurrentUserService currentUserService,
 	DbContext context,
-	CurrentTenantUserService currentTenantUserService,
-	TenantAdministrationCache administration
+	CurrentTenantUserService currentTenantUserService
 )
 {
 	private async ValueTask<Response> HandleAsync(Query _, CancellationToken token)
@@ -22,28 +21,26 @@ public sealed partial class GetTenantsForCurrentUser(
 
 		var userId = currentUserService.GetMembershipUserId();
 
-		var roles = await context.TenantRoleUsers
+		var memberships = await context.TenantRoleUsers
 			.Where(u => u.UserId == userId && u.User.IsActive)
+			.Select(u => u.TenantRole.Tenant)
+			.Where(t => t.IsActive)
 			.Select(
-				u => new
+				t => new
 				{
-					u.TenantRole.TenantId,
-					u.TenantRole.Tenant.Name,
-					u.TenantRole.Tenant.IsActive,
+					t.TenantId,
+					t.Name,
+					t.IsActive,
 				}
 			)
+			.Distinct()
 			.ToListAsync(token);
 
 		var tenants = new List<Tenant>();
 
-		foreach (var group in roles.GroupBy(r => (r.TenantId, r.Name, r.IsActive)))
+		foreach (var membership in memberships)
 		{
-			var permissions = group.Key.IsActive
-				? await currentTenantUserService.GetLoggedInUserPermissions(group.Key.TenantId)
-				: (await administration.GetValue(
-					new() { UserId = currentUserService.GetLoggedInUserId(), TenantId = group.Key.TenantId },
-					token
-				)).Permissions;
+			var permissions = await currentTenantUserService.GetLoggedInUserPermissions(membership.TenantId);
 
 			if (permissions.Count == 0)
 				continue;
@@ -51,9 +48,9 @@ public sealed partial class GetTenantsForCurrentUser(
 			tenants.Add(
 				new()
 				{
-					TenantId = group.Key.TenantId,
-					Name = group.Key.Name,
-					IsActive = group.Key.IsActive,
+					TenantId = membership.TenantId,
+					Name = membership.Name,
+					IsActive = membership.IsActive,
 					Permissions = permissions,
 				}
 			);

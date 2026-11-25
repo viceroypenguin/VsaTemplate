@@ -25,6 +25,8 @@ Use `async` and `await` in every `ValueTask`-returning implementation rather tha
 wrapper is intentional for error stack reporting with runtime-async; do not remove it as a simplification. Keep genuinely
 synchronous methods synchronous and return their values without an asynchronous wrapper.
 
+Prefer `.ToList()` when materializing a sequence. Use `.ToArray()` when the receiving API requires an array.
+
 ## Formatting C# with ReSharper
 
 Follow `.editorconfig` for C# formatting and syntax style. Restore the pinned ReSharper tool and run the formatting

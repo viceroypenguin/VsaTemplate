@@ -15,9 +15,7 @@ public sealed class PermissionCacheInvalidator(
 	DbContext context,
 	UserPermissionCache userPermissions,
 	TenantUserPermissionCache tenantPermissions,
-	TenantAdministrationCache tenantAdministration,
 	OrganizationUserPermissionCache organizationPermissions,
-	OrganizationAdministrationCache organizationAdministration,
 	GetOrganizationsByUserCache organizations
 )
 {
@@ -75,18 +73,10 @@ public sealed class PermissionCacheInvalidator(
 			organizations.RemoveValue(new() { UserId = id });
 
 			foreach (var tenantId in tenantIds)
-			{
 				tenantPermissions.RemoveValue(new() { UserId = id, TenantId = tenantId });
 
-				tenantAdministration.RemoveValue(new() { UserId = id, TenantId = tenantId });
-			}
-
 			foreach (var organizationId in organizationIds)
-			{
 				organizationPermissions.RemoveValue(new() { UserId = id, OrganizationId = organizationId });
-
-				organizationAdministration.RemoveValue(new() { UserId = id, OrganizationId = organizationId });
-			}
 		}
 	}
 }

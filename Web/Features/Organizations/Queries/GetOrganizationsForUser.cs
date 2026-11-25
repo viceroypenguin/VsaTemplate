@@ -27,14 +27,20 @@ public sealed partial class GetOrganizationsForUser(DbContext context, TimeProvi
 			)
 			.FirstOrDefaultAsync(token);
 
-		if (apiKey is not null && apiKey.PermissionsJson is null)
+		if (apiKey is { PermissionsJson: null })
 			return [];
 
 		var memberUserId = apiKey?.OwnerUserId ?? query.UserId;
 
-		var roles = await context.OrganizationRoleUsers
+		var rolesQuery = context.OrganizationRoleUsers
 			.Where(u => u.UserId == memberUserId && u.User.IsActive && u.User.ApiKey == null)
 			.Select(u => u.OrganizationRole)
+			.Where(r => r.Organization.IsActive);
+
+		if (query.OrganizationId is { } organizationId)
+			rolesQuery = rolesQuery.Where(r => r.OrganizationId == organizationId);
+
+		var roles = await rolesQuery
 			.Select(
 				r => new
 				{
@@ -47,7 +53,7 @@ public sealed partial class GetOrganizationsForUser(DbContext context, TimeProvi
 			)
 			.ToListAsync(token);
 
-		var keyPermissions = apiKey is null ? null : OrganizationManagement.ReadPermissions(apiKey.PermissionsJson);
+		var keyPermissions = apiKey?.PermissionsJson is { } grants ? OrganizationManagement.ReadPermissions(grants) : null;
 		var organizations = new List<Organization>();
 
 		foreach (var group in roles.GroupBy(r => (r.OrganizationId, r.TenantId, r.Name, r.IsActive)))
@@ -55,9 +61,9 @@ public sealed partial class GetOrganizationsForUser(DbContext context, TimeProvi
 			var membershipPermissions = group
 				.SelectMany(r => OrganizationManagement.ReadPermissions(r.PermissionsJson))
 				.Distinct()
-				.ToArray();
+				.ToList();
 
-			if (membershipPermissions.Length == 0)
+			if (membershipPermissions.Count == 0)
 				continue;
 
 			var permissions = keyPermissions is null
@@ -69,12 +75,9 @@ public sealed partial class GetOrganizationsForUser(DbContext context, TimeProvi
 							|| membershipPermissions.Contains(p)
 					)
 					.Distinct()
-					.ToArray();
+					.ToList();
 
-			if (!group.Key.IsActive)
-				permissions = permissions.Contains(OrganizationPermission.Admin) ? [OrganizationPermission.Admin] : [];
-
-			if (permissions.Length == 0)
+			if (permissions.Count == 0)
 				continue;
 
 			organizations.Add(
@@ -98,6 +101,8 @@ public sealed partial class GetOrganizationsForUser(DbContext context, TimeProvi
 	public sealed record Query
 	{
 		public required UserId UserId { get; init; }
+
+		public OrganizationId? OrganizationId { get; init; }
 	}
 
 	public sealed record Organization

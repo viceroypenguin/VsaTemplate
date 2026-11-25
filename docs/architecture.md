@@ -65,14 +65,15 @@ membership access; operations requiring management rights override the demand. D
 force every read operation to repeat the default.
 
 An empty effective permission set (`[]`) means that the scope cannot be used by that identity. A nonempty set containing
-`None` represents base membership. Inactive entities return no ordinary scoped permissions. For example, an inactive tenant
-must return `[]` from `TenantUserPermissionCache`. Explicit lifecycle administration, such as restoration, uses a separate
-cached authorization answer instead of weakening the ordinary permission cache to permit access to inactive resources.
+`None` represents base membership. Inactive tenants and organizations return `[]` from their permission caches and are
+omitted from listings. Settings updates require `Admin` through the same scoped authorization as other operations, so
+deactivation also removes access to settings.
 
 Tenant membership and organization membership are independent. A tenant is a collection of organizations; membership in an
-organization does not imply, or require, membership in that tenant. Ordinary organization authorization depends on the
-organization's own eligibility and permissions, without a parent tenant membership or activity gate. Removing a user's tenant
-membership does not remove their separately assigned organization memberships.
+organization does not imply, or require, membership in that tenant. Organization authorization checks the organization's own
+eligibility and permissions. Deactivating a tenant deactivates all its organizations in the same transaction. Organization
+creation requires an active tenant through commit. Removing a user's tenant membership preserves separately assigned
+organization memberships.
 
 A query that already produces effective organization permissions is the source for that result. Its caller should not
 reconstruct permission calculation by querying tenant or organization user services again. Keep permission derivation and

@@ -3,6 +3,7 @@ using Immediate.Cache.Shared;
 using Immediate.Handlers.Shared;
 using VsaTemplate.Web.Features.AccessControl.Models;
 using VsaTemplate.Web.Features.Organizations.Models;
+using VsaTemplate.Web.Features.Organizations.Queries;
 
 namespace VsaTemplate.Web.Features.Organizations.Services;
 
@@ -17,12 +18,17 @@ public sealed partial class OrganizationUserPermissionCache
 }
 
 [Handler]
-public sealed partial class OrganizationGetUserPermissions(OrganizationPermissionReader permissionReader)
+public sealed partial class OrganizationGetUserPermissions(GetOrganizationsForUser.Handler getOrganizationsForUser)
 {
-	private async ValueTask<Response> HandleAsync(Query query, CancellationToken token) => new()
+	private async ValueTask<Response> HandleAsync(Query query, CancellationToken token)
 	{
-		Permissions = await permissionReader.Read(query.UserId, query.OrganizationId, includeInactive: false, token),
-	};
+		var organizations = await getOrganizationsForUser.HandleAsync(
+			new() { UserId = query.UserId, OrganizationId = query.OrganizationId },
+			token
+		);
+
+		return new() { Permissions = organizations.SingleOrDefault()?.Permissions ?? [] };
+	}
 
 	public sealed record Query
 	{
