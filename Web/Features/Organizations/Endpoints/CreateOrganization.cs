@@ -1,4 +1,3 @@
-using System.Data;
 using System.Text.Json;
 using Immediate.Apis.Shared;
 using Immediate.Handlers.Shared;
@@ -28,10 +27,14 @@ public sealed partial class CreateOrganization(
 	{
 		var userId = currentUserService.GetLoggedInUserId();
 		var memberUserId = currentUserService.GetMembershipUserId();
-		// Keep the tenant active through the insert so deactivation can include the new organization.
-		await using var transaction = await context.BeginTransactionAsync(IsolationLevel.Serializable, token);
+		await using var transaction = await context.BeginTransactionAsync(token);
 
-		if (!await context.Tenants.AnyAsync(t => t.TenantId == request.TenantId && t.IsActive, token))
+		// Hold a shared lock on the tenant so deactivation includes any organization created here.
+		var tenantIsActive = await context.Tenants
+			.TableHint("REPEATABLEREAD")
+			.AnyAsync(t => t.TenantId == request.TenantId && t.IsActive, token);
+
+		if (!tenantIsActive)
 			throw new NotFoundException(nameof(Database.Models.Tenant));
 
 		var organizationId = (OrganizationId)await context.InsertWithInt32IdentityAsync(

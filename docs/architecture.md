@@ -86,6 +86,8 @@ application's administrator invariants when members or administrative roles chan
 
 ## Persistence and schema changes
 
+Prefer the default transaction isolation level. Reserve `Serializable` for cases where a specific invariant needs it.
+
 SQL migration scripts under `Web/Database/Scripts` are the source of database structure. Add a new, monotonically ordered
 script for a schema change; do not rewrite a script that could have been applied to an existing database. The application
 embeds the scripts and applies missing migrations according to its version history at startup.
