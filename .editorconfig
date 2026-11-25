@@ -305,8 +305,7 @@ dotnet_analyzer_diagnostic.category-Globalization.severity = error
 
 # IDE Diagnostics
 dotnet_diagnostic.IDE0005.severity = error              # IDE0005: Using directive is unnecessary
-dotnet_diagnostic.IDE0011.severity = silent             # IDE0011: Add braces
-dotnet_diagnostic.IDE0046.severity = silent             # IDE0046: Convert to conditional expression
+dotnet_diagnostic.IDE0046.severity = suggestion         # IDE0046: Convert to conditional expression
 dotnet_diagnostic.IDE0043.severity = error              # IDE0043: Format string contains invalid placeholder
 dotnet_diagnostic.IDE0051.severity = warning            # IDE0051: Remove unused private member
 dotnet_diagnostic.IDE0052.severity = warning            # IDE0052: Remove unread private member

@@ -22,7 +22,9 @@ internal static class OrganizationManagement
 
 		if (!current.Contains(OrganizationPermission.Admin)
 			&& permissions.Any(p => p != OrganizationPermission.None && !current.Contains(p)))
+		{
 			UnauthorizedException.ThrowUnauthorizedException("You cannot grant or change permissions beyond your own.");
+		}
 	}
 
 	public static async Task<Database.Models.OrganizationRole> GetRole(
@@ -77,6 +79,8 @@ internal static class OrganizationManagement
 				u => u.UserId == userId && u.IsActive && u.ApiKey == null,
 				token
 			))
+		{
 			NotFoundException.ThrowNotFoundException("User");
+		}
 	}
 }

@@ -41,7 +41,9 @@ public sealed partial class AddUserToTenant(
 				u => u.UserId == request.UserId && u.IsActive && u.ApiKey == null,
 				token
 			))
+		{
 			throw new NotFoundException(nameof(Database.Models.AccessControl.User));
+		}
 
 		var userId = currentUserService.GetLoggedInUserId();
 

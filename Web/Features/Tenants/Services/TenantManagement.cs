@@ -22,7 +22,9 @@ internal static class TenantManagement
 				p =>
 					p is TenantPermission.Admin || (p is not TenantPermission.None && !actorPermissions.Contains(p))
 			))
+		{
 			throw new UnauthorizedException("You cannot manage permissions beyond your own tenant permissions.");
+		}
 	}
 
 	public static async Task EnsureAdministratorRemains(

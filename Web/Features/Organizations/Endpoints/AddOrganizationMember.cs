@@ -45,7 +45,9 @@ public sealed partial class AddOrganizationMember(
 		if (user is { IsActive: false }
 			|| (user is not null
 				&& await context.AccessControl.ApiKeys.AnyAsync(k => k.ApiKeyId == user.UserId, token)))
+		{
 			throw new ConflictException("This email address is unavailable for membership.");
+		}
 
 		var userId = user?.UserId
 			?? UserId.From(
